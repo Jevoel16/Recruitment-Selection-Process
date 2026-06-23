@@ -129,6 +129,22 @@ body {
     background: rgba(255, 255, 255, 0.6);
 }
 
+.requirement-item {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.requirement-item:hover {
+    border-color: rgba(79, 70, 229, 0.3) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.requirement-item .form-check-input {
+    flex: 0 0 auto;
+}
+
 /* Buttons */
 .btn-add-glass {
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));

@@ -6,6 +6,22 @@ const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const requirementFields = [
+    'req_pds',
+    'req_prcLicense',
+    'req_reportRating',
+    'req_medCert',
+    'req_birthCert',
+    'req_marriageCert',
+    'req_nbiClearance',
+    'req_tor',
+    'req_diplomaBachelors',
+    'req_masters',
+    'req_doctorate',
+    'req_soGraduation',
+    'req_orderSeparation',
+    'req_saln'
+];
 
 // Middleware
 app.use(express.json());
@@ -32,7 +48,7 @@ hbs.registerHelper('eq', function (a, b) {
 
 // Helper to check if all requirements are met
 hbs.registerHelper('allRequirementsMet', function(applicant) {
-    return applicant.req_pds && applicant.req_birthCert && applicant.req_tor;
+    return requirementFields.every((field) => Boolean(applicant[field]));
 });
 
 // Helper for formatting date
@@ -77,6 +93,37 @@ app.get('/', async (req, res) => {
         res.status(500).send('Database Error');
     }
 });
+
+async function ensureRequirementColumns() {
+    const [columns] = await db.query(
+        `SELECT COLUMN_NAME
+         FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'applicants'`,
+        [process.env.DB_NAME || 'rsp_db']
+    );
+
+    const existingColumns = new Set(columns.map((column) => column.COLUMN_NAME));
+    const missingColumns = requirementFields.filter((field) => !existingColumns.has(field));
+
+    for (const column of missingColumns) {
+        await db.query(`ALTER TABLE applicants ADD COLUMN ${column} BOOLEAN DEFAULT FALSE AFTER contactNo`);
+    }
+}
+
+async function syncAssignmentRequirementStatus(id) {
+    const [rows] = await db.query(
+        `SELECT ${requirementFields.join(', ')} FROM applicants WHERE id = ?`,
+        [id]
+    );
+
+    if (!rows.length) return;
+
+    const allComplete = requirementFields.every((field) => Boolean(rows[0][field]));
+    await db.query(
+        `UPDATE applicants SET assignmentReqStatus = ? WHERE id = ?`,
+        [allComplete ? 'COMPLETE' : 'INCOMPLETE', id]
+    );
+}
 
 // API Routes
 // Add new applicant
@@ -156,7 +203,12 @@ app.post('/api/applicants/:id/requirements/all', async (req, res) => {
     try {
         const { id } = req.params;
         const { value } = req.body;
-        await db.query(`UPDATE applicants SET req_pds = ?, req_birthCert = ?, req_tor = ? WHERE id = ?`, [value, value, value, id]);
+        const assignments = requirementFields.map((field) => `${field} = ?`).join(', ');
+        await db.query(
+            `UPDATE applicants SET ${assignments} WHERE id = ?`,
+            [...Array(requirementFields.length).fill(Boolean(value)), id]
+        );
+        await syncAssignmentRequirementStatus(id);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -169,12 +221,13 @@ app.post('/api/applicants/:id/requirement', async (req, res) => {
         const { id } = req.params;
         const { field, value } = req.body;
         
-        const allowedFields = ['req_pds', 'req_birthCert', 'req_tor'];
+        const allowedFields = requirementFields;
         if (!allowedFields.includes(field)) {
             return res.status(400).json({ success: false, error: 'Invalid field' });
         }
         
         await db.query(`UPDATE applicants SET ${field} = ? WHERE id = ?`, [value, id]);
+        await syncAssignmentRequirementStatus(id);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -340,6 +393,16 @@ app.get('/api/applicants/:id/details', async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+async function startServer() {
+    try {
+        await ensureRequirementColumns();
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to initialize requirement columns:', error.message);
+        process.exit(1);
+    }
+}
+
+startServer();

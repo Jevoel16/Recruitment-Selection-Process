@@ -196,18 +196,25 @@
                     </thead>
                     <tbody>
                         {{#each step4}}
-                        <tr>
+                        <tr id="applicant-row-{{this.id}}">
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
                             <td>{{this.assignedOffice}}</td>
                             <td>{{this.interviewScore}}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm {{#if (eq this.assignmentReqStatus 'COMPLETE')}}btn-success{{else}}btn-outline-warning{{/if}}" onclick="toggleAssignmentReq({{this.id}}, '{{this.assignmentReqStatus}}')">
-                                    {{#if (eq this.assignmentReqStatus 'COMPLETE')}}<i class="bi bi-check-circle-fill"></i> Complete{{else}}<i class="bi bi-circle"></i> Incomplete{{/if}}
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openRequirementsModal({{this.id}}, '{{this.name}}')">
+                                    <i class="bi bi-list-check"></i> View Requirements
                                 </button>
+                                <div class="mt-2">
+                                    {{#if (allRequirementsMet this)}}
+                                        <span id="requirements-status-{{this.id}}" class="badge bg-success">Complete</span>
+                                    {{else}}
+                                        <span id="requirements-status-{{this.id}}" class="badge bg-warning text-dark">Incomplete</span>
+                                    {{/if}}
+                                </div>
                             </td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-success action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Requirements must be complete"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-check2-all"></i> Assign</button>
+                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-success action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Requirements must be complete"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-check2-all"></i> Assign</button>
                                 <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
                             </td>
                         </tr>
@@ -387,6 +394,21 @@
                         </div>
                         <button type="submit" class="btn btn-info text-white w-100">Submit Assessment</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requirements Modal -->
+    <div class="modal fade glass-modal" id="requirementsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Requirements Checklist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="requirementsModalBody">
+                    <!-- Populated via JS -->
                 </div>
             </div>
         </div>

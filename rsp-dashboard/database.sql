@@ -24,8 +24,19 @@ CREATE TABLE IF NOT EXISTS applicants (
     contactNo VARCHAR(50) DEFAULT NULL,
     
     req_pds BOOLEAN DEFAULT FALSE,
+    req_prcLicense BOOLEAN DEFAULT FALSE,
+    req_reportRating BOOLEAN DEFAULT FALSE,
+    req_medCert BOOLEAN DEFAULT FALSE,
     req_birthCert BOOLEAN DEFAULT FALSE,
+    req_marriageCert BOOLEAN DEFAULT FALSE,
+    req_nbiClearance BOOLEAN DEFAULT FALSE,
     req_tor BOOLEAN DEFAULT FALSE,
+    req_diplomaBachelors BOOLEAN DEFAULT FALSE,
+    req_masters BOOLEAN DEFAULT FALSE,
+    req_doctorate BOOLEAN DEFAULT FALSE,
+    req_soGraduation BOOLEAN DEFAULT FALSE,
+    req_orderSeparation BOOLEAN DEFAULT FALSE,
+    req_saln BOOLEAN DEFAULT FALSE,
     assignmentReqStatus ENUM('INCOMPLETE', 'COMPLETE') DEFAULT 'INCOMPLETE',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
