@@ -94,6 +94,41 @@ body {
     background-color: rgba(79, 70, 229, 0.03);
 }
 
+.table-pagination .pagination {
+    gap: 0.35rem;
+}
+
+.table-pagination .page-item {
+    border: 0;
+}
+
+.table-pagination .page-link {
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 999px;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.table-pagination .page-link:hover {
+    color: var(--primary);
+    border-color: rgba(79, 70, 229, 0.35);
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.table-pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    border-color: transparent;
+    color: #fff;
+}
+
+.table-pagination .page-item.disabled .page-link {
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.6);
+}
+
 /* Buttons */
 .btn-add-glass {
     background: linear-gradient(135deg, var(--primary), var(--primary-hover));

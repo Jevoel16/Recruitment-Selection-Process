@@ -3,6 +3,117 @@ const addApplicantForm = document.getElementById('addApplicantForm');
 const qualifyForm = document.getElementById('qualifyForm');
 const scoreForm = document.getElementById('scoreForm');
 
+const TABLE_PAGE_SIZE = 10;
+
+function getPaginationContainer(tableId) {
+    return document.querySelector(`[data-pagination-for="${tableId}"]`);
+}
+
+function getPaginatedRows(table) {
+    return Array.from(table.querySelectorAll('tbody tr')).filter((row) => {
+        return !(row.cells.length === 1 && row.cells[0].hasAttribute('colspan'));
+    });
+}
+
+function getVisibleRows(rows) {
+    return rows.filter((row) => row.style.display !== 'none');
+}
+
+function getPaginationPages(totalPages, currentPage) {
+    if (totalPages <= 5) {
+        return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pages = [1];
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    if (start > 2) pages.push('ellipsis-start');
+
+    for (let page = start; page <= end; page++) {
+        pages.push(page);
+    }
+
+    if (end < totalPages - 1) pages.push('ellipsis-end');
+
+    pages.push(totalPages);
+    return pages;
+}
+
+function renderTablePagination(tableId, requestedPage = 1) {
+    const table = document.getElementById(tableId);
+    const paginationContainer = getPaginationContainer(tableId);
+    if (!table || !paginationContainer) return;
+
+    const rows = getPaginatedRows(table);
+    const eligibleRows = rows.filter((row) => row.dataset.matchesSearch !== 'false');
+
+    const totalPages = Math.max(1, Math.ceil(eligibleRows.length / TABLE_PAGE_SIZE));
+    const currentPage = Math.min(Math.max(requestedPage, 1), totalPages);
+
+    rows.forEach((row) => {
+        const rowIndex = eligibleRows.indexOf(row);
+        const shouldShow = rowIndex !== -1 && Math.floor(rowIndex / TABLE_PAGE_SIZE) + 1 === currentPage;
+        row.style.display = shouldShow ? '' : 'none';
+    });
+
+    paginationContainer.innerHTML = '';
+
+    if (eligibleRows.length <= TABLE_PAGE_SIZE) {
+        paginationContainer.classList.add('d-none');
+        return;
+    }
+
+    paginationContainer.classList.remove('d-none');
+
+    const nav = document.createElement('nav');
+    nav.setAttribute('aria-label', `${tableId} pagination`);
+    const list = document.createElement('ul');
+    list.className = 'pagination pagination-sm flex-wrap justify-content-center mb-0';
+
+    const createPageItem = (label, page, options = {}) => {
+        const item = document.createElement('li');
+        item.className = `page-item${options.active ? ' active' : ''}${options.disabled ? ' disabled' : ''}`;
+
+        if (options.ellipsis) {
+            const span = document.createElement('span');
+            span.className = 'page-link';
+            span.textContent = label;
+            item.appendChild(span);
+            return item;
+        }
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'page-link';
+        button.textContent = label;
+        button.disabled = options.active;
+        button.addEventListener('click', () => renderTablePagination(tableId, page));
+        item.appendChild(button);
+        return item;
+    };
+
+    const pages = getPaginationPages(totalPages, currentPage);
+    pages.forEach((page) => {
+        if (page === 'ellipsis-start' || page === 'ellipsis-end') {
+            list.appendChild(createPageItem('...', null, { ellipsis: true, disabled: true }));
+            return;
+        }
+        list.appendChild(createPageItem(String(page), page, { active: page === currentPage }));
+    });
+
+    nav.appendChild(list);
+    paginationContainer.appendChild(nav);
+}
+
+function initTablePagination() {
+    ['table-step1', 'table-step2', 'table-step3', 'table-step4', 'table-step5'].forEach((tableId) => {
+        renderTablePagination(tableId, 1);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initTablePagination);
+
 // Wizard Navigation
 function nextWizardStep(step) {
     if (step === 1) {
@@ -178,11 +289,15 @@ function filterTable(input, tableId) {
         }
         const rowText = trs[i].textContent.toLowerCase();
         if (rowText.includes(filter)) {
+            trs[i].dataset.matchesSearch = 'true';
             trs[i].style.display = '';
         } else {
+            trs[i].dataset.matchesSearch = 'false';
             trs[i].style.display = 'none';
         }
     }
+
+    renderTablePagination(tableId, 1);
 }
 
 // ==========================================

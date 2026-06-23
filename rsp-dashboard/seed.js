@@ -88,23 +88,23 @@ async function seed() {
         };
 
         // 10 PENDING (Step 1)
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 501; i++) {
             values.push(createRow('PENDING', null, null, null));
         }
 
         // 10 WAITING_FOR_ASSESSMENT (Step 2)
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 489; i++) {
             values.push(createRow('WAITING_FOR_ASSESSMENT', null, generateInterviewDate(), null));
         }
 
         // 10 ASSESSED (Step 3)
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 523; i++) {
             const score = Math.floor(Math.random() * 31) + 70; // 70-100
             values.push(createRow('ASSESSED', score, generateInterviewDate(), null));
         }
         
         // 5 WAITING (Step 4)
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 1008; i++) {
             const score = Math.floor(Math.random() * 31) + 70;
             values.push(createRow('WAITING', score, generateInterviewDate(), offices[0]));
         }
