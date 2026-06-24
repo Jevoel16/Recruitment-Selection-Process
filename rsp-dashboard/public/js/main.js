@@ -356,7 +356,7 @@ async function printLetter(name, office, dateStr, category, applicationCode) {
 
     // Carbon Copy (cc) section
     doc.setFontSize(9);
-    doc.text("cc:", 20, currentY + 20);
+    doc.text("cc:", 20, currentY + 35);
     doc.setFont("Times", "bold");
     doc.text("LEONARDA LUNA ARAZO", 30, currentY + 35);
     doc.setFont("Times", "normal");
