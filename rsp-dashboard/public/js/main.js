@@ -3,7 +3,6 @@ const addApplicantForm = document.getElementById('addApplicantForm');
 const qualifyForm = document.getElementById('qualifyForm');
 const scoreForm = document.getElementById('scoreForm');
 
-const TABLE_PAGE_SIZE = 10;
 const REQUIREMENT_FIELDS = [
     { field: 'req_pds', label: 'PDS (3 copies)' },
     { field: 'req_prcLicense', label: 'PRC License Photocopy (3 copies)' },
@@ -20,20 +19,6 @@ const REQUIREMENT_FIELDS = [
     { field: 'req_orderSeparation', label: 'Order of Separation 1 orig / 2 photocopy' },
     { field: 'req_saln', label: 'SALN notarized (3 copies)' }
 ];
-
-function getPaginationContainer(tableId) {
-    return document.querySelector(`[data-pagination-for="${tableId}"]`);
-}
-
-function getPaginatedRows(table) {
-    return Array.from(table.querySelectorAll('tbody tr')).filter((row) => {
-        return !(row.cells.length === 1 && row.cells[0].hasAttribute('colspan'));
-    });
-}
-
-function getVisibleRows(rows) {
-    return rows.filter((row) => row.style.display !== 'none');
-}
 
 function syncRequirementsSummary(applicant) {
     const isComplete = REQUIREMENT_FIELDS.every(({ field }) => Boolean(applicant[field]));
@@ -60,100 +45,6 @@ function syncRequirementsSummary(applicant) {
     }
 }
 
-function getPaginationPages(totalPages, currentPage) {
-    if (totalPages <= 5) {
-        return Array.from({ length: totalPages }, (_, index) => index + 1);
-    }
-
-    const pages = [1];
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-
-    if (start > 2) pages.push('ellipsis-start');
-
-    for (let page = start; page <= end; page++) {
-        pages.push(page);
-    }
-
-    if (end < totalPages - 1) pages.push('ellipsis-end');
-
-    pages.push(totalPages);
-    return pages;
-}
-
-function renderTablePagination(tableId, requestedPage = 1) {
-    const table = document.getElementById(tableId);
-    const paginationContainer = getPaginationContainer(tableId);
-    if (!table || !paginationContainer) return;
-
-    const rows = getPaginatedRows(table);
-    const eligibleRows = rows.filter((row) => row.dataset.matchesSearch !== 'false');
-
-    const totalPages = Math.max(1, Math.ceil(eligibleRows.length / TABLE_PAGE_SIZE));
-    const currentPage = Math.min(Math.max(requestedPage, 1), totalPages);
-
-    rows.forEach((row) => {
-        const rowIndex = eligibleRows.indexOf(row);
-        const shouldShow = rowIndex !== -1 && Math.floor(rowIndex / TABLE_PAGE_SIZE) + 1 === currentPage;
-        row.style.display = shouldShow ? '' : 'none';
-    });
-
-    paginationContainer.innerHTML = '';
-
-    if (eligibleRows.length <= TABLE_PAGE_SIZE) {
-        paginationContainer.classList.add('d-none');
-        return;
-    }
-
-    paginationContainer.classList.remove('d-none');
-
-    const nav = document.createElement('nav');
-    nav.setAttribute('aria-label', `${tableId} pagination`);
-    const list = document.createElement('ul');
-    list.className = 'pagination pagination-sm flex-wrap justify-content-center mb-0';
-
-    const createPageItem = (label, page, options = {}) => {
-        const item = document.createElement('li');
-        item.className = `page-item${options.active ? ' active' : ''}${options.disabled ? ' disabled' : ''}`;
-
-        if (options.ellipsis) {
-            const span = document.createElement('span');
-            span.className = 'page-link';
-            span.textContent = label;
-            item.appendChild(span);
-            return item;
-        }
-
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'page-link';
-        button.textContent = label;
-        button.disabled = options.active;
-        button.addEventListener('click', () => renderTablePagination(tableId, page));
-        item.appendChild(button);
-        return item;
-    };
-
-    const pages = getPaginationPages(totalPages, currentPage);
-    pages.forEach((page) => {
-        if (page === 'ellipsis-start' || page === 'ellipsis-end') {
-            list.appendChild(createPageItem('...', null, { ellipsis: true, disabled: true }));
-            return;
-        }
-        list.appendChild(createPageItem(String(page), page, { active: page === currentPage }));
-    });
-
-    nav.appendChild(list);
-    paginationContainer.appendChild(nav);
-}
-
-function initTablePagination() {
-    ['table-step1', 'table-step2', 'table-step3', 'table-step4', 'table-step5'].forEach((tableId) => {
-        renderTablePagination(tableId, 1);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', initTablePagination);
 
 // Wizard Navigation
 function nextWizardStep(step) {
@@ -286,9 +177,8 @@ if (scoreForm) {
     });
 }
 
-// Generate PDF Letter
-// Generate PDF Letter using jsPDF directly (vector rendering)
-function printLetter(name, office, dateStr, category) {
+// Generate PDF Letter using jsPDF directly (vector rendering matching scan template)
+async function printLetter(name, office, dateStr, category, applicationCode) {
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
         alert('jsPDF library failed to load. Please try again.');
@@ -301,142 +191,219 @@ function printLetter(name, office, dateStr, category) {
         format: 'a4'
     });
 
-    // Format Date
-    const d = dateStr ? new Date(dateStr) : new Date();
+    // Helper function for inline rich text rendering (handles <b> tags for key values)
+    function drawRichText(doc, text, startX, startY, maxWidth, lineHeight) {
+        const parts = text.split(/(<\/b>|<b>)/);
+        let currentX = startX;
+        let currentY = startY;
+        let isBold = false;
+        
+        const rightMargin = startX + maxWidth;
+        
+        parts.forEach(part => {
+            if (part === '<b>') {
+                isBold = true;
+                doc.setFont("Times", "bold");
+            } else if (part === '</b>') {
+                isBold = false;
+                doc.setFont("Times", "normal");
+            } else {
+                const words = part.split(' ');
+                words.forEach((word, index) => {
+                    if (word === '' && index > 0) return;
+                    
+                    const wordToDraw = word + (index < words.length - 1 ? ' ' : '');
+                    const wordWidth = doc.getTextWidth(wordToDraw);
+                    
+                    if (currentX + wordWidth > rightMargin) {
+                        currentX = startX;
+                        currentY += lineHeight;
+                    }
+                    
+                    doc.text(wordToDraw, currentX, currentY);
+                    currentX += wordWidth;
+                });
+            }
+        });
+        
+        return currentY + lineHeight;
+    }
+
+    // Format Date using the current date
+    const d = new Date();
     const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     // Map applicant category to professional rank titles
     let rankTitle = 'Teacher I';
-    if (category === 'UNIV') {
-        rankTitle = 'Instructor I';
-    } else if (category === 'KINDER') {
-        rankTitle = 'Kindergarten Teacher';
-    } else if (category === 'SENHIGH') {
-        rankTitle = 'Teacher I (Senior High)';
-    } else if (category === 'HIGH') {
-        rankTitle = 'Teacher I (Junior High)';
-    } else if (category === 'ELEM') {
-        rankTitle = 'Teacher I (Elementary)';
+
+    // Parse order number from application code sequence suffix
+    let orderNum = "007";
+    if (applicationCode) {
+        const parts = applicationCode.split('-');
+        if (parts.length > 0) {
+            const num = parseInt(parts[parts.length - 1], 10);
+            if (!isNaN(num)) {
+                orderNum = String(num).padStart(3, '0');
+            }
+        }
     }
 
-    // Colors & Top Indicator Line (Indigo Accent matching our theme)
-    doc.setDrawColor(79, 70, 229);
-    doc.setLineWidth(1.5);
-    doc.line(20, 15, 190, 15);
+    // Fetch and register Canterbury custom font from server `/fonts/Canterbury.ttf`
+    let hasCustomFont = false;
+    try {
+        const fontRes = await fetch('/fonts/Canterbury.ttf');
+        if (fontRes.ok) {
+            const arrayBuffer = await fontRes.arrayBuffer();
+            let binary = '';
+            const bytes = new Uint8Array(arrayBuffer);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64Font = btoa(binary);
+            doc.addFileToVFS('Canterbury.ttf', base64Font);
+            doc.addFont('Canterbury.ttf', 'Canterbury', 'normal');
+            hasCustomFont = true;
+        }
+    } catch (err) {
+        console.error('Failed to load Canterbury font, using standard font as fallback:', err);
+    }
 
-    // Document Font Family: Times
-    doc.setFont("Times", "bold");
+    // Draw Seals Placement Outlines
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.2);
+    doc.circle(105, 10, 8); // center seal placeholder
 
-    // Header
-    doc.setFontSize(16);
-    doc.setTextColor(15, 23, 42); // slate dark color
-    doc.text("RECRUITMENT & ASSIGNMENT OFFICE", 105, 32, { align: "center" });
+    // Top Header Text using Canterbury custom font
+    if (hasCustomFont) {
+        doc.setFont("Canterbury", "normal");
+        doc.setFontSize(11); // adjust scale slightly for gothic type
+    } else {
+        doc.setFont("Times", "normal");
+        doc.setFontSize(11);
+    }
+    doc.setTextColor(0);
+    doc.text("Republic of the Philippines", 105, 23, { align: "center" });
+    
+    if (hasCustomFont) {
+        doc.setFont("Canterbury", "normal");
+        doc.setFontSize(16); // Gothic department title is larger and elegant
+    } else {
+        doc.setFont("Times", "bold");
+        doc.setFontSize(16);
+    }
+    doc.text("Department of Education", 105, 28, { align: "center" });
     
     doc.setFont("Times", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text("123 Official Boulevard, Tech City", 105, 38, { align: "center" });
-
-    // Divider Line
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.line(20, 44, 190, 44);
-
-    // Date
-    doc.setTextColor(0);
     doc.setFontSize(11);
-    doc.text(`Date: ${formattedDate}`, 190, 54, { align: "right" });
+    doc.text("Region X-Northern Mindanao", 105, 32, { align: "center" });
+    
+    doc.setFont("Times", "normal");
+    doc.setFontSize(11);
+    doc.text("SCHOOLS DIVISION OF ILIGAN CITY", 105, 36, { align: "center" });
 
-    // Recipient Information
+    // Divider Lines under schools division
+    // ASSIGNMENT ORDER Box Headers
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.9);
+    doc.line(20, 38, 190, 38); // Thicker line
+
     doc.setFont("Times", "bold");
-    doc.text("TO:", 20, 68);
-    doc.text(name, 32, 68);
-    doc.setFont("Times", "italic");
-    doc.text(rankTitle, 32, 74);
+    doc.setFontSize(20);
+    doc.text("ASSIGNMENT ORDER", 105, 44, { align: "center" });
+    
+    doc.setLineWidth(0.9);
+    doc.line(20, 46, 190, 46); // Thinner line
+
+    doc.setFont("Times", "bold");
+    doc.setFontSize(12);
+    doc.text(`No. ${orderNum}, s. 2026`, 105, 54, { align: "center" });
+
+    // Date (Right-aligned)
+    doc.setFont("Times", "normal");
+    doc.text(formattedDate, 190, 69, { align: "right" });
+
+    // Recipient TO Section
+    doc.setFont("Times", "bold");
+    doc.text("TO:", 20, 79);
+    doc.text(name.toUpperCase(), 50, 79);
+    doc.text(rankTitle, 50, 83);
 
     // Salutation
     doc.setFont("Times", "normal");
-    doc.setFontSize(11);
-    doc.text("Warm greetings!", 20, 88);
+    doc.text("Warm greetings!", 20, 104);
 
-    // Body Paragraph 1
-    const body1 = `By virtue of an appointment duly issued by this office, information is hereby given of your school assignment at ${office}, Iligan City, effective this ${formattedDate}. Thus, you shall report directly to the School Head/School Principal of the said school for further instruction.`;
-    const splitBody1 = doc.splitTextToSize(body1, 170);
-    doc.text(splitBody1, 20, 96);
-    let currentY = 96 + (splitBody1.length * 7);
+    // Body Paragraph 1 (with bold Suarez National High School and effective Date)
+    const body1 = `By virtue of an appointment duly issued by this Office, information is hereby given of your school assignment at <b>${office}</b>, Iligan City, effective this <b>${formattedDate}</b>. Thus, you shall report directly to the School Head/School Principal of the said school for further instruction.`;
+    let currentY = drawRichText(doc, body1, 20, 114, 170, 5);
 
     // Body Paragraph 2
-    currentY += 4; // spacing between paragraphs
-    const body2 = `Moreover, you are directed to submit the DBM-CSC Form No. 1, "Position Description Form" for the attestation to this Office thru Personnel Section within three (3) working days from receipt hereof.`;
-    const splitBody2 = doc.splitTextToSize(body2, 170);
-    doc.text(splitBody2, 20, currentY);
-    currentY += (splitBody2.length * 7);
+    currentY += 7.5;
+    const body2 = `Moreover, you are directed to submit the DBM-CSC Form No. 1, "Position Description Form" for the attestation of appointment to this Office thru Personnel Section within three (3) days from receipt hereof.`;
+    currentY = drawRichText(doc, body2, 20, currentY, 170, 5);
 
     // Body Paragraph 3
-    currentY += 4;
-    doc.text("Compliance is enjoined.", 20, currentY);
+    currentY += 7.5;
+    const body3 = "Compliance is enjoined.";
+    currentY = drawRichText(doc, body3, 20, currentY, 170, 5);
 
-    // Signatures Section
-    currentY += 28;
-    
-    // Left Principal Signature
-    doc.setFont("Times", "normal");
-    doc.text("Noted by:", 20, currentY);
-    
+    // Superintendent Signature Block
+    currentY += 25;
     doc.setFont("Times", "bold");
-    doc.text("School Principal", 20, currentY + 16);
-    
-    doc.setFont("Times", "normal");
-    doc.setFontSize(9.5);
-    doc.setTextColor(110);
-    doc.text("School Head / Principal", 20, currentY + 21);
-
-    // Right Superintendent Signature
     doc.setFontSize(11);
-    doc.setTextColor(0);
-    doc.text("Approved by:", 120, currentY);
-    
-    doc.setFont("Times", "bold");
-    doc.text("JONATHAN S. DELA PEÑA, PhD, CESO V", 120, currentY + 16);
-    
+    doc.text("JONATHAN S. DELA PEÑA, PhD, CESO V", 150, currentY + 15, { align: "center" });
     doc.setFont("Times", "normal");
-    doc.setFontSize(9.5);
-    doc.setTextColor(110);
-    doc.text("Schools Division Superintendent", 120, currentY + 21);
+    doc.text("Schools Division Superintendent", 150, currentY + 20, { align: "center" });
 
-    // Bottom Footer
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text("This is a system-generated document from the Recruitment & Selection Process Dashboard.", 105, 282, { align: "center" });
+    // Carbon Copy (cc) section
+    doc.setFontSize(9);
+    doc.text("cc:", 20, currentY + 20);
+    doc.setFont("Times", "bold");
+    doc.text("LEONARDA LUNA ARAZO", 30, currentY + 35);
+    doc.setFont("Times", "normal");
+    doc.text("School Principal I", 30, currentY + 40);
+    
+    // Footer section
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(20, 272, 190, 272);
+
+    doc.setFont("Times", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59);
+    doc.text("DepED", 20, 280);
+    
+    doc.setFontSize(7.5);
+    doc.setFont("Times", "normal");
+    doc.text("MATATAG", 20, 284);
+
+    // EXAMPLE
+    doc.setFont("Times", "bold");
+    doc.text("TO:", 20, 79);
+    doc.text(name.toUpperCase(), 50, 79);
+    doc.text(rankTitle, 50, 83);
+
+    doc.setFontSize(7.5);
+    doc.setTextColor(100);
+    doc.setFont("Times", "bold");
+    doc.text("Address:", 110, 277, { align: "left" });
+    doc.setFont("Times", "normal");
+    doc.text("Gen. Aguinaldo St., Iligan City", 121, 277, { align: "left" });
+    doc.setFont("Times", "bold");
+    doc.text("Email Address:", 110, 281, { align: "left" });
+    doc.setFont("Times", "normal");
+    doc.text("iligan.city@deped.gov.ph", 128, 281, { align: "left" });
+    doc.setFont("Times", "bold");
+    doc.text("Website:", 110, 285, { align: "left" });
+    doc.setFont("Times", "normal");
+    doc.text("www.iligan.deped10.com", 121, 285, { align: "left" });
+
+    doc.setFontSize(6.5);
+    doc.text("Doc. Ref. Code: DEPED-ILIGAN-AO-2026   |   Rev: 00   |   Page 1 of 1", 110, 290, { align: "left" });
 
     // Save and download PDF
     doc.save(`${name.replace(/\s+/g, '_')}_assignment_order.pdf`);
 }
 
-// Search Filter Logic
-function filterTable(input, tableId) {
-    const filter = input.value.toLowerCase();
-    const table = document.getElementById(tableId);
-    if (!table) return;
-    
-    const trs = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-
-    for (let i = 0; i < trs.length; i++) {
-        if (trs[i].cells.length === 1 && trs[i].cells[0].hasAttribute('colspan')) {
-            continue;
-        }
-        const rowText = trs[i].textContent.toLowerCase();
-        if (rowText.includes(filter)) {
-            trs[i].dataset.matchesSearch = 'true';
-            trs[i].style.display = '';
-        } else {
-            trs[i].dataset.matchesSearch = 'false';
-            trs[i].style.display = 'none';
-        }
-    }
-
-    renderTablePagination(tableId, 1);
-}
 
 // ==========================================
 // NEW WORKFLOW & MODAL FUNCTIONS

@@ -41,6 +41,11 @@ hbs.registerHelper('inc', function(value, options) {
     return parseInt(value) + 1;
 });
 
+// Helper for index calculation with offset
+hbs.registerHelper('incOffset', function(value, offset, options) {
+    return parseInt(value) + parseInt(offset) + 1;
+});
+
 // Helper for conditional rendering in hbs
 hbs.registerHelper('eq', function (a, b) {
     return a === b;
@@ -58,35 +63,89 @@ hbs.registerHelper('formatDate', function(date) {
     return d.toISOString().split('T')[0];
 });
 
-// Routes
-app.get('/', async (req, res) => {
+app.get('/', (req, res) => res.redirect('/step1/1'));
+
+app.get('/:step', (req, res) => res.redirect(`/${req.params.step}/1`));
+
+app.get('/:step/:page', async (req, res, next) => {
+    const { step } = req.params;
+    
+    const stepsConfig = {
+        'step1': {
+            conditions: "status IN ('PENDING', 'QUALIFIED', 'DISQUALIFIED')",
+            orderBy: "createdAt ASC"
+        },
+        'step2': {
+            conditions: "status = 'WAITING_FOR_ASSESSMENT'",
+            orderBy: "interviewDate ASC"
+        },
+        'step3': {
+            conditions: "status = 'ASSESSED'",
+            orderBy: "interviewScore DESC"
+        },
+        'step4': {
+            conditions: "status = 'WAITING'",
+            orderBy: "createdAt ASC"
+        },
+        'step5': {
+            conditions: "status = 'ASSIGNED'",
+            orderBy: "createdAt ASC"
+        }
+    };
+
+    if (!stepsConfig[step]) return next();
+
+    const page = parseInt(req.params.page) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const searchQuery = req.query.q || '';
+    const config = stepsConfig[step];
+    
+    let baseQuery = `FROM applicants WHERE ${config.conditions}`;
+    const queryParams = [];
+
+    if (searchQuery) {
+        baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+        const searchPattern = `%${searchQuery}%`;
+        queryParams.push(searchPattern, searchPattern);
+    }
+
     try {
-        // Base query ordered by creation date ascending (first come first serve)
-        const [applicants] = await db.query("SELECT *, CONCAT(firstName, ' ', lastName) AS name FROM applicants ORDER BY createdAt ASC");
+        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
+        const totalRecords = countResult[0].total;
+        const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+        const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY ${config.orderBy} LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
+
+        const pagination = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                pagination.push({
+                    page: i,
+                    isCurrent: i === page,
+                    url: `/${step}/${i}${searchQuery ? '?q=' + encodeURIComponent(searchQuery) : ''}`
+                });
+            } else if (i === page - 3 || i === page + 3) {
+                pagination.push({ isEllipsis: true, page: '...' });
+            }
+        }
         
-        // Step 1: Initial Evaluation
-        const step1 = applicants.filter(a => ['PENDING', 'QUALIFIED', 'DISQUALIFIED'].includes(a.status));
-        
-        // Step 2: Deliberation Sheet, ordered by closest interview date (ASC)
-        const step2 = applicants.filter(a => a.status === 'WAITING_FOR_ASSESSMENT')
-                                .sort((a, b) => new Date(a.interviewDate) - new Date(b.interviewDate));
-        
-        // Step 3: Comparative Assessments, ordered by score descending (highest first)
-        const step3 = applicants.filter(a => a.status === 'ASSESSED')
-                                .sort((a, b) => b.interviewScore - a.interviewScore);
-        
-        // Step 4: Notice of Requirements
-        const step4 = applicants.filter(a => a.status === 'WAITING');
-        
-        // Step 5: Assignment Orders
-        const step5 = applicants.filter(a => a.status === 'ASSIGNED');
-        
-        res.render('index', { 
-            step1,
-            step2,
-            step3,
-            step4,
-            step5
+        const cleanPagination = pagination.filter((p, index, arr) => {
+            if (p.isEllipsis && arr[index - 1] && arr[index - 1].isEllipsis) return false;
+            return true;
+        });
+
+        res.render('index', {
+            currentStep: step,
+            [step]: rows,
+            searchQuery,
+            pagination: cleanPagination,
+            step1Active: step === 'step1',
+            step2Active: step === 'step2',
+            step3Active: step === 'step3',
+            step4Active: step === 'step4',
+            step5Active: step === 'step5',
+            offset
         });
     } catch (error) {
         console.error(error);

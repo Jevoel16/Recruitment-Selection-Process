@@ -2,9 +2,9 @@
 
 <div class="glass-panel p-4 mb-0 shadow-sm rounded-4 d-print-none">
     <!-- Tab Content -->
-    <div class="tab-content" id="rspTabContent">
+    
         <!-- STEP 1 -->
-        <div class="tab-pane fade show active" id="step1" role="tabpanel">
+        {{#if step1Active}}
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="fw-semibold">Initial Evaluation</h2>
                 <button class="btn btn-primary btn-add-glass" data-bs-toggle="modal" data-bs-target="#addApplicantModal">
@@ -14,10 +14,14 @@
             <p class="text-muted">Review incoming applicants and verify personal data sheet, birth certificate, and transcript of records.</p>
             
             <div class="mb-3">
-                <div class="input-group glass-panel">
-                    <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." onkeyup="filterTable(this, 'table-step1')">
-                </div>
+                
+                <form method="GET" action="/step1/1">
+                    <div class="input-group glass-panel">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        <button type="submit" class="d-none"></button>
+                    </div>
+                </form>
             </div>
 
             <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
@@ -68,19 +72,38 @@
                     </tbody>
                 </table>
             </div>
-            <div class="table-pagination mt-3 d-none" data-pagination-for="table-step1"></div>
-        </div>
+            
+            {{#if pagination.length}}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination flex-wrap justify-content-center mb-0">
+                    {{#each pagination}}
+                        {{#if this.isEllipsis}}
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {{else}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                            </li>
+                        {{/if}}
+                    {{/each}}
+                </ul>
+            </nav>
+            {{/if}}
+        {{/if}}
 
         <!-- STEP 2 -->
-        <div class="tab-pane fade" id="step2" role="tabpanel">
+        {{#if step2Active}}
             <h2 class="fw-semibold mb-3">Deliberation & Interview Sheet</h2>
             <p class="text-muted">Assess qualified applicants and input their interview scores (out of 100).</p>
             
             <div class="mb-3">
-                <div class="input-group glass-panel">
-                    <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." onkeyup="filterTable(this, 'table-step2')">
-                </div>
+                
+                <form method="GET" action="/step2/1">
+                    <div class="input-group glass-panel">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        <button type="submit" class="d-none"></button>
+                    </div>
+                </form>
             </div>
 
             <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
@@ -112,19 +135,38 @@
                     </tbody>
                 </table>
             </div>
-            <div class="table-pagination mt-3 d-none" data-pagination-for="table-step2"></div>
-        </div>
+            
+            {{#if pagination.length}}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination flex-wrap justify-content-center mb-0">
+                    {{#each pagination}}
+                        {{#if this.isEllipsis}}
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {{else}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                            </li>
+                        {{/if}}
+                    {{/each}}
+                </ul>
+            </nav>
+            {{/if}}
+        {{/if}}
 
         <!-- STEP 3 -->
-        <div class="tab-pane fade" id="step3" role="tabpanel">
+        {{#if step3Active}}
             <h2 class="fw-semibold mb-3">Comparative Assessments</h2>
             <p class="text-muted">Leaderboard of assessed applicants ranked by their interview scores.</p>
             
             <div class="mb-3">
-                <div class="input-group glass-panel">
-                    <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." onkeyup="filterTable(this, 'table-step3')">
-                </div>
+                
+                <form method="GET" action="/step3/1">
+                    <div class="input-group glass-panel">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        <button type="submit" class="d-none"></button>
+                    </div>
+                </form>
             </div>
 
             <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
@@ -142,7 +184,7 @@
                     <tbody>
                         {{#each step3}}
                         <tr>
-                            <td class="fw-bold text-primary">#{{inc @index}}</td>
+                            <td class="fw-bold text-primary">#{{incOffset @index ../offset}}</td>
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
                             <td>
@@ -167,19 +209,38 @@
                     </tbody>
                 </table>
             </div>
-            <div class="table-pagination mt-3 d-none" data-pagination-for="table-step3"></div>
-        </div>
+            
+            {{#if pagination.length}}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination flex-wrap justify-content-center mb-0">
+                    {{#each pagination}}
+                        {{#if this.isEllipsis}}
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {{else}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                            </li>
+                        {{/if}}
+                    {{/each}}
+                </ul>
+            </nav>
+            {{/if}}
+        {{/if}}
 
         <!-- STEP 4 -->
-        <div class="tab-pane fade" id="step4" role="tabpanel">
+        {{#if step4Active}}
             <h4 class="fw-semibold mb-3">Notice of Requirements</h4>
             <p class="text-muted">Finalized applicants ready for assignment. Generate assignment letters here.</p>
             
             <div class="mb-3">
-                <div class="input-group glass-panel">
-                    <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." onkeyup="filterTable(this, 'table-step4')">
-                </div>
+                
+                <form method="GET" action="/step4/1">
+                    <div class="input-group glass-panel">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        <button type="submit" class="d-none"></button>
+                    </div>
+                </form>
             </div>
 
             <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
@@ -224,19 +285,38 @@
                     </tbody>
                 </table>
             </div>
-            <div class="table-pagination mt-3 d-none" data-pagination-for="table-step4"></div>
-        </div>
+            
+            {{#if pagination.length}}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination flex-wrap justify-content-center mb-0">
+                    {{#each pagination}}
+                        {{#if this.isEllipsis}}
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {{else}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                            </li>
+                        {{/if}}
+                    {{/each}}
+                </ul>
+            </nav>
+            {{/if}}
+        {{/if}}
 
         <!-- STEP 5 -->
-        <div class="tab-pane fade" id="step5" role="tabpanel">
+        {{#if step5Active}}
             <h4 class="fw-semibold mb-3">Assignment Orders</h4>
             <p class="text-muted">Finalized applicants ready for assignment. Generate assignment letters here.</p>
             
             <div class="mb-3">
-                <div class="input-group glass-panel">
-                    <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." onkeyup="filterTable(this, 'table-step5')">
-                </div>
+                
+                <form method="GET" action="/step5/1">
+                    <div class="input-group glass-panel">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        <button type="submit" class="d-none"></button>
+                    </div>
+                </form>
             </div>
 
             <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
@@ -270,11 +350,24 @@
                     </tbody>
                 </table>
             </div>
-            <div class="table-pagination mt-3 d-none" data-pagination-for="table-step5"></div>
-        </div>
+            
+            {{#if pagination.length}}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination flex-wrap justify-content-center mb-0">
+                    {{#each pagination}}
+                        {{#if this.isEllipsis}}
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {{else}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                            </li>
+                        {{/if}}
+                    {{/each}}
+                </ul>
+            </nav>
+            {{/if}}
+        {{/if}}
     </div>
-</div>
-
 <!-- Modals (Hidden from print) -->
 <div class="d-print-none">
     <!-- Add Applicant Modal -->
@@ -509,56 +602,6 @@
                     <!-- Populated via JS -->
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Print Only Section (Assignment Letter) -->
-<div class="d-none d-print-block print-container">
-    <div class="print-header">
-        <h1>RECRUITMENT & ASSIGNMENT OFFICE</h1>
-        <p>123 Official Boulevard, Tech City</p>
-    </div>
-    <div class="print-body">
-        <div class="date-field printDateHeader">Date: [Date]</div>
-        
-        <div class="recipient-info mb-4">
-            <p class="mb-1"><strong>TO: <span id="printName">[NAME]</span></strong></p>
-            <p class="mb-0"><strong id="printRank">[Teacher I]</strong></p>
-        </div>
-        
-        <p class="tabbed">Warm greetings!</p>
-        
-        <p class="tabbed">
-            By virtue of an appointment duly issued by this office, information is hereby given of your school assignment at <strong><span id="printOffice">[Assigned Office]</span></strong>, Iligan City, effective this <strong><span class="printDateBody">[Date]</span></strong>.
-            Thus, you shall report directly to the School Head/School Principal of the said school for further instruction.
-        </p>
-                
-        <p class="tabbed">
-            Moreover, you are directed to submit the DBM-CSC Form No. 1, "Position Description Form" for the attestation to this Office
-            thru Personnel Section within three (3) working days from receipt hereof.
-        </p>
-
-        <p class="tabbed">Compliance is enjoined.</p>
-        
-        <div class="signature-container mt-5">
-            <div class="signature-left">
-                <p>Noted by:</p>
-                <br><br>
-                <p class="mb-1"><strong>School Principal</strong></p>
-                <p class="text-muted small">School Head / Principal</p>
-            </div>
-            
-            <div class="signature-right">
-                <p>Approved by:</p>
-                <br><br>
-                <p class="mb-1"><strong>JONATHAN S. DELA PEÑA, PhD, CESO V</strong></p>
-                <p class="text-muted small">Schools Division Superintendent</p>
-            </div>
-        </div>
-
-        <div class="print-footer">
-            <p>This is a system-generated document from the Recruitment & Selection Process Dashboard.</p>
         </div>
     </div>
 </div>

@@ -24,31 +24,31 @@
                 <span class="fs-4 fw-bold">RSP Dashboard</span>
             </a>
             
-            <ul class="nav nav-pills flex-column mb-auto custom-sidebar-tabs gap-2" id="rspTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active text-white w-100 text-start p-3 rounded-3" id="step1-tab" data-bs-toggle="tab" data-bs-target="#step1" type="button" role="tab">
+            <ul class="nav nav-pills flex-column mb-auto custom-sidebar-tabs gap-2" id="rspTab">
+                <li class="nav-item">
+                    <a href="/step1/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step1Active}}active{{/if}}">
                         <i class="bi bi-person-vcard fs-5 me-2 align-middle"></i> <span class="align-middle">Step 1: Evaluation</span>
-                    </button>
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link text-white w-100 text-start p-3 rounded-3" id="step2-tab" data-bs-toggle="tab" data-bs-target="#step2" type="button" role="tab">
+                <li class="nav-item">
+                    <a href="/step2/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step2Active}}active{{/if}}">
                         <i class="bi bi-chat-square-text fs-5 me-2 align-middle"></i> <span class="align-middle">Step 2: Deliberation</span>
-                    </button>
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link text-white w-100 text-start p-3 rounded-3" id="step3-tab" data-bs-toggle="tab" data-bs-target="#step3" type="button" role="tab">
+                <li class="nav-item">
+                    <a href="/step3/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step3Active}}active{{/if}}">
                         <i class="bi bi-bar-chart-steps fs-5 me-2 align-middle"></i> <span class="align-middle">Step 3: Assessments</span>
-                    </button>
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link text-white w-100 text-start p-3 rounded-3" id="step4-tab" data-bs-toggle="tab" data-bs-target="#step4" type="button" role="tab">
+                <li class="nav-item">
+                    <a href="/step4/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step4Active}}active{{/if}}">
                         <i class="bi bi-card-checklist fs-5 me-2 align-middle"></i> <span class="align-middle">Step 4: Requirements</span>
-                    </button>
+                    </a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link text-white w-100 text-start p-3 rounded-3" id="step5-tab" data-bs-toggle="tab" data-bs-target="#step5" type="button" role="tab">
+                <li class="nav-item">
+                    <a href="/step5/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step5Active}}active{{/if}}">
                         <i class="bi bi-envelope-paper fs-5 me-2 align-middle"></i> <span class="align-middle">Step 5: Assignments</span>
-                    </button>
+                    </a>
                 </li>
             </ul>
         </nav>
