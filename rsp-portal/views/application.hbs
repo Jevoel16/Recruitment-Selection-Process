@@ -1,0 +1,230 @@
+<div class="d-flex" style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <nav class="sidebar premium-nav text-white d-flex flex-column p-4 flex-shrink-0 shadow-lg" id="mainSidebar" style="width: 280px; z-index: 1000; transition: width 0.3s ease;">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <button class="btn text-white p-0 border-0" id="sidebarToggle" style="order:-1">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <a href="/" class="d-flex align-items-center text-white text-decoration-none overflow-hidden" style="white-space: nowrap;">
+                <i class="bi bi-briefcase-fill text-primary fs-2 me-3 sidebar-icon"></i>
+                <span class="fs-4 fw-bold sidebar-text">RSP Portal</span>
+            </a>
+        </div>
+        
+        <div class="mb-4 text-center sidebar-text">
+            <span class="badge bg-light text-primary fs-6 py-2 px-3 rounded-pill text-capitalize">{{type}} Applicant</span>
+        </div>
+
+        <ul class="nav nav-pills flex-column mb-auto custom-sidebar-tabs gap-2" id="portalTab">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3 active" data-target="info">
+                    <i class="bi bi-person-lines-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Information</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="education">
+                    <i class="bi bi-mortarboard-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Education</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="training">
+                    <i class="bi bi-award-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Training</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="experience">
+                    <i class="bi bi-briefcase-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Experience</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="eligibility">
+                    <i class="bi bi-shield-check fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Eligibility</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="mt-auto pt-4 text-light opacity-75 overflow-hidden" style="font-size: 0.8rem; border-top: 1px solid color-mix(in srgb, var(--white) 10%, transparent); white-space: nowrap;">
+            <div class="sidebar-text">
+                2026 Recruitment Selection Process.<br>Digitized & Optimized.
+            </div>
+            <div class="sidebar-collapsed-text d-none text-center">
+                <i class="bi bi-info-circle fs-5"></i>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="flex-grow-1 p-5 main-content" style="height: 100vh; overflow-y: auto;">
+        <div class="container-fluid max-w-800 mx-auto">
+            <h2 class="mb-4 fw-bold">Application Form</h2>
+            <form id="applicationForm">
+                <input type="hidden" name="type" value="{{type}}">
+                
+                <!-- Information Section -->
+                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section active" id="section-info">
+                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Personal Information</h4>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" name="middle_name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Name Extension (e.g. Jr, Sr)</label>
+                            <input type="text" class="form-control" name="name_extension">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Tracking Number (Leave blank to auto-generate)</label>
+                            <input type="text" class="form-control" name="tracking_number">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn btn-primary btn-next" data-next="education">Next: Education <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Education Section -->
+                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-education">
+                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-mortarboard-fill me-2 text-primary"></i>Education Background</h4>
+                    <p class="text-muted small">Add your educational attainments below.</p>
+                    <div id="eduList" class="mb-3"></div>
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label small">Degree/Course</label>
+                                <input type="text" id="edu_degree" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Year Grad</label>
+                                <input type="number" id="edu_year" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Link/Certificate (URL)</label>
+                                <input type="url" id="edu_link" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-edu"><i class="bi bi-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="info"><i class="bi bi-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-primary btn-next" data-next="training">Next: Training <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Training Section -->
+                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-training">
+                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-award-fill me-2 text-primary"></i>Training & Seminars</h4>
+                    <div id="trainList" class="mb-3"></div>
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label small">Title of Training/Seminar</label>
+                                <input type="text" id="train_title" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Hours</label>
+                                <input type="number" id="train_hours" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Link/Certificate (URL)</label>
+                                <input type="url" id="train_link" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-train"><i class="bi bi-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="education"><i class="bi bi-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-primary btn-next" data-next="experience">Next: Experience <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Experience Section -->
+                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-experience">
+                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-briefcase-fill me-2 text-primary"></i>Work Experience</h4>
+                    <div id="expList" class="mb-3"></div>
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label small">Details/Position</label>
+                                <input type="text" id="exp_details" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Years</label>
+                                <input type="number" id="exp_years" step="0.1" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Link/Certificate (URL)</label>
+                                <input type="url" id="exp_link" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-exp"><i class="bi bi-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="training"><i class="bi bi-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-primary btn-next" data-next="eligibility">Next: Eligibility <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Eligibility Section -->
+                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-eligibility">
+                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-shield-check me-2 text-primary"></i>Eligibility</h4>
+                    <div id="eligList" class="mb-3"></div>
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label small">Details (e.g. LET, Civil Service)</label>
+                                <input type="text" id="elig_details" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Rating</label>
+                                <input type="number" id="elig_rating" step="0.01" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Link/Certificate (URL)</label>
+                                <input type="url" id="elig_link" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-elig"><i class="bi bi-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="experience"><i class="bi bi-arrow-left"></i> Back</button>
+                        <button type="submit" class="btn btn-success btn-lg px-5">Submit Application <i class="bi bi-check-circle"></i></button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </main>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade glass-modal" id="successModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 text-center p-4">
+            <div class="modal-body">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                <h3 class="fw-bold mt-3">Application Submitted!</h3>
+                <p class="text-muted">Your application has been received. Please save your Tracking Number for reference:</p>
+                <div class="bg-light p-3 rounded-3 mb-4">
+                    <span class="fs-4 fw-monospace fw-bold text-primary" id="trackingCodeDisplay"></span>
+                </div>
+                <a href="/" class="btn btn-primary w-100">Return to Home</a>
+            </div>
+        </div>
+    </div>
+</div>

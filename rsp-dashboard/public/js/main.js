@@ -1,3 +1,13 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('mainSidebar');
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+    }
+});
+
 // DOM Elements
 const addApplicantForm = document.getElementById('addApplicantForm');
 const qualifyForm = document.getElementById('qualifyForm');
@@ -697,17 +707,20 @@ async function openTrainModal(id) {
         if(train.length) {
             train.forEach(t => {
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${t.title}</strong> (${t.hours} hours)</span>
+                    <span><strong>${t.title}</strong> (${t.hours} hours)
+                    ${t.link ? `<br><a href="${t.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
+                    </span>
                     <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('training', ${t.id}, ${id}, 'train')"><i class="bi bi-trash"></i></button>
                 </li>`;
             });
         } else html += '<li class="list-group-item text-muted">No training seminars found.</li>';
         html += '</ul>';
         html += `
-            <form id="addTrain-${id}" class="d-flex gap-2">
-                <input type="text" class="form-control" name="title" placeholder="Title" required>
+            <form id="addTrain-${id}" class="d-flex flex-wrap gap-2">
+                <input type="text" class="form-control flex-grow-1" name="title" placeholder="Title" required>
                 <input type="number" class="form-control" name="hours" placeholder="Hrs" style="max-width: 80px;" required>
-                <button type="submit" class="btn btn-success">Add</button>
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <button type="submit" class="btn btn-success w-100 mt-2">Add Training</button>
             </form>
         `;
         document.getElementById('trainModalBody').innerHTML = html;
@@ -718,7 +731,7 @@ async function openTrainModal(id) {
                 const res = await fetch(`/api/applicants/${id}/training`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: e.target.title.value, hours: e.target.hours.value })
+                    body: JSON.stringify({ title: e.target.title.value, hours: e.target.hours.value, link: e.target.link.value })
                 });
                 if(res.ok) openTrainModal(id);
             } catch(err) { console.error(err); }
@@ -736,17 +749,20 @@ async function openExpModal(id) {
         if(exp.length) {
             exp.forEach(e => {
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${e.details}</strong> (${e.years} years)</span>
+                    <span><strong>${e.details}</strong> (${e.years} years)
+                    ${e.link ? `<br><a href="${e.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
+                    </span>
                     <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('experience', ${e.id}, ${id}, 'exp')"><i class="bi bi-trash"></i></button>
                 </li>`;
             });
         } else html += '<li class="list-group-item text-muted">No experience records found.</li>';
         html += '</ul>';
         html += `
-            <form id="addExp-${id}" class="d-flex gap-2">
-                <input type="text" class="form-control" name="details" placeholder="Details" required>
+            <form id="addExp-${id}" class="d-flex flex-wrap gap-2">
+                <input type="text" class="form-control flex-grow-1" name="details" placeholder="Details" required>
                 <input type="number" class="form-control" name="years" placeholder="Yrs" style="max-width: 80px;" required>
-                <button type="submit" class="btn btn-success">Add</button>
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
             </form>
         `;
         document.getElementById('expModalBody').innerHTML = html;
@@ -757,7 +773,7 @@ async function openExpModal(id) {
                 const res = await fetch(`/api/applicants/${id}/experience`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ details: e.target.details.value, years: e.target.years.value })
+                    body: JSON.stringify({ details: e.target.details.value, years: e.target.years.value, link: e.target.link.value })
                 });
                 if(res.ok) openExpModal(id);
             } catch(err) { console.error(err); }

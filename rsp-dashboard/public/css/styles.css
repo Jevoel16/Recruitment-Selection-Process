@@ -4,6 +4,7 @@
     --accent: #312e81;
     --black: #0f172a;
     --white: #ffffff;
+    --pagination-active: #7F00FF;
 }
 
 body {
@@ -115,7 +116,7 @@ body {
 }
 
 .table-pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, var(--primary), var(--primary));
+    background: var(--pagination-active);
     border-color: transparent;
     color: var(--white);
 }
@@ -315,4 +316,44 @@ body {
     color: var(--black);
     border-top: 1px solid color-mix(in srgb, var(--black) 20%, transparent);
     padding-top: 10px;
+}
+
+/* Custom Pagination Shapes */
+.page-first {
+    border-radius: 6px 50px 50px 6px !important;
+}
+.page-last {
+    border-radius: 50px 6px 6px 50px !important;
+}
+
+/* Sidebar Collapse Styles */
+.sidebar.collapsed {
+    width: 80px !important;
+}
+.sidebar.collapsed .sidebar-text {
+    display: none !important;
+}
+.sidebar.collapsed .sidebar-icon {
+    margin-right: 0 !important;
+    font-size: 1.5rem !important;
+    display: block;
+    text-align: center;
+}
+.sidebar.collapsed .nav-link {
+    text-align: center !important;
+    padding: 0.5rem !important;
+    display: flex;
+    justify-content: center;
+}
+.sidebar.collapsed .sidebar-collapsed-text {
+    display: block !important;
+}
+.sidebar.collapsed .mb-4.align-items-center {
+    justify-content: center !important;
+    flex-direction: column;
+}
+.sidebar.collapsed #sidebarToggle {
+    order: -1;
+    margin-top: 0;
+    margin-bottom: 1rem;
 }

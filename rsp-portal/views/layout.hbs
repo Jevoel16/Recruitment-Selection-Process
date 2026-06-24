@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSP Portal</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.css">
+    <style>
+        .kiosk-btn {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 1.5rem;
+            border: 2px solid transparent;
+        }
+        .kiosk-btn:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 35px color-mix(in srgb, var(--primary) 20%, transparent);
+        }
+        .kiosk-icon {
+            font-size: 5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .tab-section {
+            display: none;
+        }
+        .tab-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body style="background: linear-gradient(135deg, var(--white) 0%, #f1f5f9 100%);">
+    
+    {{{body}}}
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS for Portal -->
+    <script src="/js/portal.js"></script>
+</body>
+</html>

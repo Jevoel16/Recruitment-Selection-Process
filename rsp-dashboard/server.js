@@ -375,28 +375,31 @@ app.delete('/api/education/:id', async (req, res) => {
 
 // Add Training
 app.post('/api/applicants/:id/training', async (req, res) => {
+    const { id } = req.params;
+    const { title, hours, link } = req.body;
     try {
-        const { id } = req.params;
-        const { title, hours } = req.body;
-        await db.query('INSERT INTO applicant_training (applicant_id, title, hours) VALUES (?, ?, ?)', [id, title, hours]);
+        await db.query('INSERT INTO applicant_training (applicant_id, title, hours, link) VALUES (?, ?, ?, ?)', [id, title, hours, link]);
         res.json({ success: true });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Delete Training
 app.delete('/api/training/:id', async (req, res) => {
     try {
         await db.query('DELETE FROM applicant_training WHERE id = ?', [req.params.id]);
         res.json({ success: true });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Add Experience
 app.post('/api/applicants/:id/experience', async (req, res) => {
+    const { id } = req.params;
+    const { details, years, link } = req.body;
     try {
-        const { id } = req.params;
-        const { details, years } = req.body;
-        await db.query('INSERT INTO applicant_experience (applicant_id, details, years) VALUES (?, ?, ?)', [id, details, years]);
+        await db.query('INSERT INTO applicant_experience (applicant_id, details, years, link) VALUES (?, ?, ?, ?)', [id, details, years, link]);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });

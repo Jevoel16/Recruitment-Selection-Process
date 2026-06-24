@@ -24,7 +24,7 @@
                 </form>
             </div>
 
-            <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
+            <div class="rounded-3 overflow-hidden shadow-sm">
                 <table class="table table-hover align-middle mb-0 custom-table" id="table-step1">
                     <thead class="table-light">
                         <tr>
@@ -73,7 +73,7 @@
                 </table>
             </div>
             
-            {{#if pagination.length}}
+            {{#if pagination.[1]}}
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination flex-wrap justify-content-center mb-0">
                     {{#each pagination}}
@@ -81,7 +81,7 @@
                             <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
                         {{else}}
                             <li class="page-item {{#if this.isCurrent}}active{{/if}}">
-                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
                             </li>
                         {{/if}}
                     {{/each}}
@@ -106,7 +106,7 @@
                 </form>
             </div>
 
-            <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
+            <div class="rounded-3 overflow-hidden shadow-sm">
                 <table class="table table-hover align-middle mb-0 custom-table" id="table-step2">
                     <thead class="table-light">
                         <tr>
@@ -136,7 +136,7 @@
                 </table>
             </div>
             
-            {{#if pagination.length}}
+            {{#if pagination.[1]}}
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination flex-wrap justify-content-center mb-0">
                     {{#each pagination}}
@@ -144,7 +144,7 @@
                             <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
                         {{else}}
                             <li class="page-item {{#if this.isCurrent}}active{{/if}}">
-                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
                             </li>
                         {{/if}}
                     {{/each}}
@@ -169,7 +169,7 @@
                 </form>
             </div>
 
-            <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
+            <div class="rounded-3 overflow-hidden shadow-sm">
                 <table class="table table-hover align-middle mb-0 custom-table leaderboard" id="table-step3">
                     <thead class="table-light">
                         <tr>
@@ -210,7 +210,7 @@
                 </table>
             </div>
             
-            {{#if pagination.length}}
+            {{#if pagination.[1]}}
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination flex-wrap justify-content-center mb-0">
                     {{#each pagination}}
@@ -218,7 +218,7 @@
                             <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
                         {{else}}
                             <li class="page-item {{#if this.isCurrent}}active{{/if}}">
-                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
                             </li>
                         {{/if}}
                     {{/each}}
@@ -243,7 +243,7 @@
                 </form>
             </div>
 
-            <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
+            <div class="rounded-3 overflow-hidden shadow-sm">
                 <table class="table table-hover align-middle mb-0 custom-table" id="table-step4">
                     <thead class="table-light">
                         <tr>
@@ -286,7 +286,7 @@
                 </table>
             </div>
             
-            {{#if pagination.length}}
+            {{#if pagination.[1]}}
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination flex-wrap justify-content-center mb-0">
                     {{#each pagination}}
@@ -294,7 +294,7 @@
                             <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
                         {{else}}
                             <li class="page-item {{#if this.isCurrent}}active{{/if}}">
-                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
                             </li>
                         {{/if}}
                     {{/each}}
@@ -319,7 +319,7 @@
                 </form>
             </div>
 
-            <div class="table-responsive rounded-3 overflow-hidden shadow-sm">
+            <div class="rounded-3 overflow-hidden shadow-sm">
                 <table class="table table-hover align-middle mb-0 custom-table" id="table-step5">
                     <thead class="table-light">
                         <tr>
@@ -351,7 +351,7 @@
                 </table>
             </div>
             
-            {{#if pagination.length}}
+            {{#if pagination.[1]}}
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination flex-wrap justify-content-center mb-0">
                     {{#each pagination}}
@@ -359,7 +359,7 @@
                             <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
                         {{else}}
                             <li class="page-item {{#if this.isCurrent}}active{{/if}}">
-                                <a class="page-link rounded-circle mx-1 {{#if this.isCurrent}}shadow-sm{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
                             </li>
                         {{/if}}
                     {{/each}}
@@ -606,4 +606,15 @@
     </div>
 </div>
 
-{{> footer}}
+    </div> <!-- End container-fluid -->
+        </main>
+    </div> <!-- End d-flex wrapper -->
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- jsPDF for automatic PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/js/main.js"></script>
+</body>
+</html>
