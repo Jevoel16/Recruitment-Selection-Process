@@ -258,7 +258,7 @@
                             <td>{{this.assignedOffice}}</td>
                             <td>{{this.interviewScore}}</td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="printLetter('{{this.name}}', '{{this.assignedOffice}}', '{{formatDate this.interviewDate}}')">
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="printLetter('{{this.name}}', '{{this.assignedOffice}}', '{{formatDate this.interviewDate}}', '{{this.category}}')">
                                     <i class="bi bi-file-earmark-pdf"></i> Generate PDF
                                 </button>
                                 <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i></button>
@@ -518,27 +518,21 @@
     <div class="print-header">
         <h1>RECRUITMENT & ASSIGNMENT OFFICE</h1>
         <p>123 Official Boulevard, Tech City</p>
-        <hr>
     </div>
     <div class="print-body">
-        <div class="date-field" id="printDate">Date: [Date]</div>
+        <div class="date-field printDateHeader">Date: [Date]</div>
         
-        <p>
-            <strong>TO: <p id="printName">[NAME]</p></strong>
-            <strong id="ranking"><p>            [Teacher I]</p></strong>
-        </p>
+        <div class="recipient-info mb-4">
+            <p class="mb-1"><strong>TO: <span id="printName">[NAME]</span></strong></p>
+            <p class="mb-0"><strong id="printRank">[Teacher I]</strong></p>
+        </div>
         
-
         <p class="tabbed">Warm greetings!</p>
         
         <p class="tabbed">
-            By virtue of an appointment duly issued by this office, information is hereby given of your school assignment at <strong><p id="printOffice">[Assigned Office],</p></strong> Iligan City, effective this <strong><p id="printDate">[Date].</p></strong> 
+            By virtue of an appointment duly issued by this office, information is hereby given of your school assignment at <strong><span id="printOffice">[Assigned Office]</span></strong>, Iligan City, effective this <strong><span class="printDateBody">[Date]</span></strong>.
             Thus, you shall report directly to the School Head/School Principal of the said school for further instruction.
         </p>
-        
-        <!-- <div class="assigned-office-box">
-            <h2 id="printOffice">[Assigned Office]</h2>
-        </div> -->
                 
         <p class="tabbed">
             Moreover, you are directed to submit the DBM-CSC Form No. 1, "Position Description Form" for the attestation to this Office
@@ -547,20 +541,23 @@
 
         <p class="tabbed">Compliance is enjoined.</p>
         
-        <br><br><br>
-        <div class="signature-right">
-            <p><strong>JONATHAN S. DELA PEÑA, PhD, CESO V</strong></p>
-            <p>Schools Division Superintendent</p>
+        <div class="signature-container mt-5">
+            <div class="signature-left">
+                <p>Noted by:</p>
+                <br><br>
+                <p class="mb-1"><strong>School Principal</strong></p>
+                <p class="text-muted small">School Head / Principal</p>
+            </div>
+            
+            <div class="signature-right">
+                <p>Approved by:</p>
+                <br><br>
+                <p class="mb-1"><strong>JONATHAN S. DELA PEÑA, PhD, CESO V</strong></p>
+                <p class="text-muted small">Schools Division Superintendent</p>
+            </div>
         </div>
 
-        <br><br><br>
-        <div class="signature-left">
-            <p>[assignedSchoolPrincipal]</p>
-            <p>[assignedSchoolTitle]</p>
-        </div>
-
-        <!-- Add Print Footer -->
-        <div class="print-footer" style="margin-top: 80px; font-size: 0.8em; text-align: center; color: #555; border-top: 1px solid #ddd; padding-top: 10px;">
+        <div class="print-footer">
             <p>This is a system-generated document from the Recruitment & Selection Process Dashboard.</p>
         </div>
     </div>

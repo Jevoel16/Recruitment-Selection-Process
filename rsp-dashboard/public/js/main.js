@@ -287,33 +287,130 @@ if (scoreForm) {
 }
 
 // Generate PDF Letter
-function printLetter(name, office, dateStr) {
-    // Populate the print container
-    document.getElementById('printName').innerText = name;
-    document.getElementById('printOffice').innerText = office;
-    
-    // Format Date neatly
+// Generate PDF Letter using jsPDF directly (vector rendering)
+function printLetter(name, office, dateStr, category) {
+    const { jsPDF } = window.jspdf || window;
+    if (!jsPDF) {
+        alert('jsPDF library failed to load. Please try again.');
+        return;
+    }
+
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
+
+    // Format Date
     const d = dateStr ? new Date(dateStr) : new Date();
     const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('printDate').innerText = 'Date: ' + formattedDate;
+
+    // Map applicant category to professional rank titles
+    let rankTitle = 'Teacher I';
+    if (category === 'UNIV') {
+        rankTitle = 'Instructor I';
+    } else if (category === 'KINDER') {
+        rankTitle = 'Kindergarten Teacher';
+    } else if (category === 'SENHIGH') {
+        rankTitle = 'Teacher I (Senior High)';
+    } else if (category === 'HIGH') {
+        rankTitle = 'Teacher I (Junior High)';
+    } else if (category === 'ELEM') {
+        rankTitle = 'Teacher I (Elementary)';
+    }
+
+    // Colors & Top Indicator Line (Indigo Accent matching our theme)
+    doc.setDrawColor(79, 70, 229);
+    doc.setLineWidth(1.5);
+    doc.line(20, 15, 190, 15);
+
+    // Document Font Family: Times
+    doc.setFont("Times", "bold");
+
+    // Header
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // slate dark color
+    doc.text("RECRUITMENT & ASSIGNMENT OFFICE", 105, 32, { align: "center" });
     
-    // Clone the element for PDF generation so it doesn't flash on screen
-    const element = document.querySelector('.print-container').cloneNode(true);
-    element.classList.remove('d-none');
-    element.classList.remove('d-print-block');
-    element.style.display = 'block';
+    doc.setFont("Times", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("123 Official Boulevard, Tech City", 105, 38, { align: "center" });
+
+    // Divider Line
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(20, 44, 190, 44);
+
+    // Date
+    doc.setTextColor(0);
+    doc.setFontSize(11);
+    doc.text(`Date: ${formattedDate}`, 190, 54, { align: "right" });
+
+    // Recipient Information
+    doc.setFont("Times", "bold");
+    doc.text("TO:", 20, 68);
+    doc.text(name, 32, 68);
+    doc.setFont("Times", "italic");
+    doc.text(rankTitle, 32, 74);
+
+    // Salutation
+    doc.setFont("Times", "normal");
+    doc.setFontSize(11);
+    doc.text("Warm greetings!", 20, 88);
+
+    // Body Paragraph 1
+    const body1 = `By virtue of an appointment duly issued by this office, information is hereby given of your school assignment at ${office}, Iligan City, effective this ${formattedDate}. Thus, you shall report directly to the School Head/School Principal of the said school for further instruction.`;
+    const splitBody1 = doc.splitTextToSize(body1, 170);
+    doc.text(splitBody1, 20, 96);
+    let currentY = 96 + (splitBody1.length * 7);
+
+    // Body Paragraph 2
+    currentY += 4; // spacing between paragraphs
+    const body2 = `Moreover, you are directed to submit the DBM-CSC Form No. 1, "Position Description Form" for the attestation to this Office thru Personnel Section within three (3) working days from receipt hereof.`;
+    const splitBody2 = doc.splitTextToSize(body2, 170);
+    doc.text(splitBody2, 20, currentY);
+    currentY += (splitBody2.length * 7);
+
+    // Body Paragraph 3
+    currentY += 4;
+    doc.text("Compliance is enjoined.", 20, currentY);
+
+    // Signatures Section
+    currentY += 28;
     
-    // Set up html2pdf options
-    const opt = {
-        margin:       [20, 18, 20, 20],
-        filename:     `${name.replace(/\s+/g, '_')}_assignment_order.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+    // Left Principal Signature
+    doc.setFont("Times", "normal");
+    doc.text("Noted by:", 20, currentY);
     
-    // Generate and download PDF
-    html2pdf().set(opt).from(element).save();
+    doc.setFont("Times", "bold");
+    doc.text("School Principal", 20, currentY + 16);
+    
+    doc.setFont("Times", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(110);
+    doc.text("School Head / Principal", 20, currentY + 21);
+
+    // Right Superintendent Signature
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text("Approved by:", 120, currentY);
+    
+    doc.setFont("Times", "bold");
+    doc.text("JONATHAN S. DELA PEÑA, PhD, CESO V", 120, currentY + 16);
+    
+    doc.setFont("Times", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(110);
+    doc.text("Schools Division Superintendent", 120, currentY + 21);
+
+    // Bottom Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text("This is a system-generated document from the Recruitment & Selection Process Dashboard.", 105, 282, { align: "center" });
+
+    // Save and download PDF
+    doc.save(`${name.replace(/\s+/g, '_')}_assignment_order.pdf`);
 }
 
 // Search Filter Logic
@@ -408,12 +505,12 @@ async function updateRequirementField(id, field, value) {
     }
 }
 
-async function setAllRequirements(id) {
+async function setAllRequirements(id, value) {
     try {
         const res = await fetch(`/api/applicants/${id}/requirements/all`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: true })
+            body: JSON.stringify({ value })
         });
 
         if (res.ok) {
@@ -421,7 +518,7 @@ async function setAllRequirements(id) {
         }
     } catch (err) {
         console.error(err);
-        alert('Unable to mark all requirements as complete.');
+        alert('Unable to update requirements.');
     }
 }
 
@@ -446,6 +543,12 @@ async function openRequirementsModal(id, skipFetch = false) {
             `;
         }).join('');
 
+        // Toggling button text, class, and icon based on whether it is currently checked-all
+        const btnText = isComplete ? 'Uncheck All Requirements' : 'Check All Requirements';
+        const btnClass = isComplete ? 'btn-outline-danger' : 'btn-success';
+        const btnIcon = isComplete ? 'bi-x-square' : 'bi-check2-square';
+        const targetValue = !isComplete;
+
         document.getElementById('requirementsModalBody').innerHTML = `
             <input type="hidden" id="requirementsApplicantId" value="${id}">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
@@ -455,8 +558,8 @@ async function openRequirementsModal(id, skipFetch = false) {
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <span id="requirements-overall-status" class="badge ${isComplete ? 'bg-success' : 'bg-warning text-dark'}">${isComplete ? 'Complete' : 'Incomplete'}</span>
-                    <button type="button" class="btn btn-success btn-sm" onclick="setAllRequirements(${id})">
-                        <i class="bi bi-check2-square"></i> Check All Requirements
+                    <button type="button" class="btn ${btnClass} btn-sm" onclick="setAllRequirements(${id}, ${targetValue})">
+                        <i class="bi ${btnIcon}"></i> ${btnText}
                     </button>
                 </div>
             </div>
