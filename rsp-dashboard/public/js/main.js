@@ -376,12 +376,6 @@ async function printLetter(name, office, dateStr, category, applicationCode) {
     doc.setFont("Times", "normal");
     doc.text("MATATAG", 20, 284);
 
-    // EXAMPLE
-    doc.setFont("Times", "bold");
-    doc.text("TO:", 20, 79);
-    doc.text(name.toUpperCase(), 50, 79);
-    doc.text(rankTitle, 50, 83);
-
     doc.setFontSize(7.5);
     doc.setTextColor(100);
     doc.setFont("Times", "bold");
