@@ -1,19 +1,15 @@
 /* Base Styles & Premium Variables */
 :root {
-    --primary: #4f46e5;
-    --primary-hover: #4338ca;
-    --secondary: #10b981;
-    --dark: #0f172a;
-    --light: #f8fafc;
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    --primary: #1e1b4b;
+    --accent: #312e81;
+    --black: #0f172a;
+    --white: #ffffff;
 }
 
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #f0fdf4 0%, #e0e7ff 100%);
-    color: var(--dark);
+    background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%);
+    color: var(--black);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -21,62 +17,62 @@ body {
 
 /* Typography */
 .gradient-text {
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    background: linear-gradient(90deg, var(--primary), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 /* Nav & Footer */
 .premium-nav {
-    background: rgba(15, 23, 42, 0.95) !important;
+    background: color-mix(in srgb, var(--black) 95%, transparent) !important;
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid color-mix(in srgb, var(--white) 10%, transparent);
 }
 
 .premium-footer {
     background: transparent;
-    border-top: 1px solid rgba(0,0,0,0.05);
+    border-top: 1px solid color-mix(in srgb, var(--black) 5%, transparent);
 }
 
 /* Glassmorphism Panels */
 .glass-panel {
-    background: var(--glass-bg);
+    background: color-mix(in srgb, var(--white) 85%, transparent);
     backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    border: 1px solid color-mix(in srgb, var(--white) 40%, transparent);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--black) 5%, transparent);
 }
 
 .glass-card {
-    background: rgba(255, 255, 255, 0.6);
+    background: color-mix(in srgb, var(--white) 60%, transparent);
     backdrop-filter: blur(8px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid color-mix(in srgb, var(--white) 40%, transparent);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .glass-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--black) 10%, transparent);
 }
 
 /* Sidebar Styles */
 .sidebar {
-    background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary) 100%);
+    border-right: 1px solid color-mix(in srgb, var(--white) 10%, transparent);
 }
 .custom-sidebar-tabs .nav-link {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: color-mix(in srgb, var(--white) 70%, transparent) !important;
     font-weight: 500;
     transition: all 0.3s ease;
     border: 1px solid transparent;
 }
 .custom-sidebar-tabs .nav-link:hover {
-    color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--white) !important;
+    background: color-mix(in srgb, var(--white) 10%, transparent);
 }
 .custom-sidebar-tabs .nav-link.active {
-    color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    color: var(--white) !important;
+    background: color-mix(in srgb, var(--white) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--white) 20%, transparent);
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--black) 10%, transparent);
 }
 
 /* Tables */
@@ -85,13 +81,13 @@ body {
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    color: #64748b;
+    color: color-mix(in srgb, var(--black) 50%, var(--white));
 }
 .custom-table tbody tr {
     transition: background 0.2s ease;
 }
 .custom-table tbody tr:hover {
-    background-color: rgba(79, 70, 229, 0.03);
+    background-color: color-mix(in srgb, var(--primary) 3%, transparent);
 }
 
 .table-pagination .pagination {
@@ -103,42 +99,42 @@ body {
 }
 
 .table-pagination .page-link {
-    border: 1px solid rgba(148, 163, 184, 0.25);
+    border: 1px solid color-mix(in srgb, var(--black) 20%, transparent);
     border-radius: 999px;
-    color: #334155;
-    background: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    color: var(--black);
+    background: color-mix(in srgb, var(--white) 85%, transparent);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--black) 4%, transparent);
     min-width: 2.5rem;
     text-align: center;
 }
 
 .table-pagination .page-link:hover {
     color: var(--primary);
-    border-color: rgba(79, 70, 229, 0.35);
-    background: rgba(255, 255, 255, 0.98);
+    border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+    background: color-mix(in srgb, var(--white) 98%, transparent);
 }
 
 .table-pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    background: linear-gradient(135deg, var(--primary), var(--primary));
     border-color: transparent;
-    color: #fff;
+    color: var(--white);
 }
 
 .table-pagination .page-item.disabled .page-link {
-    color: #94a3b8;
-    background: rgba(255, 255, 255, 0.6);
+    color: color-mix(in srgb, var(--black) 40%, var(--white));
+    background: color-mix(in srgb, var(--white) 60%, transparent);
 }
 
 .requirement-item {
-    background: rgba(255, 255, 255, 0.82);
+    background: color-mix(in srgb, var(--white) 82%, transparent);
     backdrop-filter: blur(10px);
     transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .requirement-item:hover {
-    border-color: rgba(79, 70, 229, 0.3) !important;
+    border-color: color-mix(in srgb, var(--primary) 30%, transparent) !important;
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--black) 6%, transparent);
 }
 
 .requirement-item .form-check-input {
@@ -147,14 +143,14 @@ body {
 
 /* Buttons */
 .btn-add-glass {
-    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    background: linear-gradient(135deg, var(--primary), var(--primary));
     border: none;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .btn-add-glass:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 .action-btn {
     transition: transform 0.15s ease;
@@ -165,11 +161,11 @@ body {
 
 /* Modals */
 .glass-modal .modal-content {
-    background: rgba(255, 255, 255, 0.95);
+    background: color-mix(in srgb, var(--white) 95%, transparent);
     backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid color-mix(in srgb, var(--white) 40%, transparent);
     border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--black) 25%, transparent);
 }
 
 /* Print Styles - A4 Sizing */
@@ -180,7 +176,7 @@ body {
     }
     
     body {
-        background: #fff;
+        background: var(--white);
         margin: 0;
         padding: 0;
         min-height: auto;
@@ -197,7 +193,7 @@ body {
     .print-container {
         font-family: 'Times New Roman', Times, serif;
         line-height: 1.6;
-        color: #000;
+        color: var(--black);
         width: 100%;
     }
     
@@ -228,11 +224,11 @@ body {
     }
     
     .assigned-office-box {
-        border: 2px solid #000;
+        border: 2px solid var(--black);
         padding: 20px;
         text-align: center;
         margin: 30px 0;
-        background-color: #f9f9f9 !important; /* Forces background printing if enabled */
+        background-color: var(--white) !important; /* Forces background printing if enabled */
         -webkit-print-color-adjust: exact;
     }
     
@@ -256,15 +252,15 @@ body {
 .print-container {
     font-family: 'Times New Roman', Times, serif;
     line-height: 1.6;
-    color: #000;
-    background-color: #fff;
+    color: var(--black);
+    background-color: var(--white);
     padding: 20px;
 }
 
 .print-container .print-header {
     text-align: center;
     margin-bottom: 40px;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid var(--black);
     padding-bottom: 10px;
 }
 
@@ -277,7 +273,7 @@ body {
 .print-container .print-header p {
     font-size: 11pt;
     margin-bottom: 0;
-    color: #555;
+    color: var(--black);
 }
 
 .print-container .print-body {
@@ -316,7 +312,7 @@ body {
     margin-top: 60px;
     font-size: 9pt;
     text-align: center;
-    color: #777;
-    border-top: 1px solid #ccc;
+    color: var(--black);
+    border-top: 1px solid color-mix(in srgb, var(--black) 20%, transparent);
     padding-top: 10px;
 }

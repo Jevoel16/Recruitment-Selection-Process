@@ -178,6 +178,13 @@ if (scoreForm) {
 }
 
 // Generate PDF Letter using jsPDF directly (vector rendering matching scan template)
+const loadImageForPDF = (src) => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+});
+
 async function printLetter(name, office, dateStr, category, applicationCode) {
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
@@ -192,9 +199,9 @@ async function printLetter(name, office, dateStr, category, applicationCode) {
     });
 
     // Helper function for inline rich text rendering (handles <b> tags for key values)
-    function drawRichText(doc, text, startX, startY, maxWidth, lineHeight) {
+    function drawRichText(doc, text, startX, startY, maxWidth, lineHeight, firstLineIndent = 0) {
         const parts = text.split(/(<\/b>|<b>)/);
-        let currentX = startX;
+        let currentX = startX + firstLineIndent;
         let currentY = startY;
         let isBold = false;
         
@@ -271,7 +278,8 @@ async function printLetter(name, office, dateStr, category, applicationCode) {
     // Draw Seals Placement Outlines
     doc.setDrawColor(220, 220, 220);
     doc.setLineWidth(0.2);
-    doc.circle(105, 10, 8); // center seal placeholder
+    const seal1 = await loadImageForPDF('/images/logos/DepEd Seal.png');
+    if (seal1) doc.addImage(seal1, "PNG", 92.5, 2.5, 25, 15);
 
     // Top Header Text using Canterbury custom font
     if (hasCustomFont) {
@@ -304,15 +312,15 @@ async function printLetter(name, office, dateStr, category, applicationCode) {
     // Divider Lines under schools division
     // ASSIGNMENT ORDER Box Headers
     doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.9);
-    doc.line(20, 38, 190, 38); // Thicker line
+    doc.setLineWidth(0.8);
+    doc.line(20, 38, 190, 38);
 
     doc.setFont("Times", "bold");
     doc.setFontSize(20);
     doc.text("ASSIGNMENT ORDER", 105, 44, { align: "center" });
     
-    doc.setLineWidth(0.9);
-    doc.line(20, 46, 190, 46); // Thinner line
+    doc.setLineWidth(0.8);
+    doc.line(20, 46, 190, 46);
 
     doc.setFont("Times", "bold");
     doc.setFontSize(12);
@@ -330,21 +338,23 @@ async function printLetter(name, office, dateStr, category, applicationCode) {
 
     // Salutation
     doc.setFont("Times", "normal");
-    doc.text("Warm greetings!", 20, 104);
+    const salutation = `Warm greetings!`;
+    let currentY = drawRichText(doc, salutation, 20, 104, 170, 5, 10);
 
+    currentY += 10;
     // Body Paragraph 1 (with bold Suarez National High School and effective Date)
     const body1 = `By virtue of an appointment duly issued by this Office, information is hereby given of your school assignment at <b>${office}</b>, Iligan City, effective this <b>${formattedDate}</b>. Thus, you shall report directly to the School Head/School Principal of the said school for further instruction.`;
-    let currentY = drawRichText(doc, body1, 20, 114, 170, 5);
+    currentY = drawRichText(doc, body1, 20, currentY, 170, 5, 10);
 
     // Body Paragraph 2
     currentY += 7.5;
     const body2 = `Moreover, you are directed to submit the DBM-CSC Form No. 1, "Position Description Form" for the attestation of appointment to this Office thru Personnel Section within three (3) days from receipt hereof.`;
-    currentY = drawRichText(doc, body2, 20, currentY, 170, 5);
+    currentY = drawRichText(doc, body2, 20, currentY, 170, 5, 10);
 
     // Body Paragraph 3
     currentY += 7.5;
     const body3 = "Compliance is enjoined.";
-    currentY = drawRichText(doc, body3, 20, currentY, 170, 5);
+    currentY = drawRichText(doc, body3, 20, currentY, 170, 5, 10);
 
     // Superintendent Signature Block
     currentY += 25;
@@ -367,14 +377,13 @@ async function printLetter(name, office, dateStr, category, applicationCode) {
     doc.setLineWidth(0.3);
     doc.line(20, 272, 190, 272);
 
-    doc.setFont("Times", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(30, 41, 59);
-    doc.text("DepED", 20, 280);
+    const seal2 = await loadImageForPDF('/images/logos/DepEd Logo.png');
+    const seal3 = await loadImageForPDF('/images/logos/bagong-pilipinas-seeklogo.png');
+    const seal4 = await loadImageForPDF('/images/logos/Deped Division of Iligan City.png');
     
-    doc.setFontSize(7.5);
-    doc.setFont("Times", "normal");
-    doc.text("MATATAG", 20, 284);
+    if (seal2) doc.addImage(seal2, "PNG", 22.5, 277.5, 22.5, 12.5);
+    if (seal3) doc.addImage(seal3, "PNG", 56.5, 274.5, 17.5, 17.5);
+    if (seal4) doc.addImage(seal4, "PNG", 85, 274.5, 17.5, 17.5);
 
     doc.setFontSize(7.5);
     doc.setTextColor(100);
