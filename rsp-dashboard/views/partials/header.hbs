@@ -19,16 +19,17 @@
     <div class="d-flex" style="min-height: 100vh;">
         <!-- Sidebar -->
         <nav class="sidebar premium-nav text-white d-flex flex-column p-4 flex-shrink-0 shadow-lg" id="mainSidebar" style="width: 280px; z-index: 1000; transition: width 0.3s ease;">
+            <div class="d-flex align-items-right justify-content-between mb-4">
+                <button class="btn text-white p-0 border-0" id="sidebarToggle">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+            </div>
             <div class="d-flex align-items-center justify-content-between mb-4">
                 <a href="/" class="d-flex align-items-center text-white text-decoration-none overflow-hidden" style="white-space: nowrap;">
                     <i class="bi bi-briefcase-fill text-primary fs-2 me-3 sidebar-icon"></i>
                     <span class="fs-4 fw-bold sidebar-text">RSP Dashboard</span>
                 </a>
-                <button class="btn text-white p-0 border-0" id="sidebarToggle">
-                    <i class="bi bi-list fs-3"></i>
-                </button>
             </div>
-            
             <ul class="nav nav-pills flex-column mb-auto custom-sidebar-tabs gap-2" id="rspTab">
                 <li class="nav-item">
                     <a href="/step1/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step1Active}}active{{/if}}" title="Step 1: Evaluation">
