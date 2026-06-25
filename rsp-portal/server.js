@@ -40,22 +40,22 @@ app.post('/api/apply', async (req, res) => {
 
         const edu = JSON.parse(req.body.education || '[]');
         for (let e of edu) {
-            await conn.query('INSERT INTO applicant_education (applicant_id, degree, year, link) VALUES (?, ?, ?, ?)', [applicantId, e.degree, e.year, e.link]);
+            await conn.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, e.degree, e.year, e.link]);
         }
 
         const train = JSON.parse(req.body.training || '[]');
         for (let t of train) {
-            await conn.query('INSERT INTO applicant_training (applicant_id, title, hours, link) VALUES (?, ?, ?, ?)', [applicantId, t.title, t.hours, t.link]);
+            await conn.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, t.title, t.hours, t.link]);
         }
 
         const exp = JSON.parse(req.body.experience || '[]');
         for (let ex of exp) {
-            await conn.query('INSERT INTO applicant_experience (applicant_id, details, years, link) VALUES (?, ?, ?, ?)', [applicantId, ex.details, ex.years, ex.link]);
+            await conn.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, ex.details, ex.years, ex.link]);
         }
 
         const elig = JSON.parse(req.body.eligibility || '[]');
         for (let el of elig) {
-            await conn.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, link) VALUES (?, ?, ?, ?)', [applicantId, el.details, el.rating, el.link]);
+            await conn.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, el.details, el.rating, el.link]);
         }
 
         await conn.commit();
