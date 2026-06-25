@@ -113,15 +113,44 @@ async function seed() {
         const [result] = await connection.query(insertQuery, [values]);
         console.log(`✅ Inserted ${result.affectedRows} mock applicants.`);
         
-        // Let's seed related tables for the first 5 applicants just to have some data
-        const [insertedApplicants] = await connection.query('SELECT id FROM applicants LIMIT 5');
+        // Seed related tables (5-10 for each applicant)
+        const [insertedApplicants] = await connection.query('SELECT id FROM applicants');
+        console.log(`Generating sub-documents for ${insertedApplicants.length} applicants...`);
+
+        const eduValues = [];
+        const trainValues = [];
+        const expValues = [];
+        const eligValues = [];
+
         for (const app of insertedApplicants) {
-            await connection.query('INSERT INTO applicant_education (applicant_id, digitalCopyLink) VALUES (?, ?)', [app.id, 'https://example.com/diploma.pdf']);
-            await connection.query('INSERT INTO applicant_training (applicant_id, title, hours) VALUES (?, ?, ?)', [app.id, 'Leadership Training', 40]);
-            await connection.query('INSERT INTO applicant_experience (applicant_id, details, years) VALUES (?, ?, ?)', [app.id, 'Software Engineer at TechCorp', 3]);
-            await connection.query('INSERT INTO applicant_eligibility (applicant_id, digitalCopyLink) VALUES (?, ?)', [app.id, 'https://example.com/eligibility.pdf']);
+            const numEdu = Math.floor(Math.random() * 6) + 5; // 5 to 10
+            for(let i=0; i<numEdu; i++) eduValues.push([app.id, `Degree ${i+1}`, `201${i}`, 'https://example.com/edu']);
+
+            const numTrain = Math.floor(Math.random() * 6) + 5;
+            for(let i=0; i<numTrain; i++) trainValues.push([app.id, `Training ${i+1}`, `${(i+1)*10}`, 'https://example.com/train']);
+
+            const numExp = Math.floor(Math.random() * 6) + 5;
+            for(let i=0; i<numExp; i++) expValues.push([app.id, `Role at Company ${i+1}`, `${i+1}`, 'https://example.com/exp']);
+
+            const numElig = Math.floor(Math.random() * 6) + 5;
+            for(let i=0; i<numElig; i++) eligValues.push([app.id, `Eligibility ${i+1}`, `${80+i}%`, 'https://example.com/elig']);
         }
-        console.log('✅ Inserted related records (Education, Training, etc.)');
+
+        const chunkArray = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
+
+        const insertChunks = async (query, valuesArray) => {
+            const chunks = chunkArray(valuesArray, 5000);
+            for (const chunk of chunks) {
+                await connection.query(query, [chunk]);
+            }
+        };
+
+        await insertChunks('INSERT INTO applicant_education (applicant_id, title, year_graduated, link) VALUES ?', eduValues);
+        await insertChunks('INSERT INTO applicant_training (applicant_id, title, hours, link) VALUES ?', trainValues);
+        await insertChunks('INSERT INTO applicant_experience (applicant_id, details, years, link) VALUES ?', expValues);
+        await insertChunks('INSERT INTO applicant_eligibility (applicant_id, title, rating, link) VALUES ?', eligValues);
+
+        console.log('✅ Inserted related records (Education, Training, Experience, Eligibility) for all applicants.');
         
         console.log('🎉 Seeding completed successfully!');
     } catch (error) {

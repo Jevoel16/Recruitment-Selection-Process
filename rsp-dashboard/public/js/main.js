@@ -632,6 +632,11 @@ async function openInfoModal(id) {
                         <label class="form-label">Contact No</label>
                         <input type="text" class="form-control" name="contactNo" value="${app.contactNo || ''}">
                     </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Personal Data Sheet (PDS) Link</label>
+                        <input type="url" class="form-control" name="pdsLink" value="${app.pdsLink || ''}" placeholder="https://...">
+                        ${app.pdsLink ? `<a href="${app.pdsLink}" target="_blank" class="text-primary text-decoration-none small mt-1 d-block"><i class="bi bi-link-45deg"></i> View Current PDS</a>` : ''}
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 mt-4">Save Information</button>
             </form>
@@ -669,16 +674,27 @@ async function openEduModal(id) {
         if(edu.length) {
             edu.forEach(e => {
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href="${e.digitalCopyLink}" target="_blank">${e.digitalCopyLink}</a>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('education', ${e.id}, ${id}, 'edu')"><i class="bi bi-trash"></i></button>
+                    <span><strong>${e.title}</strong> (${e.year_graduated})
+                    ${e.link ? `<br><a href="${e.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
+                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                    </span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('education', ${e.id}, ${id}, 'edu')"><i class="bi bi-trash"></i></button>
+                    </div>
                 </li>`;
             });
         } else html += '<li class="list-group-item text-muted">No education records found.</li>';
         html += '</ul>';
         html += `
-            <form id="addEdu-${id}" class="d-flex gap-2">
-                <input type="url" class="form-control" name="link" placeholder="https://link-to-document" required>
-                <button type="submit" class="btn btn-success">Add</button>
+            <form id="addEdu-${id}" class="mb-3">
+                <div class="d-flex gap-2 w-100">
+                    <input type="text" class="form-control" name="title" placeholder="Degree / School" style="flex: 4;" required>
+                    <input type="text" class="form-control" name="year_graduated" placeholder="Year" style="flex: 1;" required>
+                </div>
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <button type="submit" class="btn btn-success w-100 mt-2">Add Education</button>
             </form>
         `;
         document.getElementById('eduModalBody').innerHTML = html;
@@ -689,7 +705,7 @@ async function openEduModal(id) {
                 const res = await fetch(`/api/applicants/${id}/education`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ link: e.target.link.value })
+                    body: JSON.stringify({ title: e.target.title.value, year_graduated: e.target.year_graduated.value, link: e.target.link.value })
                 });
                 if(res.ok) openEduModal(id);
             } catch(err) { console.error(err); }
@@ -709,16 +725,23 @@ async function openTrainModal(id) {
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
                     <span><strong>${t.title}</strong> (${t.hours} hours)
                     ${t.link ? `<br><a href="${t.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
+                    <br><span class="badge ${t.status === 'QUALIFIED' ? 'bg-success' : t.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${t.status || 'PENDING'}</span>
                     </span>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('training', ${t.id}, ${id}, 'train')"><i class="bi bi-trash"></i></button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-success ${t.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('training', ${id}, ${t.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-warning ${t.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('training', ${id}, ${t.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('training', ${t.id}, ${id}, 'train')"><i class="bi bi-trash"></i></button>
+                    </div>
                 </li>`;
             });
         } else html += '<li class="list-group-item text-muted">No training seminars found.</li>';
         html += '</ul>';
         html += `
-            <form id="addTrain-${id}" class="d-flex flex-wrap gap-2">
-                <input type="text" class="form-control flex-grow-1" name="title" placeholder="Title" required>
-                <input type="number" class="form-control" name="hours" placeholder="Hrs" style="max-width: 80px;" required>
+            <form id="addTrain-${id}" class="mb-3">
+                <div class="d-flex gap-2 w-100">
+                    <input type="text" class="form-control" name="title" placeholder="Title" style="flex: 4;" required>
+                    <input type="number" class="form-control" name="hours" placeholder="Hrs" style="flex: 1;" required>
+                </div>
                 <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Training</button>
             </form>
@@ -751,16 +774,23 @@ async function openExpModal(id) {
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
                     <span><strong>${e.details}</strong> (${e.years} years)
                     ${e.link ? `<br><a href="${e.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
+                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
                     </span>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('experience', ${e.id}, ${id}, 'exp')"><i class="bi bi-trash"></i></button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('experience', ${e.id}, ${id}, 'exp')"><i class="bi bi-trash"></i></button>
+                    </div>
                 </li>`;
             });
         } else html += '<li class="list-group-item text-muted">No experience records found.</li>';
         html += '</ul>';
         html += `
-            <form id="addExp-${id}" class="d-flex flex-wrap gap-2">
-                <input type="text" class="form-control flex-grow-1" name="details" placeholder="Details" required>
-                <input type="number" class="form-control" name="years" placeholder="Yrs" style="max-width: 80px;" required>
+            <form id="addExp-${id}" class="mb-3">
+                <div class="d-flex gap-2 w-100">
+                    <input type="text" class="form-control" name="details" placeholder="Details" style="flex: 4;" required>
+                    <input type="number" class="form-control" name="years" placeholder="Yrs" style="flex: 1;" required>
+                </div>
                 <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
             </form>
@@ -791,16 +821,27 @@ async function openEligModal(id) {
         if(elig.length) {
             elig.forEach(e => {
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href="${e.digitalCopyLink}" target="_blank">${e.digitalCopyLink}</a>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('eligibility', ${e.id}, ${id}, 'elig')"><i class="bi bi-trash"></i></button>
+                    <span><strong>${e.title}</strong> (${e.rating})
+                    ${e.link ? `<br><a href="${e.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
+                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                    </span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('eligibility', ${e.id}, ${id}, 'elig')"><i class="bi bi-trash"></i></button>
+                    </div>
                 </li>`;
             });
         } else html += '<li class="list-group-item text-muted">No eligibility records found.</li>';
         html += '</ul>';
         html += `
-            <form id="addElig-${id}" class="d-flex gap-2">
-                <input type="url" class="form-control" name="link" placeholder="https://link-to-document" required>
-                <button type="submit" class="btn btn-success">Add</button>
+            <form id="addElig-${id}" class="mb-3">
+                <div class="d-flex gap-2 w-100">
+                    <input type="text" class="form-control" name="title" placeholder="License / Exam" style="flex: 4;" required>
+                    <input type="text" class="form-control" name="rating" placeholder="Rating" style="flex: 1;" required>
+                </div>
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <button type="submit" class="btn btn-success w-100 mt-2">Add Eligibility</button>
             </form>
         `;
         document.getElementById('eligModalBody').innerHTML = html;
@@ -811,7 +852,7 @@ async function openEligModal(id) {
                 const res = await fetch(`/api/applicants/${id}/eligibility`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ link: e.target.link.value })
+                    body: JSON.stringify({ title: e.target.title.value, rating: e.target.rating.value, link: e.target.link.value })
                 });
                 if(res.ok) openEligModal(id);
             } catch(err) { console.error(err); }
@@ -820,3 +861,92 @@ async function openEligModal(id) {
         bootstrap.Modal.getOrCreateInstance(document.getElementById('eligModal')).show();
     } catch (err) { alert(err.message); }
 }
+
+async function updateDocStatus(type, applicantId, docId, status) {
+    try {
+        const res = await fetch(`/api/applicants/${applicantId}/${type}/${docId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        if(res.ok) {
+            if(type === 'education') openEduModal(applicantId);
+            else if(type === 'training') openTrainModal(applicantId);
+            else if(type === 'experience') openExpModal(applicantId);
+            else if(type === 'eligibility') openEligModal(applicantId);
+        }
+    } catch(err) { console.error(err); }
+}
+
+async function openSummaryModal(id, name) {
+    try {
+        document.getElementById('summaryApplicantId').value = id;
+        document.getElementById('summaryApplicantName').innerText = name;
+        
+        const data = await fetchDetails(id);
+        
+        const generateList = (items, typeName) => {
+            if(!items || !items.length) return `<li class="list-group-item text-muted small">No ${typeName} records.</li>`;
+            return items.map(item => {
+                const badgeClass = item.status === 'QUALIFIED' ? 'bg-success' : item.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark';
+                return `<li class="list-group-item d-flex justify-content-between align-items-center small">
+                    <span>${item.title || item.details}</span>
+                    <span class="badge ${badgeClass}">${item.status || 'PENDING'}</span>
+                </li>`;
+            }).join('');
+        };
+        
+        let html = `
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Education</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.education, 'education')}</ul>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Training</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.training, 'training')}</ul>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Experience</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.experience, 'experience')}</ul>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Eligibility</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.eligibility, 'eligibility')}</ul>
+                </div>
+            </div>
+        `;
+        document.getElementById('summaryDetails').innerHTML = html;
+        document.getElementById('summaryInterviewDate').value = new Date().toISOString().split('T')[0];
+        
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).show();
+    } catch(err) { console.error(err); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sumQualifyBtn = document.getElementById('summaryQualifyBtn');
+    if (sumQualifyBtn) {
+        sumQualifyBtn.addEventListener('click', async () => {
+            const id = document.getElementById('summaryApplicantId').value;
+            const interviewDate = document.getElementById('summaryInterviewDate').value;
+            if(!interviewDate) return alert('Please provide an interview date.');
+            try {
+                const res = await fetch(`/api/applicants/${id}/qualify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interviewDate })
+                });
+                if(res.ok) window.location.reload();
+            } catch(err) { console.error(err); }
+        });
+    }
+
+    const sumDisqualifyBtn = document.getElementById('summaryDisqualifyBtn');
+    if (sumDisqualifyBtn) {
+        sumDisqualifyBtn.addEventListener('click', () => {
+            const id = document.getElementById('summaryApplicantId').value;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).hide();
+            disqualifyApplicant(id);
+        });
+    }
+});

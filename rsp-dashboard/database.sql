@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS applicants (
     ethnicGroup VARCHAR(100) DEFAULT NULL,
     emailAddress VARCHAR(150) DEFAULT NULL,
     contactNo VARCHAR(50) DEFAULT NULL,
+    pdsLink VARCHAR(255) DEFAULT NULL,
     
     req_pds BOOLEAN DEFAULT FALSE,
     req_prcLicense BOOLEAN DEFAULT FALSE,
@@ -44,7 +45,10 @@ CREATE TABLE IF NOT EXISTS applicants (
 CREATE TABLE IF NOT EXISTS applicant_education (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
-    digitalCopyLink TEXT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    year_graduated VARCHAR(50) NOT NULL,
+    link VARCHAR(255) DEFAULT NULL,
+    status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
 );
@@ -53,7 +57,9 @@ CREATE TABLE IF NOT EXISTS applicant_training (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
-    hours INT NOT NULL,
+    hours VARCHAR(50) NOT NULL,
+    link VARCHAR(255) DEFAULT NULL,
+    status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
 );
@@ -62,7 +68,9 @@ CREATE TABLE IF NOT EXISTS applicant_experience (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
     details TEXT NOT NULL,
-    years INT NOT NULL,
+    years VARCHAR(50) NOT NULL,
+    link VARCHAR(255) DEFAULT NULL,
+    status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
 );
@@ -70,7 +78,10 @@ CREATE TABLE IF NOT EXISTS applicant_experience (
 CREATE TABLE IF NOT EXISTS applicant_eligibility (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
-    digitalCopyLink TEXT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    rating VARCHAR(50) NOT NULL,
+    link VARCHAR(255) DEFAULT NULL,
+    status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
 );

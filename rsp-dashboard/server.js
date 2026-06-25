@@ -344,10 +344,10 @@ app.post('/api/applicants/:id/assign', async (req, res) => {
 app.put('/api/applicants/:id/info', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo } = req.body;
+        const { firstName, lastName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink } = req.body;
         await db.query(
-            `UPDATE applicants SET firstName=?, lastName=?, address=?, age=?, sex=?, civilStatus=?, religion=?, disability=?, ethnicGroup=?, emailAddress=?, contactNo=? WHERE id=?`, 
-            [firstName, lastName, address, age || null, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, id]
+            `UPDATE applicants SET firstName=?, lastName=?, address=?, age=?, sex=?, civilStatus=?, religion=?, disability=?, ethnicGroup=?, emailAddress=?, contactNo=?, pdsLink=? WHERE id=?`, 
+            [firstName, lastName, address, age || null, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink || null, id]
         );
         res.json({ success: true });
     } catch (error) {
@@ -359,8 +359,8 @@ app.put('/api/applicants/:id/info', async (req, res) => {
 app.post('/api/applicants/:id/education', async (req, res) => {
     try {
         const { id } = req.params;
-        const { link } = req.body;
-        await db.query('INSERT INTO applicant_education (applicant_id, digitalCopyLink) VALUES (?, ?)', [id, link]);
+        const { title, year_graduated, link } = req.body;
+        await db.query('INSERT INTO applicant_education (applicant_id, title, year_graduated, link) VALUES (?, ?, ?, ?)', [id, title, year_graduated, link]);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
@@ -416,8 +416,8 @@ app.delete('/api/experience/:id', async (req, res) => {
 app.post('/api/applicants/:id/eligibility', async (req, res) => {
     try {
         const { id } = req.params;
-        const { link } = req.body;
-        await db.query('INSERT INTO applicant_eligibility (applicant_id, digitalCopyLink) VALUES (?, ?)', [id, link]);
+        const { title, rating, link } = req.body;
+        await db.query('INSERT INTO applicant_eligibility (applicant_id, title, rating, link) VALUES (?, ?, ?, ?)', [id, title, rating, link]);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
@@ -449,6 +449,31 @@ app.get('/api/applicants/:id/details', async (req, res) => {
             experience: exp,
             eligibility: elig
         });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update Document Status
+app.put('/api/applicants/:id/:type/:docId/status', async (req, res) => {
+    try {
+        const { id, type, docId } = req.params;
+        const { status } = req.body;
+        
+        const validTypes = {
+            'education': 'applicant_education',
+            'training': 'applicant_training',
+            'experience': 'applicant_experience',
+            'eligibility': 'applicant_eligibility'
+        };
+        
+        if (!validTypes[type]) return res.status(400).json({ error: 'Invalid document type' });
+        if (!['PENDING', 'QUALIFIED', 'DISQUALIFIED'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+        
+        const tableName = validTypes[type];
+        await db.query(`UPDATE ${tableName} SET status = ? WHERE id = ? AND applicant_id = ?`, [status, docId, id]);
+        
+        res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

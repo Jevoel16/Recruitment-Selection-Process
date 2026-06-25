@@ -60,8 +60,8 @@
                             </td>
                             <td class="text-end">
                                 {{#if (eq this.status 'PENDING')}}
-                                <button class="btn btn-sm btn-success action-btn" onclick="openQualifyModal({{this.id}}, '{{this.name}}')"><i class="bi bi-check-circle"></i> Qualify</button>
-                                <button class="btn btn-sm btn-warning action-btn ms-1" onclick="disqualifyApplicant({{this.id}})"><i class="bi bi-x-circle"></i> Disqualify</button>
+
+                                <button class="btn btn-sm btn-primary action-btn" onclick="openSummaryModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move to Step 2</button>
                                 {{/if}}
                                 <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
                             </td>
@@ -123,8 +123,8 @@
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
                             <td>{{formatDate this.interviewDate}}</td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-info text-white action-btn" onclick="openScoreModal({{this.id}}, '{{this.name}}')">
-                                    <i class="bi bi-clipboard-data"></i> Input Score
+                                <button class="btn btn-sm btn-primary action-btn" onclick="openScoreModal({{this.id}}, '{{this.name}}')">
+                                    <i class="bi bi-arrow-right-circle"></i> Move to Step 3
                                 </button>
                                 <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
                             </td>
@@ -249,7 +249,6 @@
                         <tr>
                             <th>Application Code</th>
                             <th>Applicant Name</th>
-                            <th>Assigned Office</th>
                             <th>Score</th>
                             <th class="text-center">Requirements</th>
                             <th class="text-end">Action</th>
@@ -260,7 +259,6 @@
                         <tr id="applicant-row-{{this.id}}">
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
-                            <td>{{this.assignedOffice}}</td>
                             <td>{{this.interviewScore}}</td>
                             <td class="text-center">
                                 <button class="btn btn-sm btn-outline-primary action-btn" onclick="openRequirementsModal({{this.id}}, '{{this.name}}')">
@@ -275,7 +273,7 @@
                                 </div>
                             </td>
                             <td class="text-end">
-                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-success action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Requirements must be complete"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-check2-all"></i> Assign</button>
+                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Requirements must be complete"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move to Step 5</button>
                                 <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
                             </td>
                         </tr>
@@ -605,6 +603,42 @@
         </div>
     </div>
 </div>
+
+    <!-- Step 2 Summary Modal -->
+    <div class="modal fade" id="summaryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content glass-modal shadow-lg border-0">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-primary bg-opacity-10 text-primary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-card-checklist"></i> Applicant Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="summaryApplicantId">
+                    <h5 id="summaryApplicantName" class="text-center text-primary fw-bold mb-4"></h5>
+                    
+                    <div id="summaryDetails">
+                        <!-- Populated by main.js -->
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Set Interview Date (if Qualifying)</label>
+                        <input type="date" class="form-control form-control-lg bg-light" id="summaryInterviewDate">
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="button" class="btn btn-success flex-grow-1 w-50 btn-lg shadow-sm fw-bold" id="summaryQualifyBtn">
+                            <i class="bi bi-check-circle me-1"></i> Qualify (Move to Step 2)
+                        </button>
+                        <button type="button" class="btn btn-warning flex-grow-1 w-50 btn-lg shadow-sm fw-bold text-dark" id="summaryDisqualifyBtn">
+                            <i class="bi bi-x-circle me-1"></i> Disqualify
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     </div> <!-- End container-fluid -->
         </main>
