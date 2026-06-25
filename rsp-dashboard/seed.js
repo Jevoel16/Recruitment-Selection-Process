@@ -33,14 +33,17 @@ async function seed() {
 
         // 3. Generate Mock Data
         const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica'];
+        const middleNames = ['Atticus', 'Winston', 'Byron', 'Gideon', 'Theodore', 'Franklin', 'Lincoln', 'Alistair', 'Graham', 'Harrison', 'Maxwell', 'Oliver', 'Sebastian', 'Vincent', 'Xavier', 'Zachary'];
         const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
         const offices = ['Engineering Dept', 'HR Dept', 'Marketing Office', 'Executive Suite', 'Finance Dept'];
 
+        const applicationTypes = ['Internal Application', 'External Application'];
         const districts = ['N1', 'N2', 'N3', 'W1', 'W2', 'W3', 'E1', 'E2', 'S1', 'S2'];
         const categories = ['ELEM', 'HIGH', 'SENHIGH', 'UNIV', 'KINDER'];
         const categoryCounts = {};
         
         const generateFirstName = () => firstNames[Math.floor(Math.random() * firstNames.length)];
+        const generateMiddleName = () => middleNames[Math.floor(Math.random() * middleNames.length)];
         const generateLastName = () => lastNames[Math.floor(Math.random() * lastNames.length)];
         
         const generateTracking = () => {
@@ -69,7 +72,7 @@ async function seed() {
         };
 
         const insertQuery = `INSERT INTO applicants 
-            (firstName, lastName, applicationCode, district, category, status, interviewScore, interviewDate, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo) 
+            (firstName, middleName, lastName, applicationType, applicationCode, district, category, status, interviewScore, interviewDate, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo) 
             VALUES ?`;
         const values = [];
 
@@ -82,9 +85,11 @@ async function seed() {
         // Helper to push mock row
         const createRow = (status, score, date, office) => {
             const fName = generateFirstName();
+            const mName = generateMiddleName();
             const lName = generateLastName();
+            const applicationType = applicationTypes[Math.floor(Math.random() * applicationTypes.length)];
             const tracking = generateTracking();
-            return [fName, lName, tracking.code, tracking.district, tracking.category, status, score, date, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact];
+            return [fName, mName, lName, applicationType, tracking.code, tracking.district, tracking.category, status, score, date, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact];
         };
 
         // 10 PENDING (Step 1)
@@ -116,10 +121,10 @@ async function seed() {
         // Let's seed related tables for the first 5 applicants just to have some data
         const [insertedApplicants] = await connection.query('SELECT id FROM applicants LIMIT 5');
         for (const app of insertedApplicants) {
-            await connection.query('INSERT INTO applicant_education (applicant_id, digitalCopyLink) VALUES (?, ?)', [app.id, 'https://example.com/diploma.pdf']);
-            await connection.query('INSERT INTO applicant_training (applicant_id, title, hours) VALUES (?, ?, ?)', [app.id, 'Leadership Training', 40]);
-            await connection.query('INSERT INTO applicant_experience (applicant_id, details, years) VALUES (?, ?, ?)', [app.id, 'Software Engineer at TechCorp', 3]);
-            await connection.query('INSERT INTO applicant_eligibility (applicant_id, digitalCopyLink) VALUES (?, ?)', [app.id, 'https://example.com/eligibility.pdf']);
+            await connection.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [app.id, 'B.S. Information Technology', 2020, 'https://example.com/diploma.pdf']);
+            await connection.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [app.id, 'Leadership Training', 40, 'https://example.com/training.pdf']);
+            await connection.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [app.id, 'Software Engineer at TechCorp', 3, 'https://example.com/experience.pdf']);
+            await connection.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [app.id, 'Civil Service Professional', '85.50', 'https://example.com/eligibility.pdf']);
         }
         console.log('✅ Inserted related records (Education, Training, etc.)');
         
