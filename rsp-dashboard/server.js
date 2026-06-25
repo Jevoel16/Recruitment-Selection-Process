@@ -216,6 +216,7 @@ app.post('/api/applicants', async (req, res) => {
             'INSERT INTO applicants (firstName, lastName, district, category, applicationCode) VALUES (?, ?, ?, ?, ?)', 
             [firstName, lastName, district, category, newCode]
         );
+        console.log(`[ENTRY] New Application Created: ${newCode} (${firstName} ${lastName})`);
         res.json({ success: true, applicationCode: newCode });
     } catch (error) {
         console.error(error);
@@ -228,6 +229,7 @@ app.delete('/api/applicants/:id', async (req, res) => {
     try {
         const { id } = req.params;
         await db.query('DELETE FROM applicants WHERE id = ?', [id]);
+        console.log(`[DELETE] Applicant ID ${id} deleted`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -239,6 +241,7 @@ app.post('/api/applicants/:id/disqualify', async (req, res) => {
     try {
         const { id } = req.params;
         await db.query(`UPDATE applicants SET status = 'DISQUALIFIED' WHERE id = ?`, [id]);
+        console.log(`[STATUS] Applicant ID ${id} disqualified (Step 1)`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -251,6 +254,7 @@ app.post('/api/applicants/:id/qualify', async (req, res) => {
         const { id } = req.params;
         const { interviewDate } = req.body;
         await db.query(`UPDATE applicants SET status = 'WAITING_FOR_ASSESSMENT', interviewDate = ? WHERE id = ?`, [interviewDate, id]);
+        console.log(`[STATUS] Applicant ID ${id} qualified to Step 2. Interview scheduled for ${interviewDate}`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -268,6 +272,7 @@ app.post('/api/applicants/:id/requirements/all', async (req, res) => {
             [...Array(requirementFields.length).fill(Boolean(value)), id]
         );
         await syncAssignmentRequirementStatus(id);
+        console.log(`[REQUIREMENTS] Applicant ID ${id} requirements toggled to ${value}`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -299,6 +304,7 @@ app.post('/api/applicants/:id/score', async (req, res) => {
         const { id } = req.params;
         const { score } = req.body;
         await db.query(`UPDATE applicants SET interviewScore = ?, status = 'ASSESSED' WHERE id = ?`, [score, id]);
+        console.log(`[ASSESSMENT] Applicant ID ${id} scored ${score} in interview (Step 3)`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -310,6 +316,7 @@ app.post('/api/applicants/:id/proceed-requirements', async (req, res) => {
     try {
         const { id } = req.params;
         await db.query(`UPDATE applicants SET status = 'WAITING' WHERE id = ?`, [id]);
+        console.log(`[STATUS] Applicant ID ${id} proceeded to Requirements (Step 4)`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -334,6 +341,7 @@ app.post('/api/applicants/:id/assign', async (req, res) => {
         const { id } = req.params;
         const { office } = req.body;
         await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ? WHERE id = ?`, [office, id]);
+        console.log(`[ASSIGNMENT] Applicant ID ${id} assigned to office: ${office} (Step 5)`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -361,6 +369,7 @@ app.post('/api/applicants/:id/education', async (req, res) => {
         const { id } = req.params;
         const { title, year_graduated, link } = req.body;
         await db.query('INSERT INTO applicant_education (applicant_id, title, year_graduated, link) VALUES (?, ?, ?, ?)', [id, title, year_graduated, link]);
+        console.log(`[DOCUMENT] Added education to Applicant ID ${id}: ${title}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
@@ -379,6 +388,7 @@ app.post('/api/applicants/:id/training', async (req, res) => {
     const { title, hours, link } = req.body;
     try {
         await db.query('INSERT INTO applicant_training (applicant_id, title, hours, link) VALUES (?, ?, ?, ?)', [id, title, hours, link]);
+        console.log(`[DOCUMENT] Added training to Applicant ID ${id}: ${title}`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -400,6 +410,7 @@ app.post('/api/applicants/:id/experience', async (req, res) => {
     const { details, years, link } = req.body;
     try {
         await db.query('INSERT INTO applicant_experience (applicant_id, details, years, link) VALUES (?, ?, ?, ?)', [id, details, years, link]);
+        console.log(`[DOCUMENT] Added experience to Applicant ID ${id}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
@@ -418,6 +429,7 @@ app.post('/api/applicants/:id/eligibility', async (req, res) => {
         const { id } = req.params;
         const { title, rating, link } = req.body;
         await db.query('INSERT INTO applicant_eligibility (applicant_id, title, rating, link) VALUES (?, ?, ?, ?)', [id, title, rating, link]);
+        console.log(`[DOCUMENT] Added eligibility to Applicant ID ${id}: ${title}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
