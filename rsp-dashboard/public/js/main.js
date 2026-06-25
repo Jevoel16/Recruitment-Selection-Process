@@ -693,7 +693,7 @@ async function openEduModal(id) {
                     <input type="text" class="form-control" name="title" placeholder="Degree / School" style="flex: 4;" required>
                     <input type="text" class="form-control" name="year_graduated" placeholder="Year" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Education</button>
             </form>
         `;
@@ -742,7 +742,7 @@ async function openTrainModal(id) {
                     <input type="text" class="form-control" name="title" placeholder="Title" style="flex: 4;" required>
                     <input type="number" class="form-control" name="hours" placeholder="Hrs" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Training</button>
             </form>
         `;
@@ -791,7 +791,7 @@ async function openExpModal(id) {
                     <input type="text" class="form-control" name="details" placeholder="Details" style="flex: 4;" required>
                     <input type="number" class="form-control" name="years" placeholder="Yrs" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
             </form>
         `;
@@ -840,7 +840,7 @@ async function openEligModal(id) {
                     <input type="text" class="form-control" name="title" placeholder="License / Exam" style="flex: 4;" required>
                     <input type="text" class="form-control" name="rating" placeholder="Rating" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Eligibility</button>
             </form>
         `;

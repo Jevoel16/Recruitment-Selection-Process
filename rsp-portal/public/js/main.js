@@ -719,7 +719,7 @@ async function openTrainModal(id) {
             <form id="addTrain-${id}" class="d-flex flex-wrap gap-2">
                 <input type="text" class="form-control flex-grow-1" name="title" placeholder="Title" required>
                 <input type="number" class="form-control" name="hours" placeholder="Hrs" style="max-width: 80px;" required>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Training</button>
             </form>
         `;
@@ -761,7 +761,7 @@ async function openExpModal(id) {
             <form id="addExp-${id}" class="d-flex flex-wrap gap-2">
                 <input type="text" class="form-control flex-grow-1" name="details" placeholder="Details" required>
                 <input type="number" class="form-control" name="years" placeholder="Yrs" style="max-width: 80px;" required>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link (Optional)">
+                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
             </form>
         `;
