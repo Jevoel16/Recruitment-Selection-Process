@@ -9,7 +9,7 @@
         
         <div class="row justify-content-center gap-4 mt-5">
             <div class="col-md-5 col-sm-10">
-                <a href="/apply/internal" class="text-decoration-none">
+                <a href="#" class="text-decoration-none applicant-type-btn" data-type="internal">
                     <div class="glass-card kiosk-btn p-5 bg-white shadow-lg text-center h-100">
                         <i class="bi bi-building kiosk-icon"></i>
                         <h2 class="fw-bold text-dark mb-3">Internal Applicant</h2>
@@ -19,7 +19,7 @@
             </div>
             
             <div class="col-md-5 col-sm-10">
-                <a href="/apply/external" class="text-decoration-none">
+                <a href="#" class="text-decoration-none applicant-type-btn" data-type="external">
                     <div class="glass-card kiosk-btn p-5 bg-white shadow-lg text-center h-100">
                         <i class="bi bi-person-badge kiosk-icon"></i>
                         <h2 class="fw-bold text-dark mb-3">External Applicant</h2>
@@ -30,3 +30,205 @@
         </div>
     </div>
 </div>
+
+<!-- Position Selection Modal -->
+<div class="modal fade" id="positionModal" tabindex="-1" aria-labelledby="positionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content overflow-hidden" style="border-radius: 1rem;">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold" id="positionModalLabel">Select Position Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="d-flex" style="min-height: 500px;">
+                    <!-- Side Panel: Categories -->
+                    <div class="bg-light border-end" style="width: 280px;">
+                        <div class="p-3 border-bottom bg-white">
+                            <h6 class="mb-0 fw-bold text-secondary text-uppercase" style="font-size: 0.85rem;">Position Categories</h6>
+                        </div>
+                        <div class="list-group list-group-flush" id="categoryList">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- Center Content -->
+                    <div class="flex-grow-1 p-4 bg-white position-relative" id="centerContent">
+                        <!-- Populated via JS -->
+                        <div class="d-flex h-100 align-items-center justify-content-center text-muted flex-column">
+                            <i class="bi bi-arrow-left-circle mb-3" style="font-size: 3rem; opacity: 0.2;"></i>
+                            <h5>Please select a category from the left panel</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let selectedApplicationType = '';
+    let selectedCategory = '';
+    let selectedPosition = '';
+
+    const positionData = {
+        "Teaching": ["Teacher I", "Teacher II", "Teacher III", "Master Teacher I", "Master Teacher II"],
+        "Teaching Related": ["Principal I", "Principal II", "Head Teacher I", "Head Teacher III", "Education Program Supervisor"],
+        "Non-Teaching": ["Administrative Officer II", "Administrative Assistant III", "Administrative Assistant II", "Project Development Officer II"]
+    };
+
+    const districts = ["N1", "N2", "N3", "N4", "N5", "S1", "S2", "S3", "S4", "S5", "E1", "E2", "W1", "W2"];
+    const categories = ["Elementary", "Junior High School", "Senior High School", "Kindergarten", "ALS"];
+
+    const positionModalElement = document.getElementById('positionModal');
+    const positionModal = new bootstrap.Modal(positionModalElement);
+    const categoryList = document.getElementById('categoryList');
+    const centerContent = document.getElementById('centerContent');
+
+    // Initialize Categories
+    function initCategories() {
+        categoryList.innerHTML = '';
+        Object.keys(positionData).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'list-group-item list-group-item-action py-3 fw-medium';
+            btn.textContent = cat;
+            btn.onclick = () => {
+                // Update active state
+                Array.from(categoryList.children).forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                
+                selectedCategory = cat;
+                showPositions(cat);
+            };
+            categoryList.appendChild(btn);
+        });
+    }
+
+    function showPositions(category) {
+        const positions = positionData[category];
+        let html = `
+            <div class="mb-4 pb-2 border-bottom">
+                <h4 class="fw-bold text-dark mb-1">${category} Positions</h4>
+                <p class="text-muted small mb-0">Select a specific position to apply for.</p>
+            </div>
+            <div class="row g-3">
+        `;
+
+        positions.forEach(pos => {
+            html += `
+                <div class="col-md-6">
+                    <div class="card h-100 border hover-shadow cursor-pointer position-card" style="transition: all 0.2s;" data-position="${pos}">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi bi-briefcase text-primary me-3 fs-4"></i>
+                            <h6 class="mb-0 fw-semibold">${pos}</h6>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        centerContent.innerHTML = html;
+
+        // Add hover effect style dynamically if not in css
+        centerContent.querySelectorAll('.position-card').forEach(card => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('mouseenter', () => card.classList.add('shadow-sm', 'border-primary'));
+            card.addEventListener('mouseleave', () => card.classList.remove('shadow-sm', 'border-primary'));
+            
+            card.addEventListener('click', () => {
+                selectedPosition = card.getAttribute('data-position');
+                showDetailsForm();
+            });
+        });
+    }
+
+    function showDetailsForm() {
+        let districtOptions = '<option value="" selected disabled>Select District</option>';
+        districts.forEach(d => districtOptions += `<option value="${d}">${d}</option>`);
+
+        let categoryOptions = '<option value="" selected disabled>Select Category</option>';
+        categories.forEach(c => categoryOptions += `<option value="${c}">${c}</option>`);
+
+        centerContent.innerHTML = `
+            <div class="mb-4 pb-2 border-bottom d-flex align-items-center">
+                <button class="btn btn-sm btn-light me-3 border" id="btnBackToPositions">
+                    <i class="bi bi-arrow-left"></i> Back
+                </button>
+                <div>
+                    <h4 class="fw-bold text-dark mb-1">${selectedPosition}</h4>
+                    <span class="badge bg-primary bg-opacity-10 text-primary">${selectedCategory}</span>
+                </div>
+            </div>
+            
+            <div class="mx-auto" style="max-width: 500px; margin-top: 2rem;">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-secondary">District</label>
+                    <select class="form-select form-select-lg border-2 shadow-none" id="selectDistrict">
+                        ${districtOptions}
+                    </select>
+                </div>
+                
+                <div class="mb-5">
+                    <label class="form-label fw-semibold text-secondary">Category</label>
+                    <select class="form-select form-select-lg border-2 shadow-none" id="selectCategory">
+                        ${categoryOptions}
+                    </select>
+                    <div class="form-text">e.g. Elementary, Junior High School</div>
+                </div>
+
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-lg fw-bold py-3" id="btnProceed">
+                        Proceed to Application <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('btnBackToPositions').addEventListener('click', () => {
+            showPositions(selectedCategory);
+        });
+
+        document.getElementById('btnProceed').addEventListener('click', () => {
+            const district = document.getElementById('selectDistrict').value;
+            const category = document.getElementById('selectCategory').value;
+
+            if (!district || !category) {
+                alert('Please select both District and Category to proceed.');
+                return;
+            }
+
+            // Build URL with query params
+            const params = new URLSearchParams({
+                position: selectedPosition,
+                positionCategory: selectedCategory,
+                district: district,
+                category: category
+            });
+
+            window.location.href = `/apply/${selectedApplicationType}?${params.toString()}`;
+        });
+    }
+
+    // Attach click events to application type buttons
+    document.querySelectorAll('.applicant-type-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            selectedApplicationType = btn.getAttribute('data-type');
+            
+            // Reset modal state
+            selectedCategory = '';
+            selectedPosition = '';
+            initCategories();
+            centerContent.innerHTML = `
+                <div class="d-flex h-100 align-items-center justify-content-center text-muted flex-column">
+                    <i class="bi bi-arrow-left-circle mb-3" style="font-size: 3rem; opacity: 0.2;"></i>
+                    <h5>Please select a category from the left panel</h5>
+                </div>
+            `;
+            
+            positionModal.show();
+        });
+    });
+});
+</script>

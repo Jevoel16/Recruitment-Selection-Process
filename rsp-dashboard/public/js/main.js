@@ -673,9 +673,12 @@ async function openEduModal(id) {
         let html = '<ul class="list-group mb-3">';
         if(edu.length) {
             edu.forEach(e => {
+                const docTitle = e.degree || e.title;
+                const gradYear = e.yearGraduated || e.year_graduated;
+                const docLink = e.digitalCopyLink || e.link;
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${e.title}</strong> (${e.year_graduated})
-                    ${e.link ? `<br><a href="${e.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
+                    <span><strong>${docTitle}</strong> (${gradYear})
+                    ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
                     <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
                     </span>
                     <div class="btn-group">
@@ -722,9 +725,10 @@ async function openTrainModal(id) {
         let html = '<ul class="list-group mb-3">';
         if(train.length) {
             train.forEach(t => {
+                const docLink = t.digitalCopyLink || t.link;
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
                     <span><strong>${t.title}</strong> (${t.hours} hours)
-                    ${t.link ? `<br><a href="${t.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
+                    ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
                     <br><span class="badge ${t.status === 'QUALIFIED' ? 'bg-success' : t.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${t.status || 'PENDING'}</span>
                     </span>
                     <div class="btn-group">
@@ -771,9 +775,10 @@ async function openExpModal(id) {
         let html = '<ul class="list-group mb-3">';
         if(exp.length) {
             exp.forEach(e => {
+                const docLink = e.digitalCopyLink || e.link;
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
                     <span><strong>${e.details}</strong> (${e.years} years)
-                    ${e.link ? `<br><a href="${e.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
+                    ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
                     <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
                     </span>
                     <div class="btn-group">
@@ -820,9 +825,11 @@ async function openEligModal(id) {
         let html = '<ul class="list-group mb-3">';
         if(elig.length) {
             elig.forEach(e => {
+                const docTitle = e.details || e.title;
+                const docLink = e.digitalCopyLink || e.link;
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${e.title}</strong> (${e.rating})
-                    ${e.link ? `<br><a href="${e.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
+                    <span><strong>${docTitle}</strong> (${e.rating})
+                    ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
                     <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
                     </span>
                     <div class="btn-group">
@@ -889,8 +896,9 @@ async function openSummaryModal(id, name) {
             if(!items || !items.length) return `<li class="list-group-item text-muted small">No ${typeName} records.</li>`;
             return items.map(item => {
                 const badgeClass = item.status === 'QUALIFIED' ? 'bg-success' : item.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark';
+                const docTitle = item.degree || item.title || item.details;
                 return `<li class="list-group-item d-flex justify-content-between align-items-center small">
-                    <span>${item.title || item.details}</span>
+                    <span>${docTitle}</span>
                     <span class="badge ${badgeClass}">${item.status || 'PENDING'}</span>
                 </li>`;
             }).join('');

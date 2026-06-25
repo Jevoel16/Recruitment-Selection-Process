@@ -21,22 +21,77 @@ app.get('/', (req, res) => {
 });
 
 app.get('/apply/:type', (req, res) => {
-    res.render('application', { layout: 'layout', type: req.params.type });
+    res.render('application', { 
+        layout: 'layout', 
+        type: req.params.type,
+        position: req.query.position,
+        positionCategory: req.query.positionCategory,
+        district: req.query.district,
+        category: req.query.category
+    });
 });
 
 app.post('/api/apply', async (req, res) => {
     const conn = await db.getConnection();
     try {
         await conn.beginTransaction();
-        const { type, first_name, middle_name, last_name, name_extension, tracking_number } = req.body;
+        const { 
+            type, first_name, middle_name, last_name, name_extension, tracking_number, 
+            position, positionCategory, district, category,
+            address, age, sex, civil_status, religion, disability, ethnic_group,
+            email_address, contact_no, pds_link 
+        } = req.body;
         const name = `${first_name} ${middle_name} ${last_name} ${name_extension || ''}`.trim();
-        const applicationCode = tracking_number || `APP-${Date.now()}`;
         
+        let positionCode = 'POS';
+        switch(position) {
+            case 'Teacher I': positionCode = 'T1'; break;
+            case 'Teacher II': positionCode = 'T2'; break;
+            case 'Teacher III': positionCode = 'T3'; break;
+            case 'Master Teacher I': positionCode = 'MT1'; break;
+            case 'Master Teacher II': positionCode = 'MT2'; break;
+            case 'Principal I': positionCode = 'P1'; break;
+            case 'Principal II': positionCode = 'P2'; break;
+            case 'Head Teacher I': positionCode = 'HT1'; break;
+            case 'Head Teacher III': positionCode = 'HT3'; break;
+            case 'Education Program Supervisor': positionCode = 'EPS'; break;
+            case 'Administrative Officer II': positionCode = 'AO2'; break;
+            case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
+            case 'Administrative Assistant II': positionCode = 'ADAS2'; break;
+            case 'Project Development Officer II': positionCode = 'PDO2'; break;
+        }
+
+        let categoryCode = 'CAT';
+        switch(category) {
+            case 'Elementary': categoryCode = 'ELEM'; break;
+            case 'Junior High School': categoryCode = 'JHS'; break;
+            case 'Senior High School': categoryCode = 'SHS'; break;
+            case 'Kindergarten': categoryCode = 'KIND'; break;
+            case 'ALS': categoryCode = 'ALS'; break;
+        }
+
         const [result] = await conn.query(
-            'INSERT INTO applicants (firstName, lastName, middleName, nameExtension, applicationCode, applicationType) VALUES (?, ?, ?, ?, ?, ?)',
-            [first_name, last_name, middle_name, name_extension, applicationCode, type]
+            `INSERT INTO applicants (
+                firstName, lastName, middleName, nameExtension, applicationCode, applicationType,
+                address, age, sex, civilStatus, religion, disability, ethnicGroup,
+                emailAddress, contactNo, pdsLink
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                first_name, last_name, middle_name, name_extension, 'TEMP', type,
+                address, age, sex, civil_status, religion, disability, ethnic_group,
+                email_address, contact_no, pds_link
+            ]
         );
         const applicantId = result.insertId;
+
+        const sy = 'SY20262027'; 
+        const baseCode = `${positionCode}-${sy}-${categoryCode}-${district || 'DIST'}`;
+        const applicationCode = tracking_number || `${baseCode}-${applicantId}`;
+
+        const [cols] = await conn.query("SHOW COLUMNS FROM applicants WHERE Extra LIKE '%auto_increment%'");
+        const pkCol = cols.length > 0 ? cols[0].Field : 'id';
+
+        await conn.query(`UPDATE applicants SET applicationCode = ? WHERE ${pkCol} = ?`, [applicationCode, applicantId]);
 
         const edu = JSON.parse(req.body.education || '[]');
         for (let e of edu) {
