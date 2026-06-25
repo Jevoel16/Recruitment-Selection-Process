@@ -85,6 +85,7 @@ if (addApplicantForm) {
         e.preventDefault();
         const district = document.getElementById('applicantDistrict').value;
         const category = document.getElementById('applicantCategory').value;
+        const position = document.getElementById('applicantPosition').value;
         const firstName = document.getElementById('applicantFirstName').value;
         const lastName = document.getElementById('applicantLastName').value;
         
@@ -92,7 +93,7 @@ if (addApplicantForm) {
             const res = await fetch('/api/applicants', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, district, category })
+                body: JSON.stringify({ firstName, lastName, district, category, position })
             });
             if (res.ok) window.location.reload();
         } catch (err) {

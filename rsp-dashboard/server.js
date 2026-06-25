@@ -188,34 +188,46 @@ async function syncAssignmentRequirementStatus(id) {
 // Add new applicant
 app.post('/api/applicants', async (req, res) => {
     try {
-        const { firstName, lastName, district, category } = req.body;
+        const { firstName, lastName, district, category, position } = req.body;
         
-        // Find highest increment for this district & category
-        const prefix = `${district}-${category}-`;
-        const [rows] = await db.query(
-            "SELECT applicationCode FROM applicants WHERE applicationCode LIKE ?", 
-            [`${prefix}%`]
+        let positionCode = 'POS';
+        switch(position) {
+            case 'Teacher I': positionCode = 'T1'; break;
+            case 'Teacher II': positionCode = 'T2'; break;
+            case 'Teacher III': positionCode = 'T3'; break;
+            case 'Master Teacher I': positionCode = 'MT1'; break;
+            case 'Master Teacher II': positionCode = 'MT2'; break;
+            case 'Principal I': positionCode = 'P1'; break;
+            case 'Principal II': positionCode = 'P2'; break;
+            case 'Head Teacher I': positionCode = 'HT1'; break;
+            case 'Head Teacher III': positionCode = 'HT3'; break;
+            case 'Education Program Supervisor': positionCode = 'EPS'; break;
+            case 'Administrative Officer II': positionCode = 'AO2'; break;
+            case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
+            case 'Administrative Assistant II': positionCode = 'ADAS2'; break;
+            case 'Project Development Officer II': positionCode = 'PDO2'; break;
+        }
+
+        let categoryCode = category; // Dashboard UI will send ELEM, JHS, SHS, KIND, ALS
+
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        let startYear = currentYear;
+        if (currentMonth < 6) startYear = currentYear - 1;
+        const sy = `SY${startYear}${startYear + 1}`;
+
+        const baseCode = `${positionCode}-${sy}-${categoryCode}-${district || 'DIST'}`;
+
+        const [result] = await db.query(
+            'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+            [firstName, lastName, '', 'Walk-in', district, category, position, 'TEMP']
         );
         
-        let maxIncrement = 0;
-        rows.forEach(row => {
-            if (row.applicationCode) {
-                const parts = row.applicationCode.split('-');
-                if (parts.length === 3) {
-                    const num = parseInt(parts[2], 10);
-                    if (!isNaN(num) && num > maxIncrement) {
-                        maxIncrement = num;
-                    }
-                }
-            }
-        });
+        const applicantId = result.insertId;
+        const newCode = `${baseCode}-${applicantId}`;
         
-        const newCode = `${prefix}${maxIncrement + 1}`;
-        
-        await db.query(
-            'INSERT INTO applicants (firstName, lastName, district, category, applicationCode) VALUES (?, ?, ?, ?, ?)', 
-            [firstName, lastName, district, category, newCode]
-        );
+        await db.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
+
         console.log(`[ENTRY] New Application Created: ${newCode} (${firstName} ${lastName})`);
         res.json({ success: true, applicationCode: newCode });
     } catch (error) {

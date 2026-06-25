@@ -39,8 +39,8 @@ async function seed() {
 
         const applicationTypes = ['Internal Application', 'External Application'];
         const districts = ['N1', 'N2', 'N3', 'W1', 'W2', 'W3', 'E1', 'E2', 'S1', 'S2'];
-        const categories = ['ELEM', 'HIGH', 'SENHIGH', 'UNIV', 'KINDER'];
-        const categoryCounts = {};
+        const categories = ['ELEM', 'JHS', 'SHS', 'KIND', 'ALS'];
+        const positions = ['Teacher I', 'Teacher II', 'Teacher III', 'Master Teacher I', 'Principal I', 'Administrative Officer II', 'Project Development Officer II'];
         
         const generateFirstName = () => firstNames[Math.floor(Math.random() * firstNames.length)];
         const generateMiddleName = () => middleNames[Math.floor(Math.random() * middleNames.length)];
@@ -49,12 +49,12 @@ async function seed() {
         const generateTracking = () => {
             const district = districts[Math.floor(Math.random() * districts.length)];
             const category = categories[Math.floor(Math.random() * categories.length)];
-            const key = `${district}-${category}`;
-            categoryCounts[key] = (categoryCounts[key] || 0) + 1;
+            const position = positions[Math.floor(Math.random() * positions.length)];
             return {
-                code: `${key}-${categoryCounts[key]}`,
+                code: 'TEMP',
                 district,
-                category
+                category,
+                position
             };
         };
         // Generates an interview date 1 to 2 weeks away, strictly Monday to Thursday
@@ -72,7 +72,7 @@ async function seed() {
         };
 
         const insertQuery = `INSERT INTO applicants 
-            (firstName, middleName, lastName, applicationType, applicationCode, district, category, status, interviewScore, interviewDate, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo) 
+            (firstName, middleName, lastName, applicationType, applicationCode, district, category, position, status, interviewScore, interviewDate, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo) 
             VALUES ?`;
         const values = [];
 
@@ -89,7 +89,7 @@ async function seed() {
             const lName = generateLastName();
             const applicationType = applicationTypes[Math.floor(Math.random() * applicationTypes.length)];
             const tracking = generateTracking();
-            return [fName, mName, lName, applicationType, tracking.code, tracking.district, tracking.category, status, score, date, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact];
+            return [fName, mName, lName, applicationType, tracking.code, tracking.district, tracking.category, tracking.position, status, score, date, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact];
         };
 
         // 10 PENDING (Step 1)
@@ -118,8 +118,42 @@ async function seed() {
         const [result] = await connection.query(insertQuery, [values]);
         console.log(`✅ Inserted ${result.affectedRows} mock applicants.`);
         
+        // Generate proper applicationCode for each mock applicant
+        const [insertedApplicants] = await connection.query('SELECT id, position, category, district FROM applicants');
+        
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        let startYear = currentYear;
+        if (currentMonth < 6) startYear = currentYear - 1;
+        const sy = `SY${startYear}${startYear + 1}`;
+
+        console.log('Generating proper application codes based on position, category, and SY...');
+        for (const app of insertedApplicants) {
+            let positionCode = 'POS';
+            switch(app.position) {
+                case 'Teacher I': positionCode = 'T1'; break;
+                case 'Teacher II': positionCode = 'T2'; break;
+                case 'Teacher III': positionCode = 'T3'; break;
+                case 'Master Teacher I': positionCode = 'MT1'; break;
+                case 'Master Teacher II': positionCode = 'MT2'; break;
+                case 'Principal I': positionCode = 'P1'; break;
+                case 'Principal II': positionCode = 'P2'; break;
+                case 'Head Teacher I': positionCode = 'HT1'; break;
+                case 'Head Teacher III': positionCode = 'HT3'; break;
+                case 'Education Program Supervisor': positionCode = 'EPS'; break;
+                case 'Administrative Officer II': positionCode = 'AO2'; break;
+                case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
+                case 'Administrative Assistant II': positionCode = 'ADAS2'; break;
+                case 'Project Development Officer II': positionCode = 'PDO2'; break;
+            }
+            
+            const baseCode = `${positionCode}-${sy}-${app.category}-${app.district || 'DIST'}`;
+            const applicationCode = `${baseCode}-${app.id}`;
+            await connection.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [applicationCode, app.id]);
+        }
+        console.log(`✅ Updated ${insertedApplicants.length} applicant tracking codes.`);
+
         // Seed related tables (5-10 for each applicant)
-        const [insertedApplicants] = await connection.query('SELECT id FROM applicants');
         console.log(`Generating sub-documents for ${insertedApplicants.length} applicants...`);
 
         const eduValues = [];
