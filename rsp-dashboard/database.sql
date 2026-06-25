@@ -4,7 +4,10 @@ USE rsp_db;
 CREATE TABLE IF NOT EXISTS applicants (
     id INT AUTO_INCREMENT PRIMARY KEY,
     firstName VARCHAR(100) NOT NULL,
+    middleName VARCHAR(100) NOT NULL,
     lastName VARCHAR(100) NOT NULL,
+    nameExtension VARCHAR(50) DEFAULT NULL,
+    applicationType VARCHAR(50) NOT NULL,
     applicationCode VARCHAR(50) DEFAULT NULL,
     district VARCHAR(50) DEFAULT NULL,
     category VARCHAR(50) DEFAULT NULL,
@@ -45,9 +48,9 @@ CREATE TABLE IF NOT EXISTS applicants (
 CREATE TABLE IF NOT EXISTS applicant_education (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    year_graduated VARCHAR(50) NOT NULL,
-    link VARCHAR(255) DEFAULT NULL,
+    degree VARCHAR(255) NOT NULL,
+    yearGraduated INT NOT NULL,
+    digitalCopyLink TEXT NOT NULL,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
@@ -57,8 +60,8 @@ CREATE TABLE IF NOT EXISTS applicant_training (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
-    hours VARCHAR(50) NOT NULL,
-    link VARCHAR(255) DEFAULT NULL,
+    hours INT NOT NULL,
+    digitalCopyLink TEXT NOT NULL,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
@@ -68,8 +71,8 @@ CREATE TABLE IF NOT EXISTS applicant_experience (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
     details TEXT NOT NULL,
-    years VARCHAR(50) NOT NULL,
-    link VARCHAR(255) DEFAULT NULL,
+    years INT NOT NULL,
+    digitalCopyLink TEXT NOT NULL,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
@@ -78,9 +81,9 @@ CREATE TABLE IF NOT EXISTS applicant_experience (
 CREATE TABLE IF NOT EXISTS applicant_eligibility (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    rating VARCHAR(50) NOT NULL,
-    link VARCHAR(255) DEFAULT NULL,
+    details TEXT NOT NULL,
+    rating VARCHAR(255) NOT NULL,
+    digitalCopyLink TEXT NOT NULL,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE

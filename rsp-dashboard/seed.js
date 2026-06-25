@@ -33,14 +33,17 @@ async function seed() {
 
         // 3. Generate Mock Data
         const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica'];
+        const middleNames = ['Atticus', 'Winston', 'Byron', 'Gideon', 'Theodore', 'Franklin', 'Lincoln', 'Alistair', 'Graham', 'Harrison', 'Maxwell', 'Oliver', 'Sebastian', 'Vincent', 'Xavier', 'Zachary'];
         const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
         const offices = ['Engineering Dept', 'HR Dept', 'Marketing Office', 'Executive Suite', 'Finance Dept'];
 
+        const applicationTypes = ['Internal Application', 'External Application'];
         const districts = ['N1', 'N2', 'N3', 'W1', 'W2', 'W3', 'E1', 'E2', 'S1', 'S2'];
         const categories = ['ELEM', 'HIGH', 'SENHIGH', 'UNIV', 'KINDER'];
         const categoryCounts = {};
         
         const generateFirstName = () => firstNames[Math.floor(Math.random() * firstNames.length)];
+        const generateMiddleName = () => middleNames[Math.floor(Math.random() * middleNames.length)];
         const generateLastName = () => lastNames[Math.floor(Math.random() * lastNames.length)];
         
         const generateTracking = () => {
@@ -69,7 +72,7 @@ async function seed() {
         };
 
         const insertQuery = `INSERT INTO applicants 
-            (firstName, lastName, applicationCode, district, category, status, interviewScore, interviewDate, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo) 
+            (firstName, middleName, lastName, applicationType, applicationCode, district, category, status, interviewScore, interviewDate, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo) 
             VALUES ?`;
         const values = [];
 
@@ -82,9 +85,11 @@ async function seed() {
         // Helper to push mock row
         const createRow = (status, score, date, office) => {
             const fName = generateFirstName();
+            const mName = generateMiddleName();
             const lName = generateLastName();
+            const applicationType = applicationTypes[Math.floor(Math.random() * applicationTypes.length)];
             const tracking = generateTracking();
-            return [fName, lName, tracking.code, tracking.district, tracking.category, status, score, date, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact];
+            return [fName, mName, lName, applicationType, tracking.code, tracking.district, tracking.category, status, score, date, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact];
         };
 
         // 10 PENDING (Step 1)
@@ -124,13 +129,13 @@ async function seed() {
 
         for (const app of insertedApplicants) {
             const numEdu = Math.floor(Math.random() * 6) + 5; // 5 to 10
-            for(let i=0; i<numEdu; i++) eduValues.push([app.id, `Degree ${i+1}`, `201${i}`, 'https://example.com/edu']);
+            for(let i=0; i<numEdu; i++) eduValues.push([app.id, `Degree ${i+1}`, 2010+i, 'https://example.com/edu']);
 
             const numTrain = Math.floor(Math.random() * 6) + 5;
-            for(let i=0; i<numTrain; i++) trainValues.push([app.id, `Training ${i+1}`, `${(i+1)*10}`, 'https://example.com/train']);
+            for(let i=0; i<numTrain; i++) trainValues.push([app.id, `Training ${i+1}`, (i+1)*10, 'https://example.com/train']);
 
             const numExp = Math.floor(Math.random() * 6) + 5;
-            for(let i=0; i<numExp; i++) expValues.push([app.id, `Role at Company ${i+1}`, `${i+1}`, 'https://example.com/exp']);
+            for(let i=0; i<numExp; i++) expValues.push([app.id, `Role at Company ${i+1}`, i+1, 'https://example.com/exp']);
 
             const numElig = Math.floor(Math.random() * 6) + 5;
             for(let i=0; i<numElig; i++) eligValues.push([app.id, `Eligibility ${i+1}`, `${80+i}%`, 'https://example.com/elig']);
@@ -145,10 +150,10 @@ async function seed() {
             }
         };
 
-        await insertChunks('INSERT INTO applicant_education (applicant_id, title, year_graduated, link) VALUES ?', eduValues);
-        await insertChunks('INSERT INTO applicant_training (applicant_id, title, hours, link) VALUES ?', trainValues);
-        await insertChunks('INSERT INTO applicant_experience (applicant_id, details, years, link) VALUES ?', expValues);
-        await insertChunks('INSERT INTO applicant_eligibility (applicant_id, title, rating, link) VALUES ?', eligValues);
+        await insertChunks('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES ?', eduValues);
+        await insertChunks('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES ?', trainValues);
+        await insertChunks('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES ?', expValues);
+        await insertChunks('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES ?', eligValues);
 
         console.log('✅ Inserted related records (Education, Training, Experience, Eligibility) for all applicants.');
         
