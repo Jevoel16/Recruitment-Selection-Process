@@ -77,7 +77,7 @@ app.get('/:step/:page', async (req, res, next) => {
         },
         'step2': {
             conditions: "status = 'WAITING_FOR_ASSESSMENT'",
-            orderBy: "interviewDate ASC"
+            orderBy: "createdAt ASC"
         },
         'step3': {
             conditions: "status = 'ASSESSED'",
@@ -188,7 +188,7 @@ async function syncAssignmentRequirementStatus(id) {
 // Add new applicant
 app.post('/api/applicants', async (req, res) => {
     try {
-        const { firstName, lastName, district, category, position } = req.body;
+        const { firstName, lastName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position } = req.body;
         
         let positionCode = 'POS';
         switch(position) {
@@ -206,30 +206,29 @@ app.post('/api/applicants', async (req, res) => {
             case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
             case 'Administrative Assistant II': positionCode = 'ADAS2'; break;
             case 'Project Development Officer II': positionCode = 'PDO2'; break;
+            case 'Administrative Aide VI': positionCode = 'ADA6'; break;
+            case 'Administrative Aide V': positionCode = 'ADA5'; break;
+            case 'Administrative Aide IV': positionCode = 'ADA4'; break;
+            case 'Administrative Aide III': positionCode = 'ADA3'; break;
+            case 'Administrative Aide II': positionCode = 'ADA2'; break;
+            case 'Administrative Aide I': positionCode = 'ADA1'; break;
         }
 
-        let categoryCode = category; // Dashboard UI will send ELEM, JHS, SHS, KIND, ALS
-
         const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth() + 1;
-        let startYear = currentYear;
-        if (currentMonth < 6) startYear = currentYear - 1;
-        const sy = `SY${startYear}${startYear + 1}`;
-
-        const baseCode = `${positionCode}-${sy}-${categoryCode}-${district || 'DIST'}`;
+        const sy = currentYear;
 
         const [result] = await db.query(
-            'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
-            [firstName, lastName, '', 'Walk-in', district, category, position, 'TEMP']
+            'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            [firstName, lastName, '', 'Walk-in', null, category || null, position || null, 'TEMP', address || null, age || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
         );
         
         const applicantId = result.insertId;
-        const newCode = `${baseCode}-${applicantId}`;
+        const newCode = `${positionCode}-${sy}-${applicantId}`;
         
         await db.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
 
         console.log(`[ENTRY] New Application Created: ${newCode} (${firstName} ${lastName})`);
-        res.json({ success: true, applicationCode: newCode });
+        res.json({ success: true, applicationCode: newCode, id: applicantId });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, error: error.message });
@@ -264,9 +263,8 @@ app.post('/api/applicants/:id/disqualify', async (req, res) => {
 app.post('/api/applicants/:id/qualify', async (req, res) => {
     try {
         const { id } = req.params;
-        const { interviewDate } = req.body;
-        await db.query(`UPDATE applicants SET status = 'WAITING_FOR_ASSESSMENT', interviewDate = ? WHERE id = ?`, [interviewDate, id]);
-        console.log(`[STATUS] Applicant ID ${id} qualified to Step 2. Interview scheduled for ${interviewDate}`);
+        await db.query(`UPDATE applicants SET status = 'WAITING_FOR_ASSESSMENT' WHERE id = ?`, [id]);
+        console.log(`[STATUS] Applicant ID ${id} qualified to Step 2.`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

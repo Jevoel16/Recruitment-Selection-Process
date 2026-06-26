@@ -56,46 +56,86 @@ function syncRequirementsSummary(applicant) {
 }
 
 
-// Wizard Navigation
-function nextWizardStep(step) {
-    if (step === 1) {
-        if (!document.getElementById('applicantDistrict').value) return alert('Please select a district.');
-        document.getElementById('wizardStep1').classList.add('d-none');
-        document.getElementById('wizardStep2').classList.remove('d-none');
-    } else if (step === 2) {
-        if (!document.getElementById('applicantCategory').value) return alert('Please select a category.');
-        document.getElementById('wizardStep2').classList.add('d-none');
-        document.getElementById('wizardStep3').classList.remove('d-none');
+// Wizard Transition Helper
+window.transitionModal = function(currentModalId, nextModalFn, id) {
+    bootstrap.Modal.getInstance(document.getElementById(currentModalId)).hide();
+    if (nextModalFn) {
+        window[nextModalFn](id, true);
+    } else {
+        window.location.reload();
     }
-}
+};
 
-function prevWizardStep(step) {
-    if (step === 2) {
-        document.getElementById('wizardStep2').classList.add('d-none');
-        document.getElementById('wizardStep1').classList.remove('d-none');
-    } else if (step === 3) {
-        document.getElementById('wizardStep3').classList.add('d-none');
-        document.getElementById('wizardStep2').classList.remove('d-none');
-    }
-}
+// Wizard logic for categories & positions
+const positionsByCategory = {
+    'Teaching': ['Teacher I', 'Teacher II', 'Teacher III', 'Master Teacher I', 'Master Teacher II'],
+    'Related Teaching': ['Education Program Supervisor'],
+    'School Administration': ['Principal I', 'Principal II', 'Head Teacher I', 'Head Teacher III'],
+    'Non-Teaching': ['Administrative Officer II', 'Administrative Assistant III', 'Administrative Assistant II', 'Project Development Officer II', 'Administrative Aide VI', 'Administrative Aide V', 'Administrative Aide IV', 'Administrative Aide III', 'Administrative Aide II', 'Administrative Aide I']
+};
+
+let currentWizardCategory = '';
+
+window.selectCategory = function(cat) {
+    currentWizardCategory = cat;
+    document.getElementById('categorySelection').classList.add('d-none');
+    document.getElementById('positionSelection').classList.remove('d-none');
+    document.getElementById('selectedCategoryTitle').innerText = `${cat} Positions`;
+    
+    const list = document.getElementById('positionList');
+    list.innerHTML = '';
+    positionsByCategory[cat].forEach(pos => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'list-group-item list-group-item-action py-3';
+        btn.innerText = pos;
+        btn.onclick = () => selectPosition(cat, pos);
+        list.appendChild(btn);
+    });
+};
+
+window.backToCategories = function() {
+    document.getElementById('positionSelection').classList.add('d-none');
+    document.getElementById('categorySelection').classList.remove('d-none');
+};
+
+window.backToPositions = function() {
+    document.getElementById('wizardStep1').classList.add('d-none');
+    document.getElementById('wizardStep0').classList.remove('d-none');
+};
+
+window.selectPosition = function(cat, pos) {
+    document.getElementById('wizardCategory').value = cat;
+    document.getElementById('wizardPosition').value = pos;
+    document.getElementById('wizardStep0').classList.add('d-none');
+    document.getElementById('wizardStep1').classList.remove('d-none');
+};
+
+document.getElementById('addApplicantModal')?.addEventListener('show.bs.modal', () => {
+    document.getElementById('wizardStep0').classList.remove('d-none');
+    document.getElementById('categorySelection').classList.remove('d-none');
+    document.getElementById('positionSelection').classList.add('d-none');
+    document.getElementById('wizardStep1').classList.add('d-none');
+    document.getElementById('addApplicantForm').reset();
+});
 
 // Add Applicant via Wizard
 if (addApplicantForm) {
     addApplicantForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const district = document.getElementById('applicantDistrict').value;
-        const category = document.getElementById('applicantCategory').value;
-        const position = document.getElementById('applicantPosition').value;
-        const firstName = document.getElementById('applicantFirstName').value;
-        const lastName = document.getElementById('applicantLastName').value;
+        const formData = new FormData(e.target);
+        const body = Object.fromEntries(formData.entries());
         
         try {
             const res = await fetch('/api/applicants', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, district, category, position })
+                body: JSON.stringify(body)
             });
-            if (res.ok) window.location.reload();
+            if (res.ok) {
+                const data = await res.json();
+                transitionModal('addApplicantModal', 'openEduModal', data.id);
+            }
         } catch (err) {
             console.error(err);
             alert('Error adding applicant');
@@ -116,8 +156,6 @@ async function deleteApplicant(id) {
 function openQualifyModal(id, name) {
     document.getElementById('qualifyId').value = id;
     document.getElementById('qualifyName').innerText = name;
-    // Set default date to today
-    document.getElementById('interviewDate').value = new Date().toISOString().split('T')[0];
     new bootstrap.Modal(document.getElementById('qualifyModal')).show();
 }
 
@@ -126,13 +164,11 @@ if (qualifyForm) {
     qualifyForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('qualifyId').value;
-        const interviewDate = document.getElementById('interviewDate').value;
         
         try {
             const res = await fetch(`/api/applicants/${id}/qualify`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ interviewDate })
+                headers: { 'Content-Type': 'application/json' }
             });
             if (res.ok) window.location.reload();
         } catch (err) {
@@ -667,7 +703,7 @@ async function openInfoModal(id) {
     } catch (err) { alert(err.message); }
 }
 
-async function openEduModal(id) {
+async function openEduModal(id, isWizard = false) {
     try {
         const data = await fetchDetails(id);
         const edu = data.education;
@@ -701,6 +737,9 @@ async function openEduModal(id) {
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Education</button>
             </form>
         `;
+        if (isWizard) {
+            html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-primary" onclick="transitionModal('eduModal', 'openTrainModal', ${id})">Next: Training <i class="bi bi-arrow-right"></i></button></div>`;
+        }
         document.getElementById('eduModalBody').innerHTML = html;
         
         document.getElementById(`addEdu-${id}`).addEventListener('submit', async (e) => {
@@ -711,7 +750,7 @@ async function openEduModal(id) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title: e.target.title.value, year_graduated: e.target.year_graduated.value, link: e.target.link.value })
                 });
-                if(res.ok) openEduModal(id);
+                if(res.ok) openEduModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
         
@@ -719,7 +758,7 @@ async function openEduModal(id) {
     } catch (err) { alert(err.message); }
 }
 
-async function openTrainModal(id) {
+async function openTrainModal(id, isWizard = false) {
     try {
         const data = await fetchDetails(id);
         const train = data.training;
@@ -751,6 +790,9 @@ async function openTrainModal(id) {
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Training</button>
             </form>
         `;
+        if (isWizard) {
+            html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-primary" onclick="transitionModal('trainModal', 'openExpModal', ${id})">Next: Experience <i class="bi bi-arrow-right"></i></button></div>`;
+        }
         document.getElementById('trainModalBody').innerHTML = html;
         
         document.getElementById(`addTrain-${id}`).addEventListener('submit', async (e) => {
@@ -761,7 +803,7 @@ async function openTrainModal(id) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title: e.target.title.value, hours: e.target.hours.value, link: e.target.link.value })
                 });
-                if(res.ok) openTrainModal(id);
+                if(res.ok) openTrainModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
         
@@ -769,7 +811,7 @@ async function openTrainModal(id) {
     } catch (err) { alert(err.message); }
 }
 
-async function openExpModal(id) {
+async function openExpModal(id, isWizard = false) {
     try {
         const data = await fetchDetails(id);
         const exp = data.experience;
@@ -801,6 +843,9 @@ async function openExpModal(id) {
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
             </form>
         `;
+        if (isWizard) {
+            html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-primary" onclick="transitionModal('expModal', 'openEligModal', ${id})">Next: Eligibility <i class="bi bi-arrow-right"></i></button></div>`;
+        }
         document.getElementById('expModalBody').innerHTML = html;
         
         document.getElementById(`addExp-${id}`).addEventListener('submit', async (e) => {
@@ -811,7 +856,7 @@ async function openExpModal(id) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ details: e.target.details.value, years: e.target.years.value, link: e.target.link.value })
                 });
-                if(res.ok) openExpModal(id);
+                if(res.ok) openExpModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
         
@@ -819,7 +864,7 @@ async function openExpModal(id) {
     } catch (err) { alert(err.message); }
 }
 
-async function openEligModal(id) {
+async function openEligModal(id, isWizard = false) {
     try {
         const data = await fetchDetails(id);
         const elig = data.eligibility;
@@ -852,6 +897,9 @@ async function openEligModal(id) {
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Eligibility</button>
             </form>
         `;
+        if (isWizard) {
+            html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-success" onclick="window.location.reload()">Finish Wizard <i class="bi bi-check-circle"></i></button></div>`;
+        }
         document.getElementById('eligModalBody').innerHTML = html;
         
         document.getElementById(`addElig-${id}`).addEventListener('submit', async (e) => {
@@ -862,7 +910,7 @@ async function openEligModal(id) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title: e.target.title.value, rating: e.target.rating.value, link: e.target.link.value })
                 });
-                if(res.ok) openEligModal(id);
+                if(res.ok) openEligModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
         
@@ -926,7 +974,6 @@ async function openSummaryModal(id, name) {
             </div>
         `;
         document.getElementById('summaryDetails').innerHTML = html;
-        document.getElementById('summaryInterviewDate').value = new Date().toISOString().split('T')[0];
         
         bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).show();
     } catch(err) { console.error(err); }
@@ -937,16 +984,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sumQualifyBtn) {
         sumQualifyBtn.addEventListener('click', async () => {
             const id = document.getElementById('summaryApplicantId').value;
-            const interviewDate = document.getElementById('summaryInterviewDate').value;
-            if(!interviewDate) return alert('Please provide an interview date.');
-            try {
-                const res = await fetch(`/api/applicants/${id}/qualify`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ interviewDate })
-                });
-                if(res.ok) window.location.reload();
-            } catch(err) { console.error(err); }
+            const name = document.getElementById('summaryApplicantName').innerText;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).hide();
+            openQualifyModal(id, name);
         });
     }
 
