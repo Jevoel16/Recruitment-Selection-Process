@@ -357,3 +357,10 @@ body {
     margin-top: 0;
     margin-bottom: 1rem;
 }
+/* Floating Standard Box */
+.standard-floating-box { display: none; }
+@media (min-width: 992px) { .modal-dialog-with-standard { display: flex; flex-direction: row; align-items: flex-start; max-width: 80vw !important; margin: 1.75rem auto; justify-content: space-between; gap: 1rem; }
+.modal-dialog-with-standard .modal-content { flex: 0 0 78%; width: 78%; }
+.standard-floating-box { position: sticky; top: 1.75rem; flex: 0 0 20%; width: 20%; align-self: flex-start; z-index: 1050; } }
+@media (max-width: 991px) { .standard-floating-box { position: static; margin-top: 1rem; width: 100%; }
+.modal-dialog-with-standard { display: flex; flex-direction: column; } }

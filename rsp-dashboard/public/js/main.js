@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // DOM Elements
-const addApplicantForm = document.getElementById('addApplicantForm');
 const qualifyForm = document.getElementById('qualifyForm');
 const scoreForm = document.getElementById('scoreForm');
 
@@ -56,92 +55,7 @@ function syncRequirementsSummary(applicant) {
 }
 
 
-// Wizard Transition Helper
-window.transitionModal = function(currentModalId, nextModalFn, id) {
-    bootstrap.Modal.getInstance(document.getElementById(currentModalId)).hide();
-    if (nextModalFn) {
-        window[nextModalFn](id, true);
-    } else {
-        window.location.reload();
-    }
-};
-
-// Wizard logic for categories & positions
-const positionsByCategory = {
-    'Teaching': ['Teacher I', 'Teacher II', 'Teacher III', 'Master Teacher I', 'Master Teacher II'],
-    'Related Teaching': ['Education Program Supervisor'],
-    'School Administration': ['Principal I', 'Principal II', 'Head Teacher I', 'Head Teacher III'],
-    'Non-Teaching': ['Administrative Officer II', 'Administrative Assistant III', 'Administrative Assistant II', 'Project Development Officer II', 'Administrative Aide VI', 'Administrative Aide V', 'Administrative Aide IV', 'Administrative Aide III', 'Administrative Aide II', 'Administrative Aide I']
-};
-
-let currentWizardCategory = '';
-
-window.selectCategory = function(cat) {
-    currentWizardCategory = cat;
-    document.getElementById('categorySelection').classList.add('d-none');
-    document.getElementById('positionSelection').classList.remove('d-none');
-    document.getElementById('selectedCategoryTitle').innerText = `${cat} Positions`;
-    
-    const list = document.getElementById('positionList');
-    list.innerHTML = '';
-    positionsByCategory[cat].forEach(pos => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'list-group-item list-group-item-action py-3';
-        btn.innerText = pos;
-        btn.onclick = () => selectPosition(cat, pos);
-        list.appendChild(btn);
-    });
-};
-
-window.backToCategories = function() {
-    document.getElementById('positionSelection').classList.add('d-none');
-    document.getElementById('categorySelection').classList.remove('d-none');
-};
-
-window.backToPositions = function() {
-    document.getElementById('wizardStep1').classList.add('d-none');
-    document.getElementById('wizardStep0').classList.remove('d-none');
-};
-
-window.selectPosition = function(cat, pos) {
-    document.getElementById('wizardCategory').value = cat;
-    document.getElementById('wizardPosition').value = pos;
-    document.getElementById('wizardStep0').classList.add('d-none');
-    document.getElementById('wizardStep1').classList.remove('d-none');
-};
-
-document.getElementById('addApplicantModal')?.addEventListener('show.bs.modal', () => {
-    document.getElementById('wizardStep0').classList.remove('d-none');
-    document.getElementById('categorySelection').classList.remove('d-none');
-    document.getElementById('positionSelection').classList.add('d-none');
-    document.getElementById('wizardStep1').classList.add('d-none');
-    document.getElementById('addApplicantForm').reset();
-});
-
-// Add Applicant via Wizard
-if (addApplicantForm) {
-    addApplicantForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const body = Object.fromEntries(formData.entries());
-        
-        try {
-            const res = await fetch('/api/applicants', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            if (res.ok) {
-                const data = await res.json();
-                transitionModal('addApplicantModal', 'openEduModal', data.id);
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error adding applicant');
-        }
-    });
-}
+// Wizard logic has been extracted to applicantWizard.js
 
 // Delete entire Applicant
 async function deleteApplicant(id) {
@@ -224,235 +138,7 @@ if (scoreForm) {
     });
 }
 
-// Generate PDF Letter using jsPDF directly (vector rendering matching scan template)
-const loadImageForPDF = (src) => new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-});
-
-async function printLetter(name, office, dateStr, category, applicationCode) {
-    const { jsPDF } = window.jspdf || window;
-    if (!jsPDF) {
-        alert('jsPDF library failed to load. Please try again.');
-        return;
-    }
-
-    const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-    });
-
-    // Helper function for inline rich text rendering (handles <b> tags for key values)
-    function drawRichText(doc, text, startX, startY, maxWidth, lineHeight, firstLineIndent = 0) {
-        const parts = text.split(/(<\/b>|<b>)/);
-        let currentX = startX + firstLineIndent;
-        let currentY = startY;
-        let isBold = false;
-        
-        const rightMargin = startX + maxWidth;
-        
-        parts.forEach(part => {
-            if (part === '<b>') {
-                isBold = true;
-                doc.setFont("Times", "bold");
-            } else if (part === '</b>') {
-                isBold = false;
-                doc.setFont("Times", "normal");
-            } else {
-                const words = part.split(' ');
-                words.forEach((word, index) => {
-                    if (word === '' && index > 0) return;
-                    
-                    const wordToDraw = word + (index < words.length - 1 ? ' ' : '');
-                    const wordWidth = doc.getTextWidth(wordToDraw);
-                    
-                    if (currentX + wordWidth > rightMargin) {
-                        currentX = startX;
-                        currentY += lineHeight;
-                    }
-                    
-                    doc.text(wordToDraw, currentX, currentY);
-                    currentX += wordWidth;
-                });
-            }
-        });
-        
-        return currentY + lineHeight;
-    }
-
-    // Format Date using the current date
-    const d = new Date();
-    const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-    // Map applicant category to professional rank titles
-    let rankTitle = 'Teacher I';
-
-    // Parse order number from application code sequence suffix
-    let orderNum = "007";
-    if (applicationCode) {
-        const parts = applicationCode.split('-');
-        if (parts.length > 0) {
-            const num = parseInt(parts[parts.length - 1], 10);
-            if (!isNaN(num)) {
-                orderNum = String(num).padStart(3, '0');
-            }
-        }
-    }
-
-    // Fetch and register Canterbury custom font from server `/fonts/Canterbury.ttf`
-    let hasCustomFont = false;
-    try {
-        const fontRes = await fetch('/fonts/Canterbury.ttf');
-        if (fontRes.ok) {
-            const arrayBuffer = await fontRes.arrayBuffer();
-            let binary = '';
-            const bytes = new Uint8Array(arrayBuffer);
-            for (let i = 0; i < bytes.byteLength; i++) {
-                binary += String.fromCharCode(bytes[i]);
-            }
-            const base64Font = btoa(binary);
-            doc.addFileToVFS('Canterbury.ttf', base64Font);
-            doc.addFont('Canterbury.ttf', 'Canterbury', 'normal');
-            hasCustomFont = true;
-        }
-    } catch (err) {
-        console.error('Failed to load Canterbury font, using standard font as fallback:', err);
-    }
-
-    // Draw Seals Placement Outlines
-    doc.setDrawColor(220, 220, 220);
-    doc.setLineWidth(0.2);
-    const seal1 = await loadImageForPDF('/images/logos/DepEd Seal.png');
-    if (seal1) doc.addImage(seal1, "PNG", 92.5, 2.5, 25, 15);
-
-    // Top Header Text using Canterbury custom font
-    if (hasCustomFont) {
-        doc.setFont("Canterbury", "normal");
-        doc.setFontSize(11); // adjust scale slightly for gothic type
-    } else {
-        doc.setFont("Times", "normal");
-        doc.setFontSize(11);
-    }
-    doc.setTextColor(0);
-    doc.text("Republic of the Philippines", 105, 23, { align: "center" });
-    
-    if (hasCustomFont) {
-        doc.setFont("Canterbury", "normal");
-        doc.setFontSize(16); // Gothic department title is larger and elegant
-    } else {
-        doc.setFont("Times", "bold");
-        doc.setFontSize(16);
-    }
-    doc.text("Department of Education", 105, 28, { align: "center" });
-    
-    doc.setFont("Times", "normal");
-    doc.setFontSize(11);
-    doc.text("Region X-Northern Mindanao", 105, 32, { align: "center" });
-    
-    doc.setFont("Times", "normal");
-    doc.setFontSize(11);
-    doc.text("SCHOOLS DIVISION OF ILIGAN CITY", 105, 36, { align: "center" });
-
-    // Divider Lines under schools division
-    // ASSIGNMENT ORDER Box Headers
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.8);
-    doc.line(20, 38, 190, 38);
-
-    doc.setFont("Times", "bold");
-    doc.setFontSize(20);
-    doc.text("ASSIGNMENT ORDER", 105, 44, { align: "center" });
-    
-    doc.setLineWidth(0.8);
-    doc.line(20, 46, 190, 46);
-
-    doc.setFont("Times", "bold");
-    doc.setFontSize(12);
-    doc.text(`No. ${orderNum}, s. 2026`, 105, 54, { align: "center" });
-
-    // Date (Right-aligned)
-    doc.setFont("Times", "normal");
-    doc.text(formattedDate, 190, 69, { align: "right" });
-
-    // Recipient TO Section
-    doc.setFont("Times", "bold");
-    doc.text("TO:", 20, 79);
-    doc.text(name.toUpperCase(), 50, 79);
-    doc.text(rankTitle, 50, 83);
-
-    // Salutation
-    doc.setFont("Times", "normal");
-    const salutation = `Warm greetings!`;
-    let currentY = drawRichText(doc, salutation, 20, 104, 170, 5, 10);
-
-    currentY += 10;
-    // Body Paragraph 1 (with bold Suarez National High School and effective Date)
-    const body1 = `By virtue of an appointment duly issued by this Office, information is hereby given of your school assignment at <b>${office}</b>, Iligan City, effective this <b>${formattedDate}</b>. Thus, you shall report directly to the School Head/School Principal of the said school for further instruction.`;
-    currentY = drawRichText(doc, body1, 20, currentY, 170, 5, 10);
-
-    // Body Paragraph 2
-    currentY += 7.5;
-    const body2 = `Moreover, you are directed to submit the DBM-CSC Form No. 1, "Position Description Form" for the attestation of appointment to this Office thru Personnel Section within three (3) days from receipt hereof.`;
-    currentY = drawRichText(doc, body2, 20, currentY, 170, 5, 10);
-
-    // Body Paragraph 3
-    currentY += 7.5;
-    const body3 = "Compliance is enjoined.";
-    currentY = drawRichText(doc, body3, 20, currentY, 170, 5, 10);
-
-    // Superintendent Signature Block
-    currentY += 25;
-    doc.setFont("Times", "bold");
-    doc.setFontSize(11);
-    doc.text("JONATHAN S. DELA PEÑA, PhD, CESO V", 150, currentY + 15, { align: "center" });
-    doc.setFont("Times", "normal");
-    doc.text("Schools Division Superintendent", 150, currentY + 20, { align: "center" });
-
-    // Carbon Copy (cc) section
-    doc.setFontSize(9);
-    doc.text("cc:", 20, currentY + 35);
-    doc.setFont("Times", "bold");
-    doc.text("LEONARDA LUNA ARAZO", 30, currentY + 35);
-    doc.setFont("Times", "normal");
-    doc.text("School Principal I", 30, currentY + 40);
-    
-    // Footer section
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.line(20, 272, 190, 272);
-
-    const seal2 = await loadImageForPDF('/images/logos/DepEd Logo.png');
-    const seal3 = await loadImageForPDF('/images/logos/bagong-pilipinas-seeklogo.png');
-    const seal4 = await loadImageForPDF('/images/logos/Deped Division of Iligan City.png');
-    
-    if (seal2) doc.addImage(seal2, "PNG", 22.5, 277.5, 22.5, 12.5);
-    if (seal3) doc.addImage(seal3, "PNG", 56.5, 274.5, 17.5, 17.5);
-    if (seal4) doc.addImage(seal4, "PNG", 85, 274.5, 17.5, 17.5);
-
-    doc.setFontSize(7.5);
-    doc.setTextColor(100);
-    doc.setFont("Times", "bold");
-    doc.text("Address:", 110, 277, { align: "left" });
-    doc.setFont("Times", "normal");
-    doc.text("Gen. Aguinaldo St., Iligan City", 121, 277, { align: "left" });
-    doc.setFont("Times", "bold");
-    doc.text("Email Address:", 110, 281, { align: "left" });
-    doc.setFont("Times", "normal");
-    doc.text("iligan.city@deped.gov.ph", 128, 281, { align: "left" });
-    doc.setFont("Times", "bold");
-    doc.text("Website:", 110, 285, { align: "left" });
-    doc.setFont("Times", "normal");
-    doc.text("www.iligan.deped10.com", 121, 285, { align: "left" });
-
-    doc.setFontSize(6.5);
-    doc.text("Doc. Ref. Code: DEPED-ILIGAN-AO-2026   |   Rev: 00   |   Page 1 of 1", 110, 290, { align: "left" });
-
-    // Save and download PDF
-    doc.save(`${name.replace(/\s+/g, '_')}_assignment_order.pdf`);
-}
+// PDF Generation has been extracted to pdfGenerator.js
 
 
 // ==========================================
@@ -586,11 +272,11 @@ async function openRequirementsModal(id, skipFetch = false) {
         `;
 
         syncRequirementsSummary(app);
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('requirementsModal')).show();
-    } catch (err) {
-        console.error(err);
-        alert('Failed to load requirements.');
-    }
+        const reqModal = document.getElementById('requirementsModal');
+        if (!reqModal.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(reqModal).show();
+        }
+    } catch (error) { console.error(error); alert('Failed to fetch applicant data'); }
 }
 
 async function fetchDetails(id) {
@@ -667,15 +353,12 @@ async function openInfoModal(id) {
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Contact No</label>
-                        <input type="text" class="form-control" name="contactNo" value="${app.contactNo || ''}">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Personal Data Sheet (PDS) Link</label>
-                        <input type="url" class="form-control" name="pdsLink" value="${app.pdsLink || ''}" placeholder="https://...">
-                        ${app.pdsLink ? `<a href="${app.pdsLink}" target="_blank" class="text-primary text-decoration-none small mt-1 d-block"><i class="bi bi-link-45deg"></i> View Current PDS</a>` : ''}
+                        <input type="text" class="form-control" name="contactNo" value="${app.contactNo || ''}" placeholder="Contact">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 mt-4">Save Information</button>
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-2"></i> Save Changes</button>
+                </div>
             </form>
         `;
         
@@ -699,25 +382,68 @@ async function openInfoModal(id) {
             } catch(err) { console.error(err); }
         });
         
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('infoModal')).show();
-    } catch (err) { alert(err.message); }
+        const iModal = document.getElementById('infoModal');
+        if (!iModal.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(iModal).show();
+        }
+    } catch (error) {
+        alert(error.message); }
+}
+
+function setFloatingStandard(modalId, text) {
+    const modalEl = document.getElementById(modalId);
+    if (!modalEl) return;
+    const dialog = modalEl.querySelector('.modal-dialog');
+    
+    let floatBox = dialog.querySelector('.standard-floating-box');
+    if (!floatBox) {
+        floatBox = document.createElement('div');
+        floatBox.className = 'standard-floating-box bg-white p-3 rounded-4 shadow border border-info';
+        dialog.appendChild(floatBox);
+    }
+    
+    if (text) {
+        dialog.classList.add('modal-dialog-with-standard');
+        floatBox.innerHTML = `<h6 class="text-info fw-bold mb-2"><i class="bi bi-info-circle-fill me-2"></i> Standard Required</h6><p class="mb-0 small text-dark">${text}</p>`;
+        floatBox.style.display = 'block';
+    } else {
+        dialog.classList.remove('modal-dialog-with-standard');
+        floatBox.style.display = 'none';
+    }
+}
+
+async function setHighestDegree(applicantId, eduId) {
+    try {
+        const res = await fetch(`/api/applicants/${applicantId}/education/${eduId}/highest`, { method: 'POST' });
+        if (!res.ok) alert('Failed to set highest degree.');
+    } catch(err) { console.error(err); }
 }
 
 async function openEduModal(id, isWizard = false) {
     try {
+        document.getElementById('eduModalTitle').innerText = isWizard ? 'New Applicant Wizard - Education Records' : 'Education Records';
         const data = await fetchDetails(id);
         const edu = data.education;
+        
+        setFloatingStandard('eduModal', data.positionStandards ? data.positionStandards.qsEducation : null);
+        
         let html = '<ul class="list-group mb-3">';
         if(edu.length) {
             edu.forEach(e => {
                 const docTitle = e.degree || e.title;
                 const gradYear = e.yearGraduated || e.year_graduated;
                 const docLink = e.digitalCopyLink || e.link;
+                const isHighest = e.is_highest ? 'checked' : '';
+                const radioHtml = edu.length > 1 ? `<div class="form-check m-0 me-3"><input class="form-check-input" type="radio" name="highestDegree" value="${e.id}" ${isHighest} onchange="setHighestDegree(${id}, ${e.id})" title="Set as highest degree"></div>` : '';
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${docTitle}</strong> (${gradYear})
-                    ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
-                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
-                    </span>
+                    <div class="d-flex align-items-center">
+                        ${radioHtml}
+                        <span>
+                            <strong>${docTitle}</strong> (${gradYear})
+                            ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
+                            <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                        </span>
+                    </div>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
@@ -733,7 +459,6 @@ async function openEduModal(id, isWizard = false) {
                     <input type="text" class="form-control" name="title" placeholder="Degree / School" style="flex: 4;" required>
                     <input type="text" class="form-control" name="year_graduated" placeholder="Year" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Education</button>
             </form>
         `;
@@ -748,20 +473,26 @@ async function openEduModal(id, isWizard = false) {
                 const res = await fetch(`/api/applicants/${id}/education`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: e.target.title.value, year_graduated: e.target.year_graduated.value, link: e.target.link.value })
+                    body: JSON.stringify({ title: e.target.title.value, year_graduated: e.target.year_graduated.value })
                 });
                 if(res.ok) openEduModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
-        
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('eduModal')).show();
+        const eModal = document.getElementById('eduModal');
+        if (!eModal.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(eModal).show();
+        }
     } catch (err) { alert(err.message); }
 }
 
 async function openTrainModal(id, isWizard = false) {
     try {
+        document.getElementById('trainModalTitle').innerText = isWizard ? 'New Applicant Wizard - Training Seminars' : 'Training Seminars';
         const data = await fetchDetails(id);
         const train = data.training;
+        
+        setFloatingStandard('trainModal', data.positionStandards ? data.positionStandards.qsTraining : null);
+        
         let html = '<ul class="list-group mb-3">';
         if(train.length) {
             train.forEach(t => {
@@ -786,7 +517,6 @@ async function openTrainModal(id, isWizard = false) {
                     <input type="text" class="form-control" name="title" placeholder="Title" style="flex: 4;" required>
                     <input type="number" class="form-control" name="hours" placeholder="Hrs" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Training</button>
             </form>
         `;
@@ -801,20 +531,26 @@ async function openTrainModal(id, isWizard = false) {
                 const res = await fetch(`/api/applicants/${id}/training`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: e.target.title.value, hours: e.target.hours.value, link: e.target.link.value })
+                    body: JSON.stringify({ title: e.target.title.value, hours: e.target.hours.value })
                 });
                 if(res.ok) openTrainModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
-        
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('trainModal')).show();
+        const tModal = document.getElementById('trainModal');
+        if (!tModal.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(tModal).show();
+        }
     } catch (err) { alert(err.message); }
 }
 
 async function openExpModal(id, isWizard = false) {
     try {
+        document.getElementById('expModalTitle').innerText = isWizard ? 'New Applicant Wizard - Work Experience' : 'Work Experience';
         const data = await fetchDetails(id);
         const exp = data.experience;
+        
+        setFloatingStandard('expModal', data.positionStandards ? data.positionStandards.qsExperience : null);
+        
         let html = '<ul class="list-group mb-3">';
         if(exp.length) {
             exp.forEach(e => {
@@ -839,7 +575,6 @@ async function openExpModal(id, isWizard = false) {
                     <input type="text" class="form-control" name="details" placeholder="Details" style="flex: 4;" required>
                     <input type="number" class="form-control" name="years" placeholder="Yrs" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
             </form>
         `;
@@ -854,20 +589,26 @@ async function openExpModal(id, isWizard = false) {
                 const res = await fetch(`/api/applicants/${id}/experience`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ details: e.target.details.value, years: e.target.years.value, link: e.target.link.value })
+                    body: JSON.stringify({ details: e.target.details.value, years: e.target.years.value })
                 });
                 if(res.ok) openExpModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
-        
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('expModal')).show();
+        const expModalEl = document.getElementById('expModal');
+        if (!expModalEl.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(expModalEl).show();
+        }
     } catch (err) { alert(err.message); }
 }
 
 async function openEligModal(id, isWizard = false) {
     try {
+        document.getElementById('eligModalTitle').innerText = isWizard ? 'New Applicant Wizard - Eligibility' : 'Eligibility';
         const data = await fetchDetails(id);
         const elig = data.eligibility;
+        
+        setFloatingStandard('eligModal', data.positionStandards ? data.positionStandards.qsEligibility : null);
+        
         let html = '<ul class="list-group mb-3">';
         if(elig.length) {
             elig.forEach(e => {
@@ -893,7 +634,6 @@ async function openEligModal(id, isWizard = false) {
                     <input type="text" class="form-control" name="title" placeholder="License / Exam" style="flex: 4;" required>
                     <input type="text" class="form-control" name="rating" placeholder="Rating" style="flex: 1;" required>
                 </div>
-                <input type="url" class="form-control w-100 mt-2" name="link" placeholder="Link ">
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Eligibility</button>
             </form>
         `;
@@ -908,13 +648,15 @@ async function openEligModal(id, isWizard = false) {
                 const res = await fetch(`/api/applicants/${id}/eligibility`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: e.target.title.value, rating: e.target.rating.value, link: e.target.link.value })
+                    body: JSON.stringify({ title: e.target.title.value, rating: e.target.rating.value })
                 });
                 if(res.ok) openEligModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
-        
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('eligModal')).show();
+        const eligModalEl = document.getElementById('eligModal');
+        if (!eligModalEl.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(eligModalEl).show();
+        }
     } catch (err) { alert(err.message); }
 }
 
@@ -999,3 +741,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Move modals to body to fix stacking context issues
+document.addEventListener('DOMContentLoaded', function() { document.querySelectorAll('.modal').forEach(function(m) { document.body.appendChild(m); }); });

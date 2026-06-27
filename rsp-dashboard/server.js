@@ -65,7 +65,58 @@ hbs.registerHelper('formatDate', function(date) {
 
 app.get('/', (req, res) => res.redirect('/step1/1'));
 
-app.get('/:step', (req, res) => res.redirect(`/${req.params.step}/1`));
+app.get('/positions', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
+        const groupedPositions = {};
+        for (const row of rows) {
+            if (!groupedPositions[row.category]) groupedPositions[row.category] = [];
+            groupedPositions[row.category].push(row);
+        }
+        res.render('positions', { positionsActive: true, groupedPositions });
+    } catch (e) {
+        console.error(e);
+        res.status(500).send('Error');
+    }
+});
+
+app.get('/positions/:id', async (req, res, next) => {
+    if (isNaN(req.params.id)) return next();
+    try {
+        const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
+        const groupedPositions = {};
+        let selectedPosition = null;
+        for (const row of rows) {
+            if (row.id == req.params.id) selectedPosition = row;
+            if (!groupedPositions[row.category]) groupedPositions[row.category] = [];
+            groupedPositions[row.category].push(row);
+        }
+        res.render('positions', { positionsActive: true, groupedPositions, selectedPosition });
+    } catch (e) {
+        console.error(e);
+        res.status(500).send('Error');
+    }
+});
+
+app.post('/api/positions/update', express.json(), async (req, res) => {
+    try {
+        const { id, vacancyAnnouncement, plantillaItem, salaryGrade, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
+        await db.query(`UPDATE positions SET vacancyAnnouncement=?, plantillaItem=?, salaryGrade=?, qsEducation=?, qsTraining=?, qsExperience=?, qsEligibility=? WHERE id=?`, 
+            [vacancyAnnouncement, plantillaItem, salaryGrade, qsEducation, qsTraining, qsExperience, qsEligibility, id]);
+        res.json({ success: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/:step', (req, res, next) => {
+    if (['step1', 'step2', 'step3', 'step4', 'step5'].includes(req.params.step)) {
+        res.redirect(`/${req.params.step}/1`);
+    } else {
+        next();
+    }
+});
 
 app.get('/:step/:page', async (req, res, next) => {
     const { step } = req.params;
@@ -95,6 +146,7 @@ app.get('/:step/:page', async (req, res, next) => {
 
     if (!stepsConfig[step]) return next();
 
+    const positionFilter = req.query.position || '';
     const page = parseInt(req.params.page) || 1;
     const limit = 10;
     const offset = (page - 1) * limit;
@@ -110,6 +162,11 @@ app.get('/:step/:page', async (req, res, next) => {
         queryParams.push(searchPattern, searchPattern);
     }
 
+    if (positionFilter && step === 'step1') {
+        baseQuery += ` AND position = ?`;
+        queryParams.push(positionFilter);
+    }
+
     try {
         const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
         const totalRecords = countResult[0].total;
@@ -117,13 +174,22 @@ app.get('/:step/:page', async (req, res, next) => {
 
         const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY ${config.orderBy} LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
+        let positionList = [];
+        if (step === 'step1') {
+            const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
+            positionList = positions.map(p => p.position);
+        }
+
         const pagination = [];
         for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                let pUrl = `/${step}/${i}?`;
+                if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
+                if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
                 pagination.push({
                     page: i,
                     isCurrent: i === page,
-                    url: `/${step}/${i}${searchQuery ? '?q=' + encodeURIComponent(searchQuery) : ''}`
+                    url: pUrl.replace(/&$/, '')
                 });
             } else if (i === page - 3 || i === page + 3) {
                 pagination.push({ isEllipsis: true, page: '...' });
@@ -139,6 +205,8 @@ app.get('/:step/:page', async (req, res, next) => {
             currentStep: step,
             [step]: rows,
             searchQuery,
+            positionFilter,
+            positionList,
             pagination: cleanPagination,
             step1Active: step === 'step1',
             step2Active: step === 'step2',
@@ -377,11 +445,23 @@ app.put('/api/applicants/:id/info', async (req, res) => {
 app.post('/api/applicants/:id/education', async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, year_graduated, link } = req.body;
-        await db.query('INSERT INTO applicant_education (applicant_id, title, year_graduated, link) VALUES (?, ?, ?, ?)', [id, title, year_graduated, link]);
+        const { title, year_graduated } = req.body;
+        await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [id, title, year_graduated, '']);
         console.log(`[DOCUMENT] Added education to Applicant ID ${id}: ${title}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// Set Highest Degree
+app.post('/api/applicants/:id/education/:eduId/highest', async (req, res) => {
+    try {
+        const { id, eduId } = req.params;
+        await db.query('UPDATE applicant_education SET is_highest = 0 WHERE applicant_id = ?', [id]);
+        await db.query('UPDATE applicant_education SET is_highest = 1 WHERE id = ? AND applicant_id = ?', [eduId, id]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Delete Education
@@ -395,9 +475,9 @@ app.delete('/api/education/:id', async (req, res) => {
 // Add Training
 app.post('/api/applicants/:id/training', async (req, res) => {
     const { id } = req.params;
-    const { title, hours, link } = req.body;
+    const { title, hours } = req.body;
     try {
-        await db.query('INSERT INTO applicant_training (applicant_id, title, hours, link) VALUES (?, ?, ?, ?)', [id, title, hours, link]);
+        await db.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [id, title, hours, '']);
         console.log(`[DOCUMENT] Added training to Applicant ID ${id}: ${title}`);
         res.json({ success: true });
     } catch (error) {
@@ -417,9 +497,9 @@ app.delete('/api/training/:id', async (req, res) => {
 // Add Experience
 app.post('/api/applicants/:id/experience', async (req, res) => {
     const { id } = req.params;
-    const { details, years, link } = req.body;
+    const { details, years } = req.body;
     try {
-        await db.query('INSERT INTO applicant_experience (applicant_id, details, years, link) VALUES (?, ?, ?, ?)', [id, details, years, link]);
+        await db.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [id, details, years, '']);
         console.log(`[DOCUMENT] Added experience to Applicant ID ${id}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
@@ -437,11 +517,212 @@ app.delete('/api/experience/:id', async (req, res) => {
 app.post('/api/applicants/:id/eligibility', async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, rating, link } = req.body;
-        await db.query('INSERT INTO applicant_eligibility (applicant_id, title, rating, link) VALUES (?, ?, ?, ?)', [id, title, rating, link]);
+        const { title, rating } = req.body;
+        await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [id, title, rating, '']);
         console.log(`[DOCUMENT] Added eligibility to Applicant ID ${id}: ${title}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// Export IER CSV
+app.get('/api/export/ier', async (req, res) => {
+    try {
+        const positionFilter = req.query.position || '';
+        let baseQuery = `FROM applicants WHERE status IN ('PENDING', 'QUALIFIED', 'DISQUALIFIED')`;
+        const queryParams = [];
+
+        if (positionFilter) {
+            baseQuery += ` AND position = ?`;
+            queryParams.push(positionFilter);
+        }
+
+        let posData = null;
+        if (positionFilter) {
+            const [posRows] = await db.query(`SELECT * FROM positions WHERE title = ? LIMIT 1`, [positionFilter]);
+            if (posRows.length > 0) posData = posRows[0];
+        }
+
+        const vAnnounce = posData?.vacancyAnnouncement || '';
+        const pItem = posData?.plantillaItem || '';
+        const sGrade = posData?.salaryGrade || '';
+        const qsEdu = posData?.qsEducation || '';
+        const qsTrain = posData?.qsTraining || '';
+        const qsExp = posData?.qsExperience || '';
+        const qsElig = posData?.qsEligibility || '';
+
+        // Sort numerically by applicant code as requested (treating as number where possible)
+        const [applicants] = await db.query(`SELECT * ${baseQuery} ORDER BY CAST(applicationCode AS UNSIGNED) ASC, applicationCode ASC`, queryParams);
+
+        const escapeHtml = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+        let html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<!--[if gte mso 9]>
+<xml>
+ <x:ExcelWorkbook>
+  <x:ExcelWorksheets>
+   <x:ExcelWorksheet>
+    <x:Name>IER</x:Name>
+    <x:WorksheetOptions>
+     <x:Print>
+      <x:ValidPrinterInfo/>
+      <x:PaperSizeIndex>9</x:PaperSizeIndex>
+      <x:FitWidth>1</x:FitWidth>
+      <x:FitHeight>999</x:FitHeight>
+     </x:Print>
+     <x:FitToPage/>
+    </x:WorksheetOptions>
+   </x:ExcelWorksheet>
+  </x:ExcelWorksheets>
+ </x:ExcelWorkbook>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    mso-page-orientation: landscape;
+    size: 297mm 210mm; /* A4 */
+    margin: 0.5in;
+  }
+  body, table { font-family: 'Times New Roman', serif; font-size: 9pt; }
+  table { border-collapse: collapse; width: 100%; page-break-inside: auto; }
+  tr { page-break-inside: avoid; page-break-after: auto; }
+  .no-border td, .no-border th { border: none !important; text-align: left; vertical-align: top; }
+  .bordered td, .bordered th { border: 1px solid black; text-align: center; vertical-align: middle; padding: 4px; }
+  .title-row td { text-align: center; font-size: 18pt; font-weight: bold; }
+  .annex-row td { text-align: right; font-weight: bold; font-size: 14pt; }
+  .text-bold { font-weight: bold; }
+</style>
+</head>
+<body>
+<table>
+    <tr class="no-border">
+        <td colspan="7"></td>
+        <td colspan="2" style="text-align: right; font-weight: bold; font-size: 14pt;">Annex D</td>
+    </tr>
+    <tr class="no-border">
+        <td colspan="9" style="text-align: center; font-size: 16pt; font-weight: bold;">INITIAL EVALUATION RESULT (IER)</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">Position: <span style="font-weight: bold;">${escapeHtml(positionFilter)}</span></td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">VACANCY ANNOUNCEMENT NO. ${escapeHtml(vAnnounce)}</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">PLANTILLA ITEM/S NUMBER: ${escapeHtml(pItem)}</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">Salary Grade and Monthly Salary: ${escapeHtml(sGrade)}</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">Qualification Standards:</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Education: ${escapeHtml(qsEdu)}</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Training: ${escapeHtml(qsTrain)}</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Experience: ${escapeHtml(qsExp)}</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Eligibility: ${escapeHtml(qsElig)}</td>
+    </tr>
+    <tr class="no-border">
+        <td colspan="9">&nbsp;</td>
+    </tr>
+    <tr class="bordered" style="font-size: 12pt;">
+        <th rowspan="2" style="width: 3%;">No.</th>
+        <th rowspan="2" style="width: 8%;">Application<br>Code</th>
+        <th rowspan="2" style="width: 24%;">Education</th>
+        <th colspan="2" style="width: 28%;">Training</th>
+        <th colspan="2" style="width: 19%;">Experience</th>
+        <th rowspan="2" style="width: 10%;">Eligibility</th>
+        <th rowspan="2" style="width: 8%;">Remarks<br>(Qualified or<br>Disqualified)</th>
+    </tr>
+    <tr class="bordered" style="font-size: 12pt;">
+        <th style="width: 24%;">Title</th>
+        <th style="width: 4%;">Hours</th>
+        <th style="width: 15%;">Details</th>
+        <th style="width: 4%;">Years</th>
+    </tr>
+`;
+
+        let count = 1;
+        for (const app of applicants) {
+            const [edu] = await db.query('SELECT * FROM applicant_education WHERE applicant_id = ?', [app.id]);
+            const [train] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [app.id]);
+            const [exp] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [app.id]);
+            const [elig] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [app.id]);
+
+            const eduStr = edu.length ? edu.map(e => escapeHtml(e.degree)).join('<br>') : 'N/A';
+            const trainTitleStr = train.length ? train.map(t => escapeHtml(t.title)).join('<br>') : 'N/A';
+            const trainHoursStr = train.length ? train.map(t => escapeHtml(t.hours)).join('<br>') : '0';
+            const expDetailsStr = exp.length ? exp.map(e => escapeHtml(e.details)).join('<br>') : 'N/A';
+            const expYearsStr = exp.length ? exp.map(e => escapeHtml(e.years)).join('<br>') : '0';
+            const eligStr = elig.length ? elig.map(e => escapeHtml(e.details) + (e.rating ? ' (' + escapeHtml(e.rating) + ')' : '')).join('<br>') : 'NONE';
+            
+            let remarks = app.status === 'QUALIFIED' ? 'QUALIFIED' : (app.status === 'DISQUALIFIED' ? 'DISQUALIFIED' : '');
+            let textColor = remarks === 'DISQUALIFIED' ? 'color: red;' : '';
+
+            html += `
+    <tr class="bordered">
+        <td>${count}</td>
+        <td>${escapeHtml(app.applicationCode)}</td>
+        <td>${eduStr}</td>
+        <td>${trainTitleStr}</td>
+        <td>${trainHoursStr}</td>
+        <td>${expDetailsStr}</td>
+        <td>${expYearsStr}</td>
+        <td>${eligStr}</td>
+        <td style="${textColor}">${escapeHtml(remarks)}</td>
+    </tr>`;
+            count++;
+        }
+
+        html += `
+    <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="7"></td>
+        <td colspan="2" style="text-align: left;">Prepared and certified correct by:</td>
+    </tr>
+    <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="7"></td>
+        <td colspan="2" style="text-align: center; font-weight: bold; text-decoration: underline;">AZOR B. QUIJANO</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="7"></td>
+        <td colspan="2" style="text-align: center;">Administrative Officer IV (Personnel)</td>
+    </tr>
+    <tr class="no-border" style="font-size: 12pt;">
+        <td colspan="7"></td>
+        <td colspan="2" style="text-align: left;">Date: 05/19/2026</td>
+    </tr>
+    <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
+    <tr class="no-border">
+        <td colspan="9" style="font-weight: bold;">Notes and Instructions for the HRMO:</td>
+    </tr>
+    <tr class="no-border">
+        <td colspan="9">a) For the purpose of posting the IER, columns D to M shall be concealed in accordance with RA No. 10163 (Data Privacy Act). The only information that shall be made public are the application codes, qualifications of the applicants in terms of Education, Training, Experience, Eligibility, and Competency (if applicable), and remark on whether Qualified or Disqualified</td>
+    </tr>
+    <tr class="no-border">
+        <td colspan="9">b) If the information does not apply to the applicant, please put N/A.</td>
+    </tr>
+</table>
+</body>
+</html>`;
+
+        res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="IER.xls"');
+        res.send(html);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error generating CSV');
+    }
 });
 
 // Delete Eligibility
@@ -459,17 +740,23 @@ app.get('/api/applicants/:id/details', async (req, res) => {
         const [appRow] = await db.query("SELECT *, CONCAT(firstName, ' ', lastName) AS name FROM applicants WHERE id = ?", [id]);
         if (!appRow.length) return res.status(404).json({ error: 'Not found' });
         
+        const applicant = appRow[0];
         const [edu] = await db.query('SELECT * FROM applicant_education WHERE applicant_id = ?', [id]);
         const [train] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [id]);
         const [exp] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [id]);
         const [elig] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [id]);
         
+        // Fetch the position's qualification standards
+        const [posRow] = await db.query('SELECT * FROM positions WHERE title = ? LIMIT 1', [applicant.position]);
+        const positionStandards = posRow.length > 0 ? posRow[0] : null;
+
         res.json({
-            applicant: appRow[0],
+            applicant: applicant,
             education: edu,
             training: train,
             experience: exp,
-            eligibility: elig
+            eligibility: elig,
+            positionStandards: positionStandards
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

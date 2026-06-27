@@ -1,0 +1,447 @@
+{{> header}}
+
+<div class="glass-panel p-4 mb-0 shadow-sm rounded-4 d-print-none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-semibold">Positions & Standards</h2>
+        <button class="btn btn-primary btn-add-glass" data-bs-toggle="modal" data-bs-target="#addApplicantModal">
+            <i class="bi bi-person-plus-fill me-1"></i> Add Applicant
+        </button>
+    </div>
+    
+    <div class="row">
+        <!-- Categories and Positions List -->
+        <div class="col-md-4 border-end">
+            <h5 class="mb-3 text-muted">Position Categories</h5>
+            <div class="accordion" id="categoryAccordion">
+                {{#each groupedPositions}}
+                <div class="accordion-item bg-transparent border-0 mb-2">
+                    <h2 class="accordion-header" id="heading-{{@index}}">
+                        <button class="accordion-button collapsed glass-panel fw-bold rounded shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{@index}}">
+                            {{@key}}
+                        </button>
+                    </h2>
+                    <div id="collapse-{{@index}}" class="accordion-collapse collapse" data-bs-parent="#categoryAccordion">
+                        <div class="accordion-body p-2">
+                            <div class="list-group list-group-flush">
+                                {{#each this}}
+                                <a href="/positions/{{this.id}}" class="list-group-item list-group-item-action bg-transparent border-0 rounded {{#if (eq this.id ../../selectedPosition.id)}}active text-primary fw-bold{{/if}}">
+                                    <i class="bi bi-chevron-right me-2 text-muted" style="font-size: 0.8rem;"></i> {{this.title}}
+                                </a>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+
+        <!-- Position Standard Form -->
+        <div class="col-md-8 pl-4">
+            {{#if selectedPosition}}
+            <div class="glass-panel p-4 rounded-4 shadow-sm h-100 position-relative">
+                <h4 class="fw-bold mb-4 text-primary"><i class="bi bi-file-earmark-ruled me-2"></i> {{selectedPosition.title}}</h4>
+                
+                <form id="positionForm">
+                    <input type="hidden" name="id" value="{{selectedPosition.id}}">
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Vacancy Announcement No.</label>
+                            <input type="text" class="form-control bg-white bg-opacity-75" name="vacancyAnnouncement" value="{{selectedPosition.vacancyAnnouncement}}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Plantilla Item/s Number</label>
+                            <input type="text" class="form-control bg-white bg-opacity-75" name="plantillaItem" value="{{selectedPosition.plantillaItem}}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Salary Grade and Monthly Salary</label>
+                            <input type="text" class="form-control bg-white bg-opacity-75" name="salaryGrade" value="{{selectedPosition.salaryGrade}}">
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">Qualification Standards</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Education</label>
+                            <textarea class="form-control bg-white bg-opacity-75" name="qsEducation" rows="2">{{selectedPosition.qsEducation}}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Training</label>
+                            <textarea class="form-control bg-white bg-opacity-75" name="qsTraining" rows="2">{{selectedPosition.qsTraining}}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Experience</label>
+                            <textarea class="form-control bg-white bg-opacity-75" name="qsExperience" rows="2">{{selectedPosition.qsExperience}}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Eligibility</label>
+                            <textarea class="form-control bg-white bg-opacity-75" name="qsEligibility" rows="2">{{selectedPosition.qsEligibility}}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm" id="savePositionBtn">
+                            <i class="bi bi-save me-2"></i> Save Standards
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {{else}}
+            <div class="d-flex align-items-center justify-content-center h-100 text-muted flex-column text-center">
+                <i class="bi bi-diagram-3" style="font-size: 5rem; opacity: 0.2;"></i>
+                <h4 class="mt-3">Select a Position</h4>
+                <p>Choose a position from the categories on the left to set its qualification standards.</p>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</div> <!-- End container-fluid -->
+
+<!-- Modals (Hidden from print) -->
+<div class="d-print-none">
+    <!-- Add Applicant Modal -->
+    <div class="modal fade glass-modal" id="addApplicantModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="addApplicantModalTitle">New Applicant Wizard</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addApplicantForm">
+                        <!-- Step 0: Category & Position -->
+                        <div id="wizardStep0">
+                            <h6 class="mb-3 text-center fw-bold">Select Applicant Category</h6>
+                            <div class="row g-3 mb-3" id="categorySelection">
+                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Teaching')">Teaching</button></div>
+                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Related Teaching')">Related Teaching</button></div>
+                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('School Administration')">School Administration</button></div>
+                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Non-Teaching')">Non-Teaching</button></div>
+                            </div>
+                            
+                            <div id="positionSelection" class="d-none">
+                                <div class="d-flex align-items-center mb-3">
+                                    <button type="button" class="btn btn-sm btn-light me-2" onclick="backToCategories()"><i class="bi bi-arrow-left"></i></button>
+                                    <h6 class="mb-0 fw-bold" id="selectedCategoryTitle">Select Position</h6>
+                                </div>
+                                <div class="list-group" id="positionList">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 1: Personal Info -->
+                        <div id="wizardStep1" class="d-none">
+                            <div class="d-flex align-items-center mb-3">
+                                <button type="button" class="btn btn-sm btn-light me-2" onclick="backToPositions()"><i class="bi bi-arrow-left"></i></button>
+                                <h6 class="mb-0 fw-bold text-primary">Personal Information</h6>
+                            </div>
+                            <input type="hidden" name="category" id="wizardCategory">
+                            <input type="hidden" name="position" id="wizardPosition">
+                            <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" name="firstName" required placeholder="e.g. John">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-control" name="lastName" required placeholder="e.g. Doe">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Address</label>
+                                <input type="text" class="form-control" name="address">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Age</label>
+                                <input type="number" class="form-control" name="age">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Sex</label>
+                                <select class="form-select" name="sex">
+                                    <option value="">Select...</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Civil Status</label>
+                                <input type="text" class="form-control" name="civilStatus">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Religion</label>
+                                <input type="text" class="form-control" name="religion">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Disability</label>
+                                <input type="text" class="form-control" name="disability">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Ethnic Group</label>
+                                <input type="text" class="form-control" name="ethnicGroup">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="emailAddress" placeholder="Email">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Contact No.</label>
+                                <input type="text" class="form-control" name="contactNo" placeholder="Contact">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary">Save & Next: Education <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Qualify Modal -->
+    <div class="modal fade glass-modal" id="qualifyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Qualify Applicant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="qualifyForm">
+                        <input type="hidden" id="qualifyId">
+                        <p>Qualifying <strong id="qualifyName" class="text-primary"></strong></p>
+                        <button type="submit" class="btn btn-success w-100">Confirm Qualification</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Modal -->
+    <div class="modal fade glass-modal" id="scoreModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Input Interview Score</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scoreForm">
+                        <input type="hidden" id="scoreId">
+                        <p>Applicant: <strong id="scoreName" class="text-info"></strong></p>
+                        <div class="mb-3">
+                            <label class="form-label">Score (0-100)</label>
+                            <input type="number" class="form-control form-control-lg text-center fw-bold fs-3" id="interviewScore" min="0" max="100" required>
+                        </div>
+                        <button type="submit" class="btn btn-info text-white w-100">Submit Assessment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requirements Modal -->
+    <div class="modal fade glass-modal" id="requirementsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Requirements Checklist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="requirementsModalBody">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Modal -->
+    <div class="modal fade glass-modal" id="assignModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Assign Office / School</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assignForm">
+                        <input type="hidden" id="assignId">
+                        <p>Assigning: <strong id="assignName" class="text-success"></strong></p>
+                        <div class="mb-4">
+                            <label class="form-label">Assigned Office / School</label>
+                            <input type="text" class="form-control" id="assignedOffice" required placeholder="e.g. IT Department">
+                        </div>
+                        <button type="submit" class="btn btn-success text-white w-100">Confirm Assignment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Info Modal -->
+    <div class="modal fade glass-modal" id="infoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Personal Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="infoModalBody">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Education Modal -->
+    <div class="modal fade glass-modal" id="eduModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="eduModalTitle">Education Records</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="eduModalBody">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Modal -->
+    <div class="modal fade glass-modal" id="trainModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="trainModalTitle">Training Seminars</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="trainModalBody">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experience Modal -->
+    <div class="modal fade glass-modal" id="expModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="expModalTitle">Work Experience</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="expModalBody">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Eligibility Modal -->
+    <div class="modal fade glass-modal" id="eligModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="eligModalTitle">Eligibility</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="eligModalBody">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Step 2 Summary Modal -->
+    <div class="modal fade" id="summaryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content glass-modal shadow-lg border-0">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-primary bg-opacity-10 text-primary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-card-checklist"></i> Applicant Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="summaryApplicantId">
+                    <h5 id="summaryApplicantName" class="text-center text-primary fw-bold mb-4"></h5>
+                    
+                    <div id="summaryDetails">
+                        <!-- Populated by main.js -->
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+                    
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="button" class="btn btn-success flex-grow-1 w-50 btn-lg shadow-sm fw-bold" id="summaryQualifyBtn">
+                            <i class="bi bi-check-circle me-1"></i> Qualify (Move to Step 2)
+                        </button>
+                        <button type="button" class="btn btn-warning flex-grow-1 w-50 btn-lg shadow-sm fw-bold text-dark" id="summaryDisqualifyBtn">
+                            <i class="bi bi-x-circle me-1"></i> Disqualify
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </main>
+    </div> <!-- End d-flex wrapper -->
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/applicantWizard.js"></script>
+    <script src="/js/pdfGenerator.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('positionForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('savePositionBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Saving...';
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/positions/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if(result.success) {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    btn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Saved Successfully';
+                    setTimeout(() => {
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-primary');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                } else {
+                    alert('Error saving position standards.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

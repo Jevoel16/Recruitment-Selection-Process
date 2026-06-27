@@ -7,19 +7,31 @@
         {{#if step1Active}}
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="fw-semibold">Initial Evaluation</h2>
-                <button class="btn btn-primary btn-add-glass" data-bs-toggle="modal" data-bs-target="#addApplicantModal">
-                    <i class="bi bi-plus-lg"></i> Add Applicant
-                </button>
             </div>
             <p class="text-muted">Review incoming applicants and verify personal data sheet, birth certificate, and transcript of records.</p>
             
             <div class="mb-3">
-                
-                <form method="GET" action="/step1/1">
-                    <div class="input-group glass-panel">
-                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
-                        <button type="submit" class="d-none"></button>
+                <form method="GET" action="/step1/1" class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group glass-panel h-100">
+                            <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                                <option value="">All Positions (Filter by Salary Grade/Position)</option>
+                                {{#each positionList}}
+                                    <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/api/export/ier{{#if positionFilter}}?position={{positionFilter}}{{/if}}" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i> Download IER
+                        </a>
                     </div>
                 </form>
             </div>
@@ -370,7 +382,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">New Applicant Wizard - Personal Info</h5>
+                    <h5 class="modal-title fw-bold" id="addApplicantModalTitle">New Applicant Wizard</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -447,20 +459,15 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-control" name="emailAddress">
+                                <input type="email" class="form-control" name="emailAddress" placeholder="Email">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Contact No</label>
-                                <input type="text" class="form-control" name="contactNo">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Contact No.</label>
+                                <input type="text" class="form-control" name="contactNo" placeholder="Contact">
                             </div>
-                            <div class="col-md-12">
-                                <label class="form-label">Personal Data Sheet (PDS) Link</label>
-                                <input type="url" class="form-control" name="pdsLink" placeholder="https://...">
-                            </div>
-                            </div>
-                            <div class="d-flex justify-content-end mt-4">
-                                <button type="submit" class="btn btn-primary">Save & Next: Education <i class="bi bi-arrow-right"></i></button>
-                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary">Save & Next: Education <i class="bi bi-arrow-right"></i></button>
                         </div>
                     </form>
                 </div>
@@ -568,7 +575,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">Education Records</h5>
+                    <h5 class="modal-title fw-bold" id="eduModalTitle">Education Records</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="eduModalBody">
@@ -583,7 +590,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">Training Seminars</h5>
+                    <h5 class="modal-title fw-bold" id="trainModalTitle">Training Seminars</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="trainModalBody">
@@ -598,7 +605,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">Work Experience</h5>
+                    <h5 class="modal-title fw-bold" id="expModalTitle">Work Experience</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="expModalBody">
@@ -613,7 +620,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">Eligibility</h5>
+                    <h5 class="modal-title fw-bold" id="eligModalTitle">Eligibility</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="eligModalBody">
@@ -662,7 +669,8 @@
     
     <!-- Bootstrap Bundle with Popper -->
     <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- jsPDF for automatic PDF generation -->
+    <script src="/js/applicantWizard.js"></script>
+    <script src="/js/pdfGenerator.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Custom JS -->
     <script src="/js/main.js"></script>

@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS applicant_education (
     degree VARCHAR(255) NOT NULL,
     yearGraduated INT NOT NULL,
     digitalCopyLink TEXT NOT NULL,
+    is_highest BOOLEAN DEFAULT FALSE,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
