@@ -14,6 +14,17 @@ CREATE TABLE IF NOT EXISTS applicants (
     position VARCHAR(100) DEFAULT NULL,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED', 'WAITING_FOR_ASSESSMENT', 'ASSESSED', 'NO_APPEARANCE', 'WAITING', 'ASSIGNED') DEFAULT 'PENDING',
     interviewScore INT DEFAULT NULL,
+    
+    scoreEducation DECIMAL(5,2) DEFAULT NULL,
+    scoreTraining DECIMAL(5,2) DEFAULT NULL,
+    scoreExperience DECIMAL(5,2) DEFAULT NULL,
+    scorePerformance DECIMAL(5,2) DEFAULT NULL,
+    scoreOutstandingAccomplishments DECIMAL(5,2) DEFAULT NULL,
+    scoreApplicationOfEducation DECIMAL(5,2) DEFAULT NULL,
+    scoreApplicationOfLD DECIMAL(5,2) DEFAULT NULL,
+    scorePotential DECIMAL(5,2) DEFAULT NULL,
+    assessmentTotal DECIMAL(5,2) DEFAULT NULL,
+    assessmentRemarks ENUM('Assessed', 'In-Prog', 'Pending') DEFAULT 'Pending',
 
     assignedOffice VARCHAR(255) DEFAULT NULL,
     

@@ -72,7 +72,7 @@ async function seed() {
         };
 
         const insertQuery = `INSERT INTO applicants 
-            (firstName, middleName, lastName, applicationType, applicationCode, district, category, position, status, interviewScore, interviewDate, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo) 
+            (firstName, middleName, lastName, applicationType, applicationCode, district, category, position, status, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, scoreEducation, scoreTraining, scoreExperience, scorePerformance, scoreOutstandingAccomplishments, scoreApplicationOfEducation, scoreApplicationOfLD, scorePotential, assessmentTotal, assessmentRemarks) 
             VALUES ?`;
         const values = [];
 
@@ -83,35 +83,49 @@ async function seed() {
         const mockContact = '09123456789';
 
         // Helper to push mock row
-        const createRow = (status, score, date, office) => {
+        const createRow = (status, office, isAssessed = false) => {
             const fName = generateFirstName();
             const mName = generateMiddleName();
             const lName = generateLastName();
             const applicationType = applicationTypes[Math.floor(Math.random() * applicationTypes.length)];
             const tracking = generateTracking();
-            return [fName, mName, lName, applicationType, tracking.code, tracking.district, tracking.category, tracking.position, status, score, date, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact];
+            
+            let sEdu=null, sTrain=null, sExp=null, sPerf=null, sOut=null, sAppEdu=null, sAppLD=null, sPot=null, sTotal=null, sRemarks='Pending';
+            
+            if (isAssessed) {
+                sEdu = Math.floor(Math.random() * 5) + 5; // 5-9
+                sTrain = Math.floor(Math.random() * 5) + 5; // 5-9
+                sExp = Math.floor(Math.random() * 5) + 5; // 5-9
+                sPerf = Math.floor(Math.random() * 10) + 10; // 10-19
+                sOut = Math.floor(Math.random() * 5) + 5; // 5-9
+                sAppEdu = Math.floor(Math.random() * 5) + 5; // 5-9
+                sAppLD = Math.floor(Math.random() * 5) + 5; // 5-9
+                sPot = Math.floor(Math.random() * 10) + 5; // 5-14
+                sTotal = sEdu + sTrain + sExp + sPerf + sOut + sAppEdu + sAppLD + sPot;
+                sRemarks = 'Assessed';
+            }
+
+            return [fName, mName, lName, applicationType, tracking.code, tracking.district, tracking.category, tracking.position, status, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact, sEdu, sTrain, sExp, sPerf, sOut, sAppEdu, sAppLD, sPot, sTotal, sRemarks];
         };
 
         // 10 PENDING (Step 1)
         for (let i = 0; i < 501; i++) {
-            values.push(createRow('PENDING', null, null, null));
+            values.push(createRow('PENDING', null, false));
         }
 
         // 10 WAITING_FOR_ASSESSMENT (Step 2)
         for (let i = 0; i < 489; i++) {
-            values.push(createRow('WAITING_FOR_ASSESSMENT', null, generateInterviewDate(), null));
+            values.push(createRow('WAITING_FOR_ASSESSMENT', null, false));
         }
 
         // 10 ASSESSED (Step 3)
         for (let i = 0; i < 523; i++) {
-            const score = Math.floor(Math.random() * 31) + 70; // 70-100
-            values.push(createRow('ASSESSED', score, generateInterviewDate(), null));
+            values.push(createRow('ASSESSED', null, true));
         }
         
         // 5 WAITING (Step 4)
         for (let i = 0; i < 1008; i++) {
-            const score = Math.floor(Math.random() * 31) + 70;
-            values.push(createRow('WAITING', score, generateInterviewDate(), offices[0]));
+            values.push(createRow('WAITING', offices[0], true));
         }
 
         // Execute batch insert

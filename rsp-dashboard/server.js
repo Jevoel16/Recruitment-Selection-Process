@@ -132,7 +132,7 @@ app.get('/:step/:page', async (req, res, next) => {
         },
         'step3': {
             conditions: "status = 'ASSESSED'",
-            orderBy: "interviewScore DESC"
+            orderBy: "assessmentTotal DESC"
         },
         'step4': {
             conditions: "status = 'WAITING'",
@@ -162,7 +162,7 @@ app.get('/:step/:page', async (req, res, next) => {
         queryParams.push(searchPattern, searchPattern);
     }
 
-    if (positionFilter && step === 'step1') {
+    if (positionFilter && (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4')) {
         baseQuery += ` AND position = ?`;
         queryParams.push(positionFilter);
     }
@@ -175,9 +175,56 @@ app.get('/:step/:page', async (req, res, next) => {
         const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY ${config.orderBy} LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
         let positionList = [];
-        if (step === 'step1') {
+        if (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4') {
             const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
             positionList = positions.map(p => p.position);
+        }
+
+        const mappedRows = rows.map(row => {
+            row.scores = {
+                education: row.scoreEducation,
+                training: row.scoreTraining,
+                experience: row.scoreExperience,
+                performance: row.scorePerformance,
+                outstandingAccomplishments: row.scoreOutstandingAccomplishments,
+                applicationOfEducation: row.scoreApplicationOfEducation,
+                applicationOfLD: row.scoreApplicationOfLD,
+                potential: row.scorePotential,
+                total: row.assessmentTotal
+            };
+            return row;
+        });
+
+        if (step === 'step1') {
+            for (let row of mappedRows) {
+                if (row.status !== 'PENDING') {
+                    row.docRemark = row.status === 'QUALIFIED' ? 'Qualified' : 'Disqualified';
+                    continue;
+                }
+                
+                const [docs] = await db.query(`
+                    SELECT status FROM applicant_education WHERE applicant_id = ?
+                    UNION ALL
+                    SELECT status FROM applicant_training WHERE applicant_id = ?
+                    UNION ALL
+                    SELECT status FROM applicant_experience WHERE applicant_id = ?
+                    UNION ALL
+                    SELECT status FROM applicant_eligibility WHERE applicant_id = ?
+                `, [row.id, row.id, row.id, row.id]);
+                
+                if (docs.length === 0) {
+                    row.docRemark = 'Pending';
+                } else {
+                    const pendingCount = docs.filter(d => d.status === 'PENDING' || !d.status).length;
+                    if (pendingCount === docs.length) {
+                        row.docRemark = 'Pending';
+                    } else if (pendingCount === 0) {
+                        row.docRemark = 'Assessed';
+                    } else {
+                        row.docRemark = 'In-Prog';
+                    }
+                }
+            }
         }
 
         const pagination = [];
@@ -203,7 +250,7 @@ app.get('/:step/:page', async (req, res, next) => {
 
         res.render('index', {
             currentStep: step,
-            [step]: rows,
+            [step]: mappedRows,
             searchQuery,
             positionFilter,
             positionList,
@@ -380,11 +427,60 @@ app.post('/api/applicants/:id/requirement', async (req, res) => {
 app.post('/api/applicants/:id/score', async (req, res) => {
     try {
         const { id } = req.params;
-        const { score } = req.body;
-        await db.query(`UPDATE applicants SET interviewScore = ?, status = 'ASSESSED' WHERE id = ?`, [score, id]);
-        console.log(`[ASSESSMENT] Applicant ID ${id} scored ${score} in interview (Step 3)`);
+        await db.query(`UPDATE applicants SET status = 'ASSESSED' WHERE id = ?`, [id]);
+        console.log(`[STATUS] Applicant ID ${id} moved to Step 3 (Assessed)`);
         res.json({ success: true });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/applicants/:id/assess', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            education, training, experience, performance,
+            outstandingAccomplishments, applicationOfEducation,
+            applicationOfLD, potential, isComplete
+        } = req.body;
+
+        const edu = (education !== null && education !== '') ? parseFloat(education) : null;
+        const trn = (training !== null && training !== '') ? parseFloat(training) : null;
+        const exp = (experience !== null && experience !== '') ? parseFloat(experience) : null;
+        const prf = (performance !== null && performance !== '') ? parseFloat(performance) : null;
+        const oac = (outstandingAccomplishments !== null && outstandingAccomplishments !== '') ? parseFloat(outstandingAccomplishments) : null;
+        const aoe = (applicationOfEducation !== null && applicationOfEducation !== '') ? parseFloat(applicationOfEducation) : null;
+        const ald = (applicationOfLD !== null && applicationOfLD !== '') ? parseFloat(applicationOfLD) : null;
+        const pot = (potential !== null && potential !== '') ? parseFloat(potential) : null;
+
+        let total = 0;
+        let anyScore = false;
+        [edu, trn, exp, prf, oac, aoe, ald, pot].forEach(val => {
+            if (val !== null) {
+                total += val;
+                anyScore = true;
+            }
+        });
+        
+        let finalTotal = anyScore ? parseFloat(total.toFixed(2)) : null;
+        
+        let remarks = 'Pending';
+        if (anyScore) {
+            remarks = isComplete ? 'Assessed' : 'In-Prog';
+        }
+
+        await db.query(`
+            UPDATE applicants 
+            SET scoreEducation = ?, scoreTraining = ?, scoreExperience = ?, 
+                scorePerformance = ?, scoreOutstandingAccomplishments = ?, 
+                scoreApplicationOfEducation = ?, scoreApplicationOfLD = ?, 
+                scorePotential = ?, assessmentTotal = ?, assessmentRemarks = ?
+            WHERE id = ?`, 
+            [edu, trn, exp, prf, oac, aoe, ald, pot, finalTotal, remarks, id]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -749,6 +845,18 @@ app.get('/api/applicants/:id/details', async (req, res) => {
         // Fetch the position's qualification standards
         const [posRow] = await db.query('SELECT * FROM positions WHERE title = ? LIMIT 1', [applicant.position]);
         const positionStandards = posRow.length > 0 ? posRow[0] : null;
+
+        applicant.scores = {
+            education: applicant.scoreEducation,
+            training: applicant.scoreTraining,
+            experience: applicant.scoreExperience,
+            performance: applicant.scorePerformance,
+            outstandingAccomplishments: applicant.scoreOutstandingAccomplishments,
+            applicationOfEducation: applicant.scoreApplicationOfEducation,
+            applicationOfLD: applicant.scoreApplicationOfLD,
+            potential: applicant.scorePotential,
+            total: applicant.assessmentTotal
+        };
 
         res.json({
             applicant: applicant,

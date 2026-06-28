@@ -145,10 +145,17 @@ if (scoreForm) {
 // NEW WORKFLOW & MODAL FUNCTIONS
 // ==========================================
 
-async function proceedToRequirements(id) {
+function proceedToRequirements(id, name) {
+    document.getElementById('step3ConfirmApplicantId').value = id;
+    document.getElementById('step3ConfirmApplicantName').innerText = name;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('step3ConfirmModal')).show();
+}
+
+async function confirmProceedToStep4() {
+    const id = document.getElementById('step3ConfirmApplicantId').value;
     try {
         const res = await fetch(`/api/applicants/${id}/proceed-requirements`, { method: 'POST' });
-        if (res.ok) window.location.reload();
+        if(res.ok) window.location.reload();
     } catch(err) { console.error(err); }
 }
 
@@ -419,8 +426,11 @@ async function setHighestDegree(applicantId, eduId) {
     } catch(err) { console.error(err); }
 }
 
+window.currentDocApplicantId = null;
+
 async function openEduModal(id, isWizard = false) {
     try {
+        window.currentDocApplicantId = id;
         document.getElementById('eduModalTitle').innerText = isWizard ? 'New Applicant Wizard - Education Records' : 'Education Records';
         const data = await fetchDetails(id);
         const edu = data.education;
@@ -487,6 +497,7 @@ async function openEduModal(id, isWizard = false) {
 
 async function openTrainModal(id, isWizard = false) {
     try {
+        window.currentDocApplicantId = id;
         document.getElementById('trainModalTitle').innerText = isWizard ? 'New Applicant Wizard - Training Seminars' : 'Training Seminars';
         const data = await fetchDetails(id);
         const train = data.training;
@@ -717,8 +728,241 @@ async function openSummaryModal(id, name) {
         `;
         document.getElementById('summaryDetails').innerHTML = html;
         
+        const checkPending = (items) => {
+            if(!items || !items.length) return false;
+            return items.some(item => !item.status || item.status === 'PENDING');
+        };
+        const hasPending = checkPending(data.education) || checkPending(data.training) || checkPending(data.experience) || checkPending(data.eligibility);
+        
+        const sumQualifyBtn = document.getElementById('summaryQualifyBtn');
+        if (sumQualifyBtn) {
+            sumQualifyBtn.disabled = hasPending;
+            if (hasPending) {
+                sumQualifyBtn.title = "All documents must be evaluated first";
+                sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Assess all docs to Qualify';
+            } else {
+                sumQualifyBtn.title = "";
+                sumQualifyBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Qualify & Move to Step 2';
+            }
+        }
+
         bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).show();
     } catch(err) { console.error(err); }
+}
+
+async function openExpModal(id, isWizard = false) {
+    try {
+        window.currentDocApplicantId = id;
+        document.getElementById('expModalTitle').innerText = isWizard ? 'New Applicant Wizard - Work Experience' : 'Work Experience';
+        const data = await fetchDetails(id);
+        const exp = data.experience;
+        
+        setFloatingStandard('expModal', data.positionStandards ? data.positionStandards.qsExperience : null);
+        
+        let html = '<ul class="list-group mb-3">';
+        if(exp.length) {
+            exp.forEach(e => {
+                const docLink = e.digitalCopyLink || e.link;
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>${e.details}</strong> (${e.years} years)
+                    ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Certificate</a>` : ''}
+                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                    </span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('experience', ${e.id}, ${id}, 'exp')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </li>`;
+            });
+        } else html += '<li class="list-group-item text-muted">No experience records found.</li>';
+        html += '</ul>';
+        html += `
+            <form id="addExp-${id}" class="mb-3">
+                <div class="d-flex gap-2 w-100">
+                    <input type="text" class="form-control" name="details" placeholder="Details" style="flex: 4;" required>
+                    <input type="number" class="form-control" name="years" placeholder="Yrs" style="flex: 1;" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
+            </form>
+        `;
+        if (isWizard) {
+            html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-primary" onclick="transitionModal('expModal', 'openEligModal', ${id})">Next: Eligibility <i class="bi bi-arrow-right"></i></button></div>`;
+        }
+        document.getElementById('expModalBody').innerHTML = html;
+        
+        document.getElementById(`addExp-${id}`).addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch(`/api/applicants/${id}/experience`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ details: e.target.details.value, years: e.target.years.value })
+                });
+                if(res.ok) openExpModal(id, isWizard);
+            } catch(err) { console.error(err); }
+        });
+        const expModalEl = document.getElementById('expModal');
+        if (!expModalEl.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(expModalEl).show();
+        }
+    } catch (err) { alert(err.message); }
+}
+
+async function openEligModal(id, isWizard = false) {
+    try {
+        window.currentDocApplicantId = id;
+        document.getElementById('eligModalTitle').innerText = isWizard ? 'New Applicant Wizard - Eligibility' : 'Eligibility';
+        const data = await fetchDetails(id);
+        const elig = data.eligibility;
+        
+        setFloatingStandard('eligModal', data.positionStandards ? data.positionStandards.qsEligibility : null);
+        
+        let html = '<ul class="list-group mb-3">';
+        if(elig.length) {
+            elig.forEach(e => {
+                const docTitle = e.details || e.title;
+                const docLink = e.digitalCopyLink || e.link;
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>${docTitle}</strong> (${e.rating})
+                    ${docLink ? `<br><a href="${docLink}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : ''}
+                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                    </span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('eligibility', ${e.id}, ${id}, 'elig')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </li>`;
+            });
+        } else html += '<li class="list-group-item text-muted">No eligibility records found.</li>';
+        html += '</ul>';
+        html += `
+            <form id="addElig-${id}" class="mb-3">
+                <div class="d-flex gap-2 w-100">
+                    <input type="text" class="form-control" name="title" placeholder="License / Exam" style="flex: 4;" required>
+                    <input type="text" class="form-control" name="rating" placeholder="Rating" style="flex: 1;" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 mt-2">Add Eligibility</button>
+            </form>
+        `;
+        if (isWizard) {
+            html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-success" onclick="window.location.reload()">Finish Wizard <i class="bi bi-check-circle"></i></button></div>`;
+        }
+        document.getElementById('eligModalBody').innerHTML = html;
+        
+        document.getElementById(`addElig-${id}`).addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch(`/api/applicants/${id}/eligibility`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: e.target.title.value, rating: e.target.rating.value })
+                });
+                if(res.ok) openEligModal(id, isWizard);
+            } catch(err) { console.error(err); }
+        });
+        const eligModalEl = document.getElementById('eligModal');
+        if (!eligModalEl.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(eligModalEl).show();
+        }
+    } catch (err) { alert(err.message); }
+}
+
+async function updateDocStatus(type, applicantId, docId, status) {
+    try {
+        const res = await fetch(`/api/applicants/${applicantId}/${type}/${docId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        if(res.ok) {
+            if(type === 'education') openEduModal(applicantId);
+            else if(type === 'training') openTrainModal(applicantId);
+            else if(type === 'experience') openExpModal(applicantId);
+            else if(type === 'eligibility') openEligModal(applicantId);
+        }
+    } catch(err) { console.error(err); }
+}
+
+async function openSummaryModal(id, name) {
+    try {
+        document.getElementById('summaryApplicantId').value = id;
+        document.getElementById('summaryApplicantName').innerText = name;
+        
+        const data = await fetchDetails(id);
+        
+        const generateList = (items, typeName) => {
+            if(!items || !items.length) return `<li class="list-group-item text-muted small">No ${typeName} records.</li>`;
+            return items.map(item => {
+                const badgeClass = item.status === 'QUALIFIED' ? 'bg-success' : item.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark';
+                const docTitle = item.degree || item.title || item.details;
+                return `<li class="list-group-item d-flex justify-content-between align-items-center small">
+                    <span>${docTitle}</span>
+                    <span class="badge ${badgeClass}">${item.status || 'PENDING'}</span>
+                </li>`;
+            }).join('');
+        };
+        
+        let html = `
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Education</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.education, 'education')}</ul>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Training</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.training, 'training')}</ul>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Experience</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.experience, 'experience')}</ul>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Eligibility</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.eligibility, 'eligibility')}</ul>
+                </div>
+            </div>
+        `;
+        document.getElementById('summaryDetails').innerHTML = html;
+        
+        const checkPending = (items) => {
+            if(!items || !items.length) return false;
+            return items.some(item => !item.status || item.status === 'PENDING');
+        };
+        const hasPending = checkPending(data.education) || checkPending(data.training) || checkPending(data.experience) || checkPending(data.eligibility);
+        
+        const sumQualifyBtn = document.getElementById('summaryQualifyBtn');
+        if (sumQualifyBtn) {
+            sumQualifyBtn.disabled = hasPending;
+            if (hasPending) {
+                sumQualifyBtn.title = "All documents must be evaluated first";
+                sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Assess all docs to Qualify';
+            } else {
+                sumQualifyBtn.title = "";
+                sumQualifyBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Qualify & Move to Step 2';
+            }
+        }
+
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).show();
+    } catch(err) { console.error(err); }
+}
+
+window.disqualifyFromSummary = () => {
+    const id = document.getElementById('summaryApplicantId').value;
+    const name = document.getElementById('summaryApplicantName').innerText;
+    bootstrap.Modal.getInstance(document.getElementById('summaryModal')).hide();
+    
+    document.getElementById('summaryDisqualifyId').value = id;
+    document.getElementById('summaryDisqualifyName').innerText = name;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryDisqualifyModal')).show();
+}
+
+window.confirmSummaryDisqualify = () => {
+    const id = document.getElementById('summaryDisqualifyId').value;
+    fetch(`/api/applicants/${id}/disqualify`, { method: 'POST' })
+        .then(res => res.ok ? window.location.reload() : alert('Error'))
+        .catch(err => console.error(err));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -740,7 +984,336 @@ document.addEventListener('DOMContentLoaded', () => {
             disqualifyApplicant(id);
         });
     }
+
+    const updateRowRemarks = async () => {
+        if (!window.currentDocApplicantId) return;
+        try {
+            const id = window.currentDocApplicantId;
+            const data = await fetchDetails(id);
+            
+            const cell = document.getElementById(`remarks-cell-${id}`);
+            if (cell && data.applicant.status === 'PENDING') {
+                const allDocs = [...(data.education || []), ...(data.training || []), ...(data.experience || []), ...(data.eligibility || [])];
+                
+                if (allDocs.length === 0) {
+                    cell.innerHTML = '<span class="badge bg-warning text-dark">Pending</span>';
+                } else {
+                    const pendingCount = allDocs.filter(d => !d.status || d.status === 'PENDING').length;
+                    if (pendingCount === allDocs.length) {
+                        cell.innerHTML = '<span class="badge bg-warning text-dark">Pending</span>';
+                    } else if (pendingCount === 0) {
+                        cell.innerHTML = '<span class="badge bg-success text-white">Assessed</span>';
+                    } else {
+                        cell.innerHTML = '<span class="badge bg-info text-dark">In-Prog</span>';
+                    }
+                }
+            }
+        } catch(err) { console.error(err); }
+    };
+
+    ['eduModal', 'trainModal', 'expModal', 'eligModal'].forEach(modalId => {
+        const el = document.getElementById(modalId);
+        if (el) {
+            el.addEventListener('hidden.bs.modal', updateRowRemarks);
+        }
+    });
 });
+
+// ==========================================
+// ASSESSMENT & EDUCATION CALCULATOR
+// ==========================================
+
+let currentAssessmentId = null;
+
+async function openAssessmentModal(id, name) {
+    currentAssessmentId = id;
+    document.getElementById('assessmentApplicantId').value = id;
+    document.getElementById('assessmentApplicantName').innerText = name;
+    
+    // Fetch details to get SG and Category if possible
+    try {
+        const data = await fetchDetails(id);
+        const app = data.applicant;
+        
+        const category = app.category || 'Non-Teaching';
+        const sg = app.salaryGrade || '1'; 
+        
+        document.getElementById('assessmentCategory').innerText = category;
+        document.getElementById('assessmentSG').innerText = `${sg}`;
+        
+        // Determine Category Key
+        let categoryKey = 'SG 1-9';
+        const sgNum = parseInt(sg.toString().replace('SG', '').trim()) || 1;
+        if (category.toLowerCase().includes('general services') || sg.toString().toLowerCase().includes('general services')) {
+            categoryKey = 'General';
+        } else if (sgNum === 24) {
+            categoryKey = 'SG 24';
+        } else if ((sgNum >= 10 && sgNum <= 22) || sgNum === 27) {
+            categoryKey = 'SG 10-22';
+        } else {
+            categoryKey = 'SG 1-9';
+        }
+
+        const maxPointsConfig = {
+            'General': { education: 5, training: 5, experience: 20, performance: 10, outstandingAccomplishments: 5, applicationOfEducation: 0, applicationOfLD: 0, potential: 55 },
+            'SG 1-9': { education: 5, training: 5, experience: 20, performance: 20, outstandingAccomplishments: 10, applicationOfEducation: 10, applicationOfLD: 10, potential: 20 },
+            'SG 10-22': { education: 5, training: 10, experience: 15, performance: 20, outstandingAccomplishments: 10, applicationOfEducation: 10, applicationOfLD: 10, potential: 20 },
+            'SG 24': { education: 10, training: 5, experience: 15, performance: 20, outstandingAccomplishments: 10, applicationOfEducation: 10, applicationOfLD: 10, potential: 20 }
+        };
+
+        const maxPoints = maxPointsConfig[categoryKey];
+        const criteriaList = ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'];
+        
+        criteriaList.forEach(key => {
+            const inputEl = document.querySelector(`[name="${key}"]`);
+            const maxEl = document.getElementById(`max-${key}`);
+            if (inputEl) {
+                inputEl.max = maxPoints[key];
+                if (maxPoints[key] === 0) {
+                    inputEl.disabled = true;
+                } else {
+                    inputEl.disabled = false;
+                }
+            }
+            if (maxEl) {
+                maxEl.innerText = maxPoints[key];
+            }
+        });
+
+        // If there are existing scores, populate them
+        if (app.scores && app.scores.total !== null) {
+            document.getElementById('educationInput').value = app.scores.education !== null ? app.scores.education : '';
+            document.querySelector('[name="training"]').value = app.scores.training !== null ? app.scores.training : '';
+            document.querySelector('[name="experience"]').value = app.scores.experience !== null ? app.scores.experience : '';
+            document.querySelector('[name="performance"]').value = app.scores.performance !== null ? app.scores.performance : '';
+            document.querySelector('[name="outstandingAccomplishments"]').value = app.scores.outstandingAccomplishments !== null ? app.scores.outstandingAccomplishments : '';
+            document.querySelector('[name="applicationOfEducation"]').value = app.scores.applicationOfEducation !== null ? app.scores.applicationOfEducation : '';
+            document.querySelector('[name="applicationOfLD"]').value = app.scores.applicationOfLD !== null ? app.scores.applicationOfLD : '';
+            document.querySelector('[name="potential"]').value = app.scores.potential !== null ? app.scores.potential : '';
+        } else {
+            criteriaList.forEach(key => {
+                const inputEl = document.querySelector(`[name="${key}"]`);
+                if (inputEl && !inputEl.disabled) inputEl.value = '';
+                if (inputEl && inputEl.disabled) inputEl.value = 0;
+            });
+        }
+        
+        if (typeof calculateAssessmentTotal === 'function') {
+            calculateAssessmentTotal();
+        }
+    } catch(err) {
+        console.error('Could not fetch details for assessment', err);
+    }
+    
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('assessmentModal')).show();
+}
+
+const assessmentForm = document.getElementById('assessmentForm');
+if (assessmentForm) {
+    assessmentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('assessmentApplicantId').value;
+        const formData = new FormData(assessmentForm);
+        const data = Object.fromEntries(formData.entries());
+        
+        let isComplete = true;
+        const criteriaList = ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'];
+        criteriaList.forEach(key => {
+            const inputEl = document.querySelector(`[name="${key}"]`);
+            if (inputEl && !inputEl.disabled && !data[key]) {
+                isComplete = false;
+            }
+        });
+        
+        data.isComplete = isComplete;
+        
+        try {
+            const res = await fetch(`/api/applicants/${id}/assess`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error saving assessment');
+        }
+    });
+    
+    // Add dynamic calculation for inputs
+    const calculateAssessmentTotal = () => {
+        let total = 0;
+        const criteriaList = ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'];
+        criteriaList.forEach(key => {
+            const inputEl = document.querySelector(`[name="${key}"]`);
+            if (inputEl && !inputEl.disabled) {
+                const val = parseFloat(inputEl.value);
+                if (!isNaN(val)) total += val;
+            }
+        });
+        const totalEl = document.getElementById('assessmentTotalScore');
+        if (totalEl) totalEl.innerText = total > 0 ? parseFloat(total.toFixed(2)) : 0;
+    };
+
+    const assessmentInputs = document.querySelectorAll('#assessmentForm input[type="number"]');
+    assessmentInputs.forEach(input => {
+        input.addEventListener('input', calculateAssessmentTotal);
+    });
+    
+    // Make calculateAssessmentTotal globally available if needed
+    window.calculateAssessmentTotal = calculateAssessmentTotal;
+}
+
+function openEduCalcModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('eduCalcModal')).show();
+    calculateEduPoints();
+}
+
+function calculateEduPoints() {
+    const appLevel = parseInt(document.getElementById('applicantEduLevel').value);
+    const stdLevel = parseInt(document.getElementById('standardEduLevel').value);
+    
+    let finalInc = appLevel - stdLevel;
+    if (finalInc < 0) finalInc = 0;
+    
+    document.getElementById('finalIncrementLevel').innerText = finalInc;
+    
+    const sgText = document.getElementById('assessmentSG').innerText.replace('SG', '').trim();
+    const sgNum = parseInt(sgText);
+    const categoryText = document.getElementById('assessmentCategory').innerText;
+    
+    let categoryKey = 'SG 1-9'; // Default
+    if (categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services')) {
+        categoryKey = 'General';
+    } else if (sgNum === 24) {
+        categoryKey = 'SG 24';
+    } else if ((sgNum >= 10 && sgNum <= 22) || sgNum === 27) {
+        categoryKey = 'SG 10-22';
+    } else {
+        categoryKey = 'SG 1-9';
+    }
+
+    let points = 0;
+    
+    if (categoryKey === 'General') {
+        if (finalInc >= 5) points = 5;
+        else if (finalInc === 4) points = 4;
+        else if (finalInc === 3) points = 3;
+        else if (finalInc === 2) points = 2;
+        else if (finalInc === 1) points = 1;
+        else points = 0;
+    } else if (categoryKey === 'SG 1-9') {
+        if (finalInc >= 10) points = 5;
+        else if (finalInc >= 8) points = 4;
+        else if (finalInc >= 6) points = 3;
+        else if (finalInc >= 4) points = 2;
+        else if (finalInc >= 1) points = 1;
+        else points = 0;
+    } else if (categoryKey === 'SG 10-22') {
+        if (finalInc >= 10) points = 5;
+        else if (finalInc >= 8) points = 4;
+        else if (finalInc >= 6) points = 3;
+        else if (finalInc >= 4) points = 2;
+        else if (finalInc >= 2) points = 1;
+        else points = 0; 
+    } else if (categoryKey === 'SG 24') {
+        if (finalInc >= 10) points = 10;
+        else if (finalInc === 9) points = 8;
+        else if (finalInc === 8) points = 6;
+        else if (finalInc >= 6) points = 4;
+        else if (finalInc >= 4) points = 2;
+        else points = 0;
+    }
+
+    document.getElementById('calculatedEduPoints').innerText = points;
+}
+
+function applyEduPoints() {
+    const points = document.getElementById('calculatedEduPoints').innerText;
+    document.getElementById('educationInput').value = points;
+    bootstrap.Modal.getInstance(document.getElementById('eduCalcModal')).hide();
+}
+
+async function openStep2SummaryModal(id, name, isReadOnly = false) {
+    document.getElementById('step2SummaryApplicantId').value = id;
+    document.getElementById('step2SummaryApplicantName').innerText = name;
+    
+    const submitBtnDiv = document.getElementById('step2SummarySubmitBtnDiv');
+    if (submitBtnDiv) {
+        if (isReadOnly) {
+            submitBtnDiv.classList.add('d-none');
+        } else {
+            submitBtnDiv.classList.remove('d-none');
+        }
+    }
+
+    const detailsDiv = document.getElementById('step2SummaryDetails');
+    detailsDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary"></div></div>';
+    
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('step2SummaryModal')).show();
+
+    try {
+        const data = await fetchDetails(id);
+        const app = data.applicant;
+        
+        let html = `
+            <div class="row g-3">
+                <div class="col-md-6"><strong>Position:</strong> ${app.position || 'N/A'}</div>
+                <div class="col-md-6"><strong>Category:</strong> ${app.category || 'N/A'}</div>
+            </div>
+            <h6 class="mt-4 mb-3 fw-bold text-secondary border-bottom pb-2">Evaluation Assessment Summary</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered mt-2">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Criteria</th>
+                            <th class="text-center">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>a. Education</td><td class="text-center">${app.scores?.education != null ? app.scores.education : '-'}</td></tr>
+                        <tr><td>b. Training</td><td class="text-center">${app.scores?.training != null ? app.scores.training : '-'}</td></tr>
+                        <tr><td>c. Experience</td><td class="text-center">${app.scores?.experience != null ? app.scores.experience : '-'}</td></tr>
+                        <tr><td>d. Performance</td><td class="text-center">${app.scores?.performance != null ? app.scores.performance : '-'}</td></tr>
+                        <tr><td>e. Outstanding Accomplishments</td><td class="text-center">${app.scores?.outstandingAccomplishments != null ? app.scores.outstandingAccomplishments : '-'}</td></tr>
+                        <tr><td>f. Application of Education</td><td class="text-center">${app.scores?.applicationOfEducation != null ? app.scores.applicationOfEducation : '-'}</td></tr>
+                        <tr><td>g. Application of L&D</td><td class="text-center">${app.scores?.applicationOfLD != null ? app.scores.applicationOfLD : '-'}</td></tr>
+                        <tr><td>h. Potential</td><td class="text-center">${app.scores?.potential != null ? app.scores.potential : '-'}</td></tr>
+                        <tr class="table-active fw-bold"><td>Evaluation Assessment Total</td><td class="text-center text-primary fs-5">${app.scores?.total != null ? app.scores.total : '-'}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        detailsDiv.innerHTML = html;
+        
+    } catch (err) {
+        detailsDiv.innerHTML = '<div class="alert alert-danger">Error loading applicant details.</div>';
+    }
+}
+
+const step2SummaryForm = document.getElementById('step2SummaryForm');
+if (step2SummaryForm) {
+    step2SummaryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('step2SummaryApplicantId').value;
+        
+        try {
+            const res = await fetch(`/api/applicants/${id}/score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            if (res.ok) {
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error submitting score');
+        }
+    });
+}
 
 // Move modals to body to fix stacking context issues
 document.addEventListener('DOMContentLoaded', function() { document.querySelectorAll('.modal').forEach(function(m) { document.body.appendChild(m); }); });
