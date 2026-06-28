@@ -13,12 +13,22 @@ A web-based platform to digitize the recruitment selection process.
 - **Step 3:** Comparative Assessments (Leaderboard based on Scores)
 - **Step 4:** Assignment Orders (Generate & Print A4 Assignment Letters)
 
-## Installation
+## Installation & Setup
 1. Clone or download this directory.
 2. Run `npm install` to install dependencies.
-3. Import `database.sql` into your MySQL instance to create the schema and initial data.
-4. Update `.env` file with your MySQL credentials (if not using the default root user without password).
-5. Run the server using `npm start` or `node server.js`.
+3. Update `.env` file with your MySQL credentials (if not using the default root user without password).
+4. For **Development** (loads schema, active positions, and mock applicants), run:
+   ```bash
+   npm run dev
+   ```
+5. For **Production** (clean slate, loads schema and active positions only), run:
+   ```bash
+   npm run prod
+   ```
 
 ## Running Locally
 Access the app at `http://localhost:3000`.
+To simply start the server without rebuilding the database, use:
+```bash
+npm start
+```

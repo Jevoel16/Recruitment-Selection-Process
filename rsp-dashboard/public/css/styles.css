@@ -333,6 +333,12 @@ body {
 .sidebar.collapsed .sidebar-text {
     display: none !important;
 }
+.sidebar.collapsed .sidebar-logo-icon {
+    display: none !important;
+}
+.sidebar.collapsed .sidebar-top-row {
+    justify-content: center !important;
+}
 .sidebar.collapsed .sidebar-icon {
     margin-right: 0 !important;
     font-size: 1.5rem !important;

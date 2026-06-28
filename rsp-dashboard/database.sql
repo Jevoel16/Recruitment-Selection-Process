@@ -101,3 +101,18 @@ CREATE TABLE IF NOT EXISTS applicant_eligibility (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS positions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category VARCHAR(100) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    vacancyAnnouncement TEXT DEFAULT NULL,
+    plantillaItem TEXT DEFAULT NULL,
+    salaryGrade TEXT DEFAULT NULL,
+    qsEducation TEXT DEFAULT NULL,
+    qsTraining TEXT DEFAULT NULL,
+    qsExperience TEXT DEFAULT NULL,
+    qsEligibility TEXT DEFAULT NULL,
+    in_vacancy BOOLEAN DEFAULT FALSE,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

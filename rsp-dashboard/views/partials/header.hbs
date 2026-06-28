@@ -19,21 +19,24 @@
     <div class="d-flex" style="min-height: 100vh;">
         <!-- Sidebar -->
         <nav class="sidebar premium-nav text-white d-flex flex-column p-4 flex-shrink-0 shadow-lg" id="mainSidebar" style="width: 280px; z-index: 1000; transition: width 0.3s ease;">
-            <div class="d-flex justify-content-end mb-4">
-                <button class="btn text-white p-0 border-0" id="sidebarToggle">
+            <div class="d-flex align-items-center justify-content-between mb-4 sidebar-top-row">
+                <a href="/" class="d-flex align-items-center text-white text-decoration-none overflow-hidden" style="white-space: nowrap;">
+                    <i class="bi bi-briefcase-fill text-primary fs-2 me-3 sidebar-icon sidebar-logo-icon"></i>
+                    <span class="fs-4 fw-bold sidebar-text" style="font-size: 1.25rem !important;">RSP</span>
+                </a>
+                <button class="btn text-white p-0 border-0 flex-shrink-0" id="sidebarToggle">
                     <i class="bi bi-list fs-3"></i>
                 </button>
             </div>
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <a href="/" class="d-flex align-items-center text-white text-decoration-none overflow-hidden" style="white-space: nowrap;">
-                    <i class="bi bi-briefcase-fill text-primary fs-2 me-3 sidebar-icon"></i>
-                    <span class="fs-4 fw-bold sidebar-text">RSP Dashboard</span>
-                </a>
-            </div>
             <ul class="nav nav-pills flex-column mb-auto custom-sidebar-tabs gap-2" id="rspTab">
                 <li class="nav-item">
-                    <a href="/positions" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if positionsActive}}active{{/if}}" title="Positions & Standards">
-                        <i class="bi bi-diagram-3 fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Positions & Standards</span>
+                    <a href="/dashboard" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if dashboardActive}}active{{/if}}" title="Dashboard">
+                        <i class="bi bi-speedometer2 fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-2 mt-1">
+                    <a href="/add-applicant" class="nav-link text-white w-100 text-start p-3 rounded-3 shadow-sm btn-add-glass border-0" title="Add Applicant" style="{{#unless addApplicantActive}}background-color: var(--bs-primary);{{else}}background-color: var(--bs-primary-dark);{{/unless}}">
+                        <i class="bi bi-person-plus-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Add Applicant</span>
                     </a>
                 </li>
                 <li class="nav-item">

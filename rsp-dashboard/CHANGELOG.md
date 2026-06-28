@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-28 20:48 (v0.5.0-Alpha+202606282048)
+### ADDED
+- Fully implemented point calculators across all criteria (Education, Training, Experience, Performance, Accomplishments, App. of Education, App. of L&D, Potential) following DepEd Order No. 007 s. 2023 / No. 021 s. 2024.
+- Added comprehensive position database mapping featuring 241 positions categorized by Teaching, Related Teaching, School Administration, and Non-Teaching.
+- Introduced `in_vacancy` tagging to accurately restrict application workflows to active Notice of Vacancy positions.
+- Redesigned the top header sidebar UI into a single-row responsive compact header.
+- Extracted the "Add Applicant" wizard from a floating modal into a seamless, dedicated `/add-applicant` page routing.
+- Established `Dashboard` as the new default root page to organize and filter vacant positions dynamically.
+- Developed automated development (`npm run dev`) and production (`npm run prod`) pipeline scripts with native node-based DB initialization and seeding.
+
+### FIXED
+- Overhauled database setup sequence to prevent UTF-16 encoding errors in PowerShell.
+- Updated nodemon configuration to hot-reload on `.hbs` template modifications.
+
 ## 2026-06-23 11:17 (v0.4.0-Alpha+202606231117)
 ### ADDED
 - Replaced top navbar with a dedicated left sidebar layout.

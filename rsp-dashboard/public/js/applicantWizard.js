@@ -27,10 +27,23 @@ window.transitionModal = function(currentModalId, nextModalFn, id) {
 
 // Wizard logic for categories & positions
 const positionsByCategory = {
-    'Teaching': ['Teacher I', 'Teacher II', 'Teacher III', 'Master Teacher I', 'Master Teacher II'],
-    'Related Teaching': ['Education Program Supervisor'],
-    'School Administration': ['Principal I', 'Principal II', 'Head Teacher I', 'Head Teacher III'],
-    'Non-Teaching': ['Administrative Officer II', 'Administrative Assistant III', 'Administrative Assistant II', 'Project Development Officer II', 'Administrative Aide VI', 'Administrative Aide V', 'Administrative Aide IV', 'Administrative Aide III', 'Administrative Aide II', 'Administrative Aide I']
+    'Related Teaching': [
+        'Education Program Supervisor'
+    ],
+    'School Administration': [
+        'School Principal I'
+    ],
+    'Non-Teaching': [
+        'Administrative Aide I',
+        'Watchman I',
+        'Administrative Officer I',
+        'Administrative Assistant III',
+        'Legal Assistant I',
+        'Project Development Officer I',
+        'Administrative Officer II',
+        'Administrative Officer IV',
+        'Project Development Officer II'
+    ]
 };
 
 let currentWizardCategory = '';

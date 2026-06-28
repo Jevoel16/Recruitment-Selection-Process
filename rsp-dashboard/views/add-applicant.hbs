@@ -1,0 +1,220 @@
+{{> header}}
+
+<div class="glass-panel p-4 mb-0 shadow-sm rounded-4 d-print-none" style="max-width: 800px; margin: 0 auto;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-semibold text-primary" id="addApplicantTitle">New Applicant Wizard</h2>
+    </div>
+    
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <form id="addApplicantForm">
+                <!-- Step 0: Category & Position -->
+                <div id="wizardStep0">
+                    <h6 class="mb-4 text-center fw-bold text-secondary">Select Applicant Category</h6>
+                    <div class="row g-3 mb-3" id="categorySelection">
+                        {{#each groupedPositions}}
+                        <div class="col-sm-6 col-md-6">
+                            <button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold category-btn" data-category="{{this.categoryName}}">
+                                {{this.categoryName}}
+                            </button>
+                        </div>
+                        {{/each}}
+                    </div>
+                    
+                    <div id="positionSelection" class="d-none">
+                        <div class="d-flex align-items-center mb-3">
+                            <button type="button" class="btn btn-sm btn-light me-3 border shadow-sm" onclick="backToCategories()"><i class="bi bi-arrow-left"></i> Back</button>
+                            <h6 class="mb-0 fw-bold text-secondary" id="selectedCategoryTitle">Select Position</h6>
+                        </div>
+                        <div class="list-group list-group-flush border rounded-3" id="positionList">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Personal Info -->
+                <div id="wizardStep1" class="d-none">
+                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                        <button type="button" class="btn btn-sm btn-light me-3 border shadow-sm" onclick="backToPositions()"><i class="bi bi-arrow-left"></i> Back</button>
+                        <div>
+                            <h5 class="mb-0 fw-bold text-primary">Personal Information</h5>
+                            <small class="text-muted" id="selectedPositionText"></small>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="category" id="wizardCategory">
+                    <input type="hidden" name="position" id="wizardPosition">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="firstName" required placeholder="e.g. John">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="lastName" required placeholder="e.g. Doe">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Address</label>
+                            <input type="text" class="form-control" name="address" placeholder="Complete address">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Age</label>
+                            <input type="number" class="form-control" name="age" min="18">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Sex</label>
+                            <select class="form-select" name="sex">
+                                <option value="">Select...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Civil Status</label>
+                            <select class="form-select" name="civilStatus">
+                                <option value="">Select...</option>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Separated">Separated</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Religion</label>
+                            <input type="text" class="form-control" name="religion">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Disability</label>
+                            <input type="text" class="form-control" name="disability" placeholder="N/A if none">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Ethnic Group</label>
+                            <input type="text" class="form-control" name="ethnicGroup">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email Address</label>
+                            <input type="email" class="form-control" name="emailAddress" placeholder="email@example.com">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Contact No.</label>
+                            <input type="text" class="form-control" name="contactNo" placeholder="09XX XXX XXXX">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Save Applicant <i class="bi bi-check-circle ms-2"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Make positions map available to frontend
+    const positionsByCategory = {
+        {{#each groupedPositions}}
+        "{{this.categoryName}}": [
+            {{#each this.positions}}
+            "{{this.title}}",
+            {{/each}}
+        ]{{#unless @last}},{{/unless}}
+        {{/each}}
+    };
+
+    let currentWizardCategory = '';
+
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            selectCategory(e.target.getAttribute('data-category'));
+        });
+    });
+
+    function selectCategory(cat) {
+        currentWizardCategory = cat;
+        document.getElementById('categorySelection').classList.add('d-none');
+        document.getElementById('positionSelection').classList.remove('d-none');
+        document.getElementById('selectedCategoryTitle').innerText = `${cat} Positions`;
+        
+        const list = document.getElementById('positionList');
+        list.innerHTML = '';
+        const positions = positionsByCategory[cat] || [];
+        
+        if (positions.length === 0) {
+            list.innerHTML = '<div class="p-3 text-muted text-center">No active positions in this category.</div>';
+            return;
+        }
+
+        positions.forEach(pos => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center';
+            btn.innerHTML = `<span>${pos}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
+            btn.onclick = () => selectPosition(cat, pos);
+            list.appendChild(btn);
+        });
+    }
+
+    function backToCategories() {
+        document.getElementById('positionSelection').classList.add('d-none');
+        document.getElementById('categorySelection').classList.remove('d-none');
+    }
+
+    function backToPositions() {
+        document.getElementById('addApplicantTitle').innerText = 'New Applicant Wizard';
+        document.getElementById('wizardStep1').classList.add('d-none');
+        document.getElementById('wizardStep0').classList.remove('d-none');
+    }
+
+    function selectPosition(cat, pos) {
+        document.getElementById('wizardCategory').value = cat;
+        document.getElementById('wizardPosition').value = pos;
+        document.getElementById('selectedPositionText').innerText = `${cat} > ${pos}`;
+        document.getElementById('addApplicantTitle').innerText = 'Applicant Information';
+        document.getElementById('wizardStep0').classList.add('d-none');
+        document.getElementById('wizardStep1').classList.remove('d-none');
+    }
+
+    document.getElementById('addApplicantForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+        btn.disabled = true;
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('/api/applicants', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                const responseData = await res.json();
+                // Redirect directly to the new applicant's requirement page in step 1
+                window.location.href = `/step1/1?search=${encodeURIComponent(data.firstName + ' ' + data.lastName)}`;
+            } else {
+                alert('Failed to save applicant');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error(err);
+            alert('An error occurred');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+</script>
+
+{{> modals}}
+</div>
+</div>
+<!-- Bootstrap Bundle with Popper -->
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- Custom Script -->
+<script src="/js/main.js"></script>
+</body>
+</html>

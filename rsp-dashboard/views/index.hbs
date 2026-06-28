@@ -462,10 +462,9 @@
                         <div id="wizardStep0">
                             <h6 class="mb-3 text-center fw-bold">Select Applicant Category</h6>
                             <div class="row g-3 mb-3" id="categorySelection">
-                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Teaching')">Teaching</button></div>
-                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Related Teaching')">Related Teaching</button></div>
-                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('School Administration')">School Administration</button></div>
-                                <div class="col-6"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Non-Teaching')">Non-Teaching</button></div>
+                                <div class="col-12"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Related Teaching')">Related Teaching</button></div>
+                                <div class="col-12"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('School Administration')">School Administration</button></div>
+                                <div class="col-12"><button type="button" class="btn btn-outline-primary w-100 py-3 fw-semibold" onclick="selectCategory('Non-Teaching')">Non-Teaching</button></div>
                             </div>
                             
                             <div id="positionSelection" class="d-none">
@@ -788,38 +787,73 @@
                                         <td class="text-center fw-bold text-muted align-middle" id="max-education">-</td>
                                     </tr>
                                     <tr>
-                                        <td>b. Training</td>
-                                        <td><input type="number" class="form-control" name="training"></td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>b. Training</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openTrainCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="training" id="trainingInput"></td>
                                         <td class="text-center fw-bold text-muted align-middle" id="max-training">-</td>
                                     </tr>
                                     <tr>
-                                        <td>c. Experience</td>
-                                        <td><input type="number" class="form-control" name="experience"></td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>c. Experience</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openExpCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="experience" id="experienceInput"></td>
                                         <td class="text-center fw-bold text-muted align-middle" id="max-experience">-</td>
                                     </tr>
                                     <tr>
-                                        <td>d. Performance</td>
-                                        <td><input type="number" class="form-control" name="performance"></td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>d. Performance</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openPerfCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="performance" id="performanceInput"></td>
                                         <td class="text-center fw-bold text-muted align-middle" id="max-performance">-</td>
                                     </tr>
                                     <tr>
-                                        <td>e. Outstanding Accomplishments</td>
-                                        <td><input type="number" class="form-control" name="outstandingAccomplishments"></td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>e. Outstanding Accomplishments</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openOutAccCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="outstandingAccomplishments" id="outstandingAccomplishmentsInput"></td>
                                         <td class="text-center fw-bold text-muted align-middle" id="max-outstandingAccomplishments">-</td>
                                     </tr>
                                     <tr>
-                                        <td>f. Application of Education</td>
-                                        <td><input type="number" class="form-control" name="applicationOfEducation"></td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>f. Application of Education</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openAppEduCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="applicationOfEducation" id="appEduInput"></td>
                                         <td class="text-center fw-bold text-muted align-middle" id="max-applicationOfEducation">-</td>
                                     </tr>
                                     <tr>
-                                        <td>g. Application of L&D</td>
-                                        <td><input type="number" class="form-control" name="applicationOfLD"></td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>g. Application of L&D</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openAppLNDCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="applicationOfLD" id="appLNDInput"></td>
                                         <td class="text-center fw-bold text-muted align-middle" id="max-applicationOfLD">-</td>
                                     </tr>
                                     <tr>
-                                        <td>h. Potential (Written Test, BEI, Work Sample Test)</td>
-                                        <td><input type="number" class="form-control" name="potential"></td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>h. Potential (Written Test, BEI, Work Sample Test)</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openPotentialCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="potential" id="potentialInput"></td>
                                         <td class="text-center fw-bold text-muted align-middle" id="max-potential">-</td>
                                     </tr>
                                 </tbody>
@@ -946,6 +980,498 @@
         </div>
     </div>
     
+    <!-- Training Calculator Modal -->
+    <div class="modal fade glass-modal" id="trainCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-warning bg-opacity-10 text-warning">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-award-fill"></i> Training Increment Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Applicant's Training Level</label>
+                        <select class="form-select" id="applicantTrainLevel" onchange="calculateTrainPoints()">
+                            <option value="1">Level 1: 0 - <8 hours</option>
+                            <option value="2">Level 2: 8 - <16 hours</option>
+                            <option value="3">Level 3: 16 - <24 hours</option>
+                            <option value="4">Level 4: 24 - <32 hours</option>
+                            <option value="5">Level 5: 32 - <40 hours</option>
+                            <option value="6">Level 6: 40 - <48 hours</option>
+                            <option value="7">Level 7: 48 - <56 hours</option>
+                            <option value="8">Level 8: 56 - <64 hours</option>
+                            <option value="9">Level 9: 64 - <72 hours</option>
+                            <option value="10">Level 10: 72 - <80 hours</option>
+                            <option value="11">Level 11: 80 - <88 hours</option>
+                            <option value="12">Level 12: 88 - <96 hours</option>
+                            <option value="13">Level 13: 96 - <104 hours</option>
+                            <option value="14">Level 14: 104 - <112 hours</option>
+                            <option value="15">Level 15: 112 - <120 hours</option>
+                            <option value="16">Level 16: 120 - <128 hours</option>
+                            <option value="17">Level 17: 128 - <136 hours</option>
+                            <option value="18">Level 18: 136 - <144 hours</option>
+                            <option value="19">Level 19: 144 - <152 hours</option>
+                            <option value="20">Level 20: 152 - <160 hours</option>
+                            <option value="21">Level 21: 160 - <168 hours</option>
+                            <option value="22">Level 22: 168 - <176 hours</option>
+                            <option value="23">Level 23: 176 - <184 hours</option>
+                            <option value="24">Level 24: 184 - <192 hours</option>
+                            <option value="25">Level 25: 192 - <200 hours</option>
+                            <option value="26">Level 26: 200 - <208 hours</option>
+                            <option value="27">Level 27: 208 - <216 hours</option>
+                            <option value="28">Level 28: 216 - <224 hours</option>
+                            <option value="29">Level 29: 224 - <232 hours</option>
+                            <option value="30">Level 30: 232 - <240 hours</option>
+                            <option value="31">Level 31: 240 hours or more</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Position's Standard Requirement</label>
+                        <select class="form-select" id="standardTrainLevel" onchange="calculateTrainPoints()">
+                            <option value="1">Level 1: 0 - <8 hours</option>
+                            <option value="2">Level 2: 8 - <16 hours</option>
+                            <option value="3">Level 3: 16 - <24 hours</option>
+                            <option value="4">Level 4: 24 - <32 hours</option>
+                            <option value="5">Level 5: 32 - <40 hours</option>
+                            <option value="6">Level 6: 40 - <48 hours</option>
+                            <option value="7">Level 7: 48 - <56 hours</option>
+                            <option value="8">Level 8: 56 - <64 hours</option>
+                            <option value="9">Level 9: 64 - <72 hours</option>
+                            <option value="10">Level 10: 72 - <80 hours</option>
+                            <option value="11">Level 11: 80 - <88 hours</option>
+                            <option value="12">Level 12: 88 - <96 hours</option>
+                            <option value="13">Level 13: 96 - <104 hours</option>
+                            <option value="14">Level 14: 104 - <112 hours</option>
+                            <option value="15">Level 15: 112 - <120 hours</option>
+                            <option value="16">Level 16: 120 - <128 hours</option>
+                            <option value="17">Level 17: 128 - <136 hours</option>
+                            <option value="18">Level 18: 136 - <144 hours</option>
+                            <option value="19">Level 19: 144 - <152 hours</option>
+                            <option value="20">Level 20: 152 - <160 hours</option>
+                            <option value="21">Level 21: 160 - <168 hours</option>
+                            <option value="22">Level 22: 168 - <176 hours</option>
+                            <option value="23">Level 23: 176 - <184 hours</option>
+                            <option value="24">Level 24: 184 - <192 hours</option>
+                            <option value="25">Level 25: 192 - <200 hours</option>
+                            <option value="26">Level 26: 200 - <208 hours</option>
+                            <option value="27">Level 27: 208 - <216 hours</option>
+                            <option value="28">Level 28: 216 - <224 hours</option>
+                            <option value="29">Level 29: 224 - <232 hours</option>
+                            <option value="30">Level 30: 232 - <240 hours</option>
+                            <option value="31">Level 31: 240 hours or more</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted fw-bold">Final Increment Level:</span>
+                        <span class="fs-5 fw-bold text-primary" id="finalTrainIncrementLevel">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedTrainPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-warning text-dark w-100 fw-bold shadow-sm" onclick="applyTrainPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experience Calculator Modal -->
+    <div class="modal fade glass-modal" id="expCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-success bg-opacity-10 text-success">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-briefcase-fill"></i> Experience Increment Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Applicant's Experience Level</label>
+                        <select class="form-select" id="applicantExpLevel" onchange="calculateExpPoints()">
+                            <option value="1">Level 1: Less than 6 months</option>
+                            <option value="2">Level 2: 6 months - <1 year</option>
+                            <option value="3">Level 3: 1 year - <1 year 6 months</option>
+                            <option value="4">Level 4: 1 year 6 months - <2 years</option>
+                            <option value="5">Level 5: 2 years - <2 years 6 months</option>
+                            <option value="6">Level 6: 2 years 6 months - <3 years</option>
+                            <option value="7">Level 7: 3 years - <3 years 6 months</option>
+                            <option value="8">Level 8: 3 years 6 months - <4 years</option>
+                            <option value="9">Level 9: 4 years - <4 years 6 months</option>
+                            <option value="10">Level 10: 4 years 6 months - <5 years</option>
+                            <option value="11">Level 11: 5 years - <5 years 6 months</option>
+                            <option value="12">Level 12: 5 years 6 months - <6 years</option>
+                            <option value="13">Level 13: 6 years - <6 years 6 months</option>
+                            <option value="14">Level 14: 6 years 6 months - <7 years</option>
+                            <option value="15">Level 15: 7 years - <7 years 6 months</option>
+                            <option value="16">Level 16: 7 years 6 months - <8 years</option>
+                            <option value="17">Level 17: 8 years - <8 years 6 months</option>
+                            <option value="18">Level 18: 8 years 6 months - <9 years</option>
+                            <option value="19">Level 19: 9 years - <9 years 6 months</option>
+                            <option value="20">Level 20: 9 years 6 months - <10 years</option>
+                            <option value="21">Level 21: 10 years - <10 years 6 months</option>
+                            <option value="22">Level 22: 10 years 6 months - <11 years</option>
+                            <option value="23">Level 23: 11 years - <11 years 6 months</option>
+                            <option value="24">Level 24: 11 years 6 months - <12 years</option>
+                            <option value="25">Level 25: 12 years - <12 years 6 months</option>
+                            <option value="26">Level 26: 12 years 6 months - <13 years</option>
+                            <option value="27">Level 27: 13 years - <13 years 6 months</option>
+                            <option value="28">Level 28: 13 years 6 months - <14 years</option>
+                            <option value="29">Level 29: 14 years - <14 years 6 months</option>
+                            <option value="30">Level 30: 14 years 6 months - <15 years</option>
+                            <option value="31">Level 31: 15 years or more</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Position's Standard Requirement</label>
+                        <select class="form-select" id="standardExpLevel" onchange="calculateExpPoints()">
+                            <option value="1">Level 1: Less than 6 months</option>
+                            <option value="2">Level 2: 6 months - <1 year</option>
+                            <option value="3">Level 3: 1 year - <1 year 6 months</option>
+                            <option value="4">Level 4: 1 year 6 months - <2 years</option>
+                            <option value="5">Level 5: 2 years - <2 years 6 months</option>
+                            <option value="6">Level 6: 2 years 6 months - <3 years</option>
+                            <option value="7">Level 7: 3 years - <3 years 6 months</option>
+                            <option value="8">Level 8: 3 years 6 months - <4 years</option>
+                            <option value="9">Level 9: 4 years - <4 years 6 months</option>
+                            <option value="10">Level 10: 4 years 6 months - <5 years</option>
+                            <option value="11">Level 11: 5 years - <5 years 6 months</option>
+                            <option value="12">Level 12: 5 years 6 months - <6 years</option>
+                            <option value="13">Level 13: 6 years - <6 years 6 months</option>
+                            <option value="14">Level 14: 6 years 6 months - <7 years</option>
+                            <option value="15">Level 15: 7 years - <7 years 6 months</option>
+                            <option value="16">Level 16: 7 years 6 months - <8 years</option>
+                            <option value="17">Level 17: 8 years - <8 years 6 months</option>
+                            <option value="18">Level 18: 8 years 6 months - <9 years</option>
+                            <option value="19">Level 19: 9 years - <9 years 6 months</option>
+                            <option value="20">Level 20: 9 years 6 months - <10 years</option>
+                            <option value="21">Level 21: 10 years - <10 years 6 months</option>
+                            <option value="22">Level 22: 10 years 6 months - <11 years</option>
+                            <option value="23">Level 23: 11 years - <11 years 6 months</option>
+                            <option value="24">Level 24: 11 years 6 months - <12 years</option>
+                            <option value="25">Level 25: 12 years - <12 years 6 months</option>
+                            <option value="26">Level 26: 12 years 6 months - <13 years</option>
+                            <option value="27">Level 27: 13 years - <13 years 6 months</option>
+                            <option value="28">Level 28: 13 years 6 months - <14 years</option>
+                            <option value="29">Level 29: 14 years - <14 years 6 months</option>
+                            <option value="30">Level 30: 14 years 6 months - <15 years</option>
+                            <option value="31">Level 31: 15 years or more</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted fw-bold">Final Increment Level:</span>
+                        <span class="fs-5 fw-bold text-primary" id="finalExpIncrementLevel">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedExpPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success text-white w-100 fw-bold shadow-sm" onclick="applyExpPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance Calculator Modal -->
+    <div class="modal fade glass-modal" id="perfCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-info bg-opacity-10 text-info">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-graph-up-arrow"></i> Performance Points Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Evaluation Method</label>
+                        <select class="form-select mb-2" id="perfEvalMethod" onchange="togglePerfInputs(); calculatePerfPoints()">
+                            <option value="rpms">Performance Rating (RPMS 5-point scale)</option>
+                            <option value="gwa">CS Eligibility / Board Exam / GWA (100-point scale)</option>
+                            <option value="summa">Honor Graduate - Summa Cum Laude (Auto 20 pts)</option>
+                            <option value="magna">Honor Graduate - Magna Cum Laude (Auto 19 pts)</option>
+                            <option value="cum">Honor Graduate - Cum Laude (Auto 18 pts)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="perfRatingDiv">
+                        <label class="form-label fw-bold" id="perfRatingLabel">Rating (x)</label>
+                        <input type="number" class="form-control" id="perfRatingInput" step="0.001" placeholder="e.g. 4.356" oninput="calculatePerfPoints()">
+                        <div class="form-text" id="perfRatingHelp">Enter RPMS rating (0-5) or midpoint value.</div>
+                        <div class="mt-2" id="midpointHelperDiv">
+                            <label class="form-label small text-muted">Midpoint Helper (External Applicants)</label>
+                            <select class="form-select form-select-sm" id="perfMidpointHelper" onchange="applyMidpoint()">
+                                <option value="">-- Select Adjectival Rating --</option>
+                                <option value="4.75">Outstanding (4.75)</option>
+                                <option value="3.995">Very Satisfactory (3.995)</option>
+                                <option value="2.995">Satisfactory (2.995)</option>
+                                <option value="1.995">Unsatisfactory (1.995)</option>
+                                <option value="0.7495">Poor (0.7495)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted fw-bold">Weight Allocation (WA):</span>
+                        <span class="fs-5 fw-bold text-primary" id="perfWA">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedPerfPoints">0.000</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-info text-white w-100 fw-bold shadow-sm" onclick="applyPerfPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outstanding Accomplishments Calculator Modal -->
+    <div class="modal fade glass-modal" id="outAccCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-secondary bg-opacity-10 text-secondary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-star-fill text-warning"></i> Outstanding Accomplishments</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="outAccNational" onchange="calculateOutAccPoints()">
+                        <label class="form-check-label fw-bold text-success" for="outAccNational">
+                            <i class="bi bi-trophy-fill"></i> National Level Individual Award
+                        </label>
+                        <div class="form-text small">Checking this will instantly grant Maximum Points.</div>
+                    </div>
+
+                    <div id="outAccComponentsDiv">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">a. Awards and Recognition (Max 4)</label>
+                            <select class="form-select form-select-sm" id="outAccAward" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="2">Citation (1) / Academic (1) / Outstanding Emp (Lower Level) (2 pts)</option>
+                                <option value="3">Citation (2) / Academic (2) (3 pts)</option>
+                                <option value="4">Citation (3+) / Academic (3+) / Outstanding Emp (Higher Level) (4 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">b. Research and Innovation (Max 4)</label>
+                            <select class="form-select form-select-sm" id="outAccResearch" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="1">MOV A only (1 pt)</option>
+                                <option value="2">MOVs A, B (2 pts)</option>
+                                <option value="3">MOVs A, B, C (3 pts)</option>
+                                <option value="4">MOVs A, B, C, D or E (4 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">c. SME / NTWGs (Max 3)</label>
+                            <select class="form-select form-select-sm" id="outAccSME" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="2">MOVs A & B only (2 pts)</option>
+                                <option value="3">All MOVs A, B, C (3 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">d. Resource Speakership (Max 2)</label>
+                            <select class="form-select form-select-sm" id="outAccSpeaker" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="1">Lower Level Speakership (1 pt)</option>
+                                <option value="2">Higher Level Speakership (2 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">e. NEAP Accredited Facilitator (Max 2)</label>
+                            <select class="form-select form-select-sm" id="outAccNEAP" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="1">Accredited Regional Trainer (1 pt)</option>
+                                <option value="1.5">Accredited National Trainer (1.5 pts)</option>
+                                <option value="2">Accredited National Assessor (2 pts)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted fw-bold">Sum of Components:</span>
+                        <span class="fs-6 fw-bold text-secondary" id="outAccSum">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted fw-bold">Max Allowed Points (SG Cap):</span>
+                        <span class="fs-6 fw-bold text-danger" id="outAccMax">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Final Credited Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedOutAccPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary text-white w-100 fw-bold shadow-sm" onclick="applyOutAccPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application of Education Calculator Modal -->
+    <div class="modal fade glass-modal" id="appEduCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-primary bg-opacity-10 text-primary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-book-half"></i> Application of Education</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Evaluation Method</label>
+                        <select class="form-select mb-2" id="appEduEvalMethod" onchange="toggleAppEduInputs(); calculateAppEduPoints()">
+                            <option value="relevant">Experienced: Relevant Intervention</option>
+                            <option value="not_relevant">Experienced: Not Relevant Intervention</option>
+                            <option value="no_exp">No Experience: GWA Percentage Scale</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="appEduMOVsDiv">
+                        <label class="form-label fw-bold">MOVs Submitted</label>
+                        <select class="form-select" id="appEduMOVs" onchange="calculateAppEduPoints()">
+                            <option value="0">None (0 pts)</option>
+                            <option value="A">Only A (Action Plan) </option>
+                            <option value="AB">Only A & B (Action Plan + Accomp. Report)</option>
+                            <option value="ABC">ALL MOVs (A, B, C)</option>
+                        </select>
+                        <div class="form-text small text-muted">A: Action Plan | B: Accomplishment Report | C: Cert. of Utilization</div>
+                    </div>
+
+                    <div class="mb-3 d-none" id="appEduGWADiv">
+                        <label class="form-label fw-bold">GWA Transmuted to Percentage (x)</label>
+                        <input type="number" class="form-control" id="appEduGWAInput" step="0.01" max="100" placeholder="e.g. 82.75" oninput="calculateAppEduPoints()">
+                        <div class="form-text small text-muted">Enter percentage from 0 to 100.</div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedAppEduPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary text-white w-100 fw-bold shadow-sm" onclick="applyAppEduPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application of L&D Calculator Modal -->
+    <div class="modal fade glass-modal" id="appLNDCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-primary bg-opacity-10 text-primary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-lightbulb-fill text-warning"></i> Application of L&D</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Intervention Relevance</label>
+                        <select class="form-select mb-2" id="appLNDRelevance" onchange="calculateAppLNDPoints()">
+                            <option value="relevant">Relevant Intervention</option>
+                            <option value="not_relevant">Not Relevant Intervention</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="appLNDMOVsDiv">
+                        <label class="form-label fw-bold">MOVs Submitted</label>
+                        <select class="form-select" id="appLNDMOVs" onchange="calculateAppLNDPoints()">
+                            <option value="0">None (0 pts)</option>
+                            <option value="AB">Only A & B (Cert. of Training + Action Plan)</option>
+                            <option value="ABC">Only A, B & C (+ Local Adoption Cert.)</option>
+                            <option value="ABCD">ALL MOVs (A, B, C, D) (+ Higher Level Adoption Cert.)</option>
+                        </select>
+                        <div class="form-text small text-muted">A: Cert. of Training | B: Action Plan | C: Local Adoption | D: Higher Level Adoption</div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedAppLNDPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary text-white w-100 fw-bold shadow-sm" onclick="applyAppLNDPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Potential Calculator Modal -->
+    <div class="modal fade glass-modal" id="potentialCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-success bg-opacity-10 text-success">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-fill-up"></i> Potential Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="potentialGeneralDiv" class="d-none">
+                        <div class="alert alert-info small border-0">
+                            <strong>General Services Detected.</strong> According to guidelines, General Services uses alternative evaluative assessments designed by the HRMPSB. Enter the raw total score directly (Max 55 points).
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Total Potential Score</label>
+                            <input type="number" class="form-control" id="potGeneralInput" step="0.01" max="55" placeholder="e.g. 50" oninput="calculatePotentialPoints()">
+                        </div>
+                    </div>
+
+                    <div id="potentialOtherDiv">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">a. Written Examinations (WE) - Max 5 pts</label>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potWEInput" step="0.01" max="100" placeholder="Rating in percentage (0-100)" oninput="calculatePotentialPoints()">
+                            <div class="form-text mt-0">Score = (x / 100) * 5</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">b. Skills or Work Sample Test (S/WST) - Max 10 pts</label>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potSWSTInput" step="0.01" max="100" placeholder="Rating in percentage (0-100)" oninput="calculatePotentialPoints()">
+                            <div class="form-text mt-0">Score = (x / 100) * 10</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">c. Behavioural Events Interview (BEI) - Max 5 pts</label>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potBEIInput" step="0.01" max="5" placeholder="Raw BEI points (0-5)" oninput="calculatePotentialPoints()">
+                            <div class="form-text mt-0">Enter cumulative raw points given.</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Total Potential Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedPotentialPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success text-white w-100 fw-bold shadow-sm" onclick="applyPotentialPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Step 2 Summary & Move to Step 3 Modal -->
     <div class="modal fade glass-modal" id="step2SummaryModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">

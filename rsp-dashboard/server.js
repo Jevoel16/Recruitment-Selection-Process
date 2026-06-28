@@ -63,24 +63,27 @@ hbs.registerHelper('formatDate', function(date) {
     return d.toISOString().split('T')[0];
 });
 
-app.get('/', (req, res) => res.redirect('/step1/1'));
+app.get('/', (req, res) => res.redirect('/dashboard'));
 
-app.get('/positions', async (req, res) => {
+app.get('/dashboard', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
         const groupedPositions = {};
         for (const row of rows) {
-            if (!groupedPositions[row.category]) groupedPositions[row.category] = [];
-            groupedPositions[row.category].push(row);
+            if (!groupedPositions[row.category]) {
+                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [] };
+            }
+            if (row.in_vacancy) groupedPositions[row.category].hasVacancy = true;
+            groupedPositions[row.category].positions.push(row);
         }
-        res.render('positions', { positionsActive: true, groupedPositions });
-    } catch (e) {
-        console.error(e);
-        res.status(500).send('Error');
+        res.render('dashboard', { dashboardActive: true, groupedPositions });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database error');
     }
 });
 
-app.get('/positions/:id', async (req, res, next) => {
+app.get('/dashboard/:id', async (req, res, next) => {
     if (isNaN(req.params.id)) return next();
     try {
         const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
@@ -88,16 +91,20 @@ app.get('/positions/:id', async (req, res, next) => {
         let selectedPosition = null;
         for (const row of rows) {
             if (row.id == req.params.id) selectedPosition = row;
-            if (!groupedPositions[row.category]) groupedPositions[row.category] = [];
-            groupedPositions[row.category].push(row);
+            if (!groupedPositions[row.category]) {
+                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [] };
+            }
+            if (row.in_vacancy) groupedPositions[row.category].hasVacancy = true;
+            groupedPositions[row.category].positions.push(row);
         }
-        res.render('positions', { positionsActive: true, groupedPositions, selectedPosition });
+        res.render('dashboard', { dashboardActive: true, groupedPositions, selectedPosition });
     } catch (e) {
         console.error(e);
         res.status(500).send('Error');
     }
 });
 
+// Update Qualification Standards
 app.post('/api/positions/update', express.json(), async (req, res) => {
     try {
         const { id, vacancyAnnouncement, plantillaItem, salaryGrade, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
@@ -107,6 +114,23 @@ app.post('/api/positions/update', express.json(), async (req, res) => {
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/add-applicant', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM positions WHERE in_vacancy = true ORDER BY category ASC, title ASC');
+        const groupedPositions = {};
+        for (const row of rows) {
+            if (!groupedPositions[row.category]) {
+                groupedPositions[row.category] = { categoryName: row.category, positions: [] };
+            }
+            groupedPositions[row.category].positions.push(row);
+        }
+        res.render('add-applicant', { addApplicantActive: true, groupedPositions });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database error');
     }
 });
 
@@ -307,26 +331,17 @@ app.post('/api/applicants', async (req, res) => {
         
         let positionCode = 'POS';
         switch(position) {
-            case 'Teacher I': positionCode = 'T1'; break;
-            case 'Teacher II': positionCode = 'T2'; break;
-            case 'Teacher III': positionCode = 'T3'; break;
-            case 'Master Teacher I': positionCode = 'MT1'; break;
-            case 'Master Teacher II': positionCode = 'MT2'; break;
-            case 'Principal I': positionCode = 'P1'; break;
-            case 'Principal II': positionCode = 'P2'; break;
-            case 'Head Teacher I': positionCode = 'HT1'; break;
-            case 'Head Teacher III': positionCode = 'HT3'; break;
-            case 'Education Program Supervisor': positionCode = 'EPS'; break;
-            case 'Administrative Officer II': positionCode = 'AO2'; break;
-            case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
-            case 'Administrative Assistant II': positionCode = 'ADAS2'; break;
-            case 'Project Development Officer II': positionCode = 'PDO2'; break;
-            case 'Administrative Aide VI': positionCode = 'ADA6'; break;
-            case 'Administrative Aide V': positionCode = 'ADA5'; break;
-            case 'Administrative Aide IV': positionCode = 'ADA4'; break;
-            case 'Administrative Aide III': positionCode = 'ADA3'; break;
-            case 'Administrative Aide II': positionCode = 'ADA2'; break;
             case 'Administrative Aide I': positionCode = 'ADA1'; break;
+            case 'Watchman I': positionCode = 'WCHM1'; break;
+            case 'Administrative Officer I': positionCode = 'ADOF1'; break;
+            case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
+            case 'Legal Assistant I': positionCode = 'LEA1'; break;
+            case 'Project Development Officer I': positionCode = 'PDO1'; break;
+            case 'Administrative Officer II': positionCode = 'ADOF2'; break;
+            case 'Administrative Officer IV': positionCode = 'ADOF4'; break;
+            case 'School Principal I': positionCode = 'SP1'; break;
+            case 'Project Development Officer II': positionCode = 'PDO2'; break;
+            case 'Education Program Supervisor': positionCode = 'EPSVR'; break;
         }
 
         const currentYear = new Date().getFullYear();

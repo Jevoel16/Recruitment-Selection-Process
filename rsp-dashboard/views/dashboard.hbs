@@ -2,10 +2,7 @@
 
 <div class="glass-panel p-4 mb-0 shadow-sm rounded-4 d-print-none">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-semibold">Positions & Standards</h2>
-        <button class="btn btn-primary btn-add-glass" data-bs-toggle="modal" data-bs-target="#addApplicantModal">
-            <i class="bi bi-person-plus-fill me-1"></i> Add Applicant
-        </button>
+        <h2 class="fw-semibold">Dashboard</h2>
     </div>
     
     <div class="row">
@@ -16,16 +13,16 @@
                 {{#each groupedPositions}}
                 <div class="accordion-item bg-transparent border-0 mb-2">
                     <h2 class="accordion-header" id="heading-{{@index}}">
-                        <button class="accordion-button collapsed glass-panel fw-bold rounded shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{@index}}">
-                            {{@key}}
+                        <button class="accordion-button collapsed glass-panel fw-bold rounded shadow-sm {{#unless this.hasVacancy}}text-muted opacity-50{{/unless}}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{@index}}" {{#unless this.hasVacancy}}disabled style="pointer-events: none;"{{/unless}}>
+                            {{this.categoryName}} {{#unless this.hasVacancy}}<small class="ms-2 fw-normal">(Not in Vacancy)</small>{{/unless}}
                         </button>
                     </h2>
                     <div id="collapse-{{@index}}" class="accordion-collapse collapse" data-bs-parent="#categoryAccordion">
                         <div class="accordion-body p-2">
                             <div class="list-group list-group-flush">
-                                {{#each this}}
-                                <a href="/positions/{{this.id}}" class="list-group-item list-group-item-action bg-transparent border-0 rounded {{#if (eq this.id ../../selectedPosition.id)}}active text-primary fw-bold{{/if}}">
-                                    <i class="bi bi-chevron-right me-2 text-muted" style="font-size: 0.8rem;"></i> {{this.title}}
+                                {{#each this.positions}}
+                                <a href="/dashboard/{{this.id}}" class="list-group-item list-group-item-action bg-transparent border-0 rounded {{#if (eq this.id ../../selectedPosition.id)}}active text-primary fw-bold{{/if}} {{#unless this.in_vacancy}}text-muted opacity-50 pe-none{{/unless}}" {{#unless this.in_vacancy}}tabindex="-1" aria-disabled="true"{{/unless}}>
+                                    <i class="bi bi-chevron-right me-2 text-muted" style="font-size: 0.8rem;"></i> {{this.title}} {{#unless this.in_vacancy}}<span class="badge bg-secondary ms-1" style="font-size: 0.6rem;">N/A</span>{{/unless}}
                                 </a>
                                 {{/each}}
                             </div>
