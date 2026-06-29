@@ -221,6 +221,11 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <a href="/api/export/car{{#if positionFilter}}?position={{positionFilter}}{{/if}}" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i> Download CAR
+                        </a>
+                    </div>
                 </form>
             </div>
 
@@ -289,7 +294,7 @@
 
         <!-- STEP 4 -->
         {{#if step4Active}}
-            <h4 class="fw-semibold mb-3">Notice of Requirements</h4>
+            <h2 class="fw-semibold mb-3">Notice of Requirements</h2>
             <p class="text-muted">Finalized applicants ready for assignment. Generate assignment letters here.</p>
             
             <div class="mb-3">
@@ -383,7 +388,7 @@
 
         <!-- STEP 5 -->
         {{#if step5Active}}
-            <h4 class="fw-semibold mb-3">Assignment Orders</h4>
+            <h2 class="fw-semibold mb-3">Assignment Orders</h2>
             <p class="text-muted">Finalized applicants ready for assignment. Generate assignment letters here.</p>
             
             <div class="mb-3">
