@@ -1,0 +1,34 @@
+// Open Score Modal
+function openScoreModal(id, name) {
+    document.getElementById('scoreId').value = id;
+    document.getElementById('scoreName').innerText = name;
+    new bootstrap.Modal(document.getElementById('scoreModal')).show();
+}
+
+// Submit Score
+if (scoreForm) {
+    scoreForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('scoreId').value;
+        const score = document.getElementById('interviewScore').value;
+        const office = document.getElementById('assignedOffice').value;
+        
+        try {
+            const res = await fetch(`/api/applicants/${id}/score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ score, office })
+            });
+            if (res.ok) {
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error submitting score');
+        }
+    });
+}
+
+// PDF Generation has been extracted to pdfGenerator.js
+
+

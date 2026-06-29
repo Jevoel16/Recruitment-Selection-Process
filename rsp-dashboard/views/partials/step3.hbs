@@ -1,0 +1,95 @@
+        <!-- STEP 3 -->
+        {{#if step3Active}}
+            <h2 class="fw-semibold mb-3">Comparative Assessments</h2>
+            <p class="text-muted">Leaderboard of assessed applicants ranked by their interview scores.</p>
+            
+            <div class="mb-3">
+                
+                <form method="GET" action="/step3/1" class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group glass-panel h-100">
+                            <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                                <option value="">All Positions (Filter by Salary Grade/Position)</option>
+                                {{#each positionList}}
+                                    <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/api/export/car{{#if positionFilter}}?position={{positionFilter}}{{/if}}" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i> Download CAR
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="rounded-3 overflow-hidden shadow-sm">
+                <table class="table table-hover align-middle mb-0 custom-table leaderboard" id="table-step3">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 80px;">Rank</th>
+                            <th>Application Code</th>
+                            <th>Applicant Name</th>
+                            <th class="text-center">Score Summary</th>
+                            <th class="text-center">Total</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each step3}}
+                        <tr>
+                            <td class="fw-bold text-primary text-center">#{{incOffset @index ../offset}}</td>
+                            <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                            <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{this.name}}', true)">
+                                    <i class="bi bi-eye"></i> View Summary
+                                </button>
+                            </td>
+                            <td class="text-center fw-bold text-success fs-5">
+                                {{#unless (eq this.scores.total null)}}
+                                    {{this.scores.total}}
+                                {{else}}
+                                    -
+                                {{/unless}}
+                            </td>
+                            <td class="text-center"><span class="badge bg-success">Assessed</span></td>
+                            <td class="text-end">
+                                {{#if (eq this.status 'ASSESSED')}}
+                                <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move to Step 4</button>
+                                {{/if}}
+                                <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr><td colspan="6" class="text-center text-muted py-4">No comparative data available yet.</td></tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            
+            {{#if pagination.[1]}}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination flex-wrap justify-content-center mb-0">
+                    {{#each pagination}}
+                        {{#if this.isEllipsis}}
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {{else}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                            </li>
+                        {{/if}}
+                    {{/each}}
+                </ul>
+            </nav>
+            {{/if}}
+        {{/if}}
+

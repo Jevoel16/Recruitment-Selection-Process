@@ -8,6 +8,8 @@ A web-based platform to digitize the recruitment selection process.
 - **Database:** MySQL
 
 ## Features
+- **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades and fully editable text-based qualification standards.
+- **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values.
 - **Step 1:** Notice of Requirements (Qualify/Disqualify Applicants)
 - **Step 2:** Deliberation Sheet (Assess & Input Interview Scores)
 - **Step 3:** Comparative Assessments (Leaderboard based on Scores)

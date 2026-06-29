@@ -69,14 +69,22 @@ app.get('/dashboard', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
         const groupedPositions = {};
+        let totalVacantCount = 0;
+        let totalPositionsCount = 0;
         for (const row of rows) {
             if (!groupedPositions[row.category]) {
-                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [] };
+                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [], vacantCount: 0, totalCount: 0 };
             }
-            if (row.in_vacancy) groupedPositions[row.category].hasVacancy = true;
+            groupedPositions[row.category].totalCount++;
+            totalPositionsCount++;
+            if (row.in_vacancy) {
+                groupedPositions[row.category].hasVacancy = true;
+                groupedPositions[row.category].vacantCount++;
+                totalVacantCount++;
+            }
             groupedPositions[row.category].positions.push(row);
         }
-        res.render('dashboard', { dashboardActive: true, groupedPositions });
+        res.render('dashboard', { dashboardActive: true, groupedPositions, totalVacantCount, totalPositionsCount });
     } catch (err) {
         console.error(err);
         res.status(500).send('Database error');
@@ -89,15 +97,23 @@ app.get('/dashboard/:id', async (req, res, next) => {
         const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
         const groupedPositions = {};
         let selectedPosition = null;
+        let totalVacantCount = 0;
+        let totalPositionsCount = 0;
         for (const row of rows) {
             if (row.id == req.params.id) selectedPosition = row;
             if (!groupedPositions[row.category]) {
-                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [] };
+                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [], vacantCount: 0, totalCount: 0 };
             }
-            if (row.in_vacancy) groupedPositions[row.category].hasVacancy = true;
+            groupedPositions[row.category].totalCount++;
+            totalPositionsCount++;
+            if (row.in_vacancy) {
+                groupedPositions[row.category].hasVacancy = true;
+                groupedPositions[row.category].vacantCount++;
+                totalVacantCount++;
+            }
             groupedPositions[row.category].positions.push(row);
         }
-        res.render('dashboard', { dashboardActive: true, groupedPositions, selectedPosition });
+        res.render('dashboard', { dashboardActive: true, groupedPositions, selectedPosition, totalVacantCount, totalPositionsCount });
     } catch (e) {
         console.error(e);
         res.status(500).send('Error');
@@ -107,9 +123,33 @@ app.get('/dashboard/:id', async (req, res, next) => {
 // Update Qualification Standards
 app.post('/api/positions/update', express.json(), async (req, res) => {
     try {
-        const { id, vacancyAnnouncement, plantillaItem, salaryGrade, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
-        await db.query(`UPDATE positions SET vacancyAnnouncement=?, plantillaItem=?, salaryGrade=?, qsEducation=?, qsTraining=?, qsExperience=?, qsEligibility=? WHERE id=?`, 
-            [vacancyAnnouncement, plantillaItem, salaryGrade, qsEducation, qsTraining, qsExperience, qsEligibility, id]);
+        const { id, vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
+        await db.query(`UPDATE positions SET vacancyAnnouncement=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsTraining=?, qsExperience=?, qsEligibility=? WHERE id=?`, 
+            [vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility, id]);
+        res.json({ success: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Toggle Position Vacancy
+app.post('/api/positions/:id/vacancy', express.json(), async (req, res) => {
+    try {
+        const { in_vacancy } = req.body;
+        await db.query(`UPDATE positions SET in_vacancy = ? WHERE id = ?`, [in_vacancy ? 1 : 0, req.params.id]);
+        res.json({ success: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Update Plantilla and Vacancy Count
+app.post('/api/positions/:id/plantilla', express.json(), async (req, res) => {
+    try {
+        const { vacancyCount, plantillaItem } = req.body;
+        await db.query(`UPDATE positions SET vacancyCount = ?, plantillaItem = ? WHERE id = ?`, [vacancyCount, plantillaItem, req.params.id]);
         res.json({ success: true });
     } catch (e) {
         console.error(e);
@@ -667,7 +707,7 @@ app.get('/api/export/ier', async (req, res) => {
         const escapeHtml = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
         let html = `
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
 <head>
 <meta charset="utf-8">
 <!--[if gte mso 9]>
@@ -861,7 +901,7 @@ app.get('/api/export/car', async (req, res) => {
         const escapeHtml = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
         let html = `
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
 <head>
 <meta charset="utf-8">
 <!--[if gte mso 9]>

@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-06-29 16:50 (v0.6.0-Alpha+202606291650)
+### ADDED
+- Dynamic Plantilla setup with auto-generating fields corresponding to Vacancy Counts.
+- Implemented elegant two-column layout for Plantilla Item list rendering in the Position Info Modal.
+- Added 17 new official positions mapped directly from standard CSC Excel sheets.
+- Extracted Plantilla data to its own responsive `col-12` container to prevent modal layout breaking.
+
+### CHANGED
+- Transformed Qualification Standards (Education, Training, Experience, Eligibility) from dropdowns into fully editable, multi-line raw text fields in the Position Info Modal.
+- Formatted new Position titles to Title Case natively, preserving uppercase for internal parentheticals (e.g., `(CT)`) and Roman Numerals.
+- Rewrote the database seeding logic (`seed_positions.js`) to dynamically embed all 72 full position profiles, categories, and raw text-based Qualification Standards directly into the `npm run dev` and `npm run prod` initialization cycle.
+
+### FIXED
+- Removed problematic W3C XML Schema linkages (`xmlns="http://www.w3.org/TR/REC-html40"`) from backend `.xls` exporters, permanently eliminating the issue of Microsoft Excel hanging or crashing when intranet devices attempt to open exported documents offline.
+
+
 ## 2026-06-28 20:48 (v0.5.0-Alpha+202606282048)
 ### ADDED
 - Fully implemented point calculators across all criteria (Education, Training, Experience, Performance, Accomplishments, App. of Education, App. of L&D, Potential) following DepEd Order No. 007 s. 2023 / No. 021 s. 2024.

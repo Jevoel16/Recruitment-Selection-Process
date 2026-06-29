@@ -1,0 +1,94 @@
+        <!-- STEP 4 -->
+        {{#if step4Active}}
+            <h2 class="fw-semibold mb-3">Notice of Requirements</h2>
+            <p class="text-muted">Finalized applicants ready for assignment. Generate assignment letters here.</p>
+            
+            <div class="mb-3">
+                
+                <form method="GET" action="/step4/1" class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group glass-panel h-100">
+                            <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                                <option value="">All Positions (Filter by Salary Grade/Position)</option>
+                                {{#each positionList}}
+                                    <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="rounded-3 overflow-hidden shadow-sm">
+                <table class="table table-hover align-middle mb-0 custom-table" id="table-step4">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Application Code</th>
+                            <th>Applicant Name</th>
+                            <th class="text-center">Score</th>
+                            <th class="text-center">Requirements</th>
+                            <th class="text-center">Remarks</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each step4}}
+                        <tr id="applicant-row-{{this.id}}">
+                            <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                            <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                            <td class="text-center fw-bold text-success fs-5">
+                                {{#unless (eq this.scores.total null)}}
+                                    {{this.scores.total}}
+                                {{else}}
+                                    -
+                                {{/unless}}
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openRequirementsModal({{this.id}}, '{{this.name}}')">
+                                    <i class="bi bi-list-check"></i> View Requirements
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <div class="mt-2">
+                                    {{#if (allRequirementsMet this)}}
+                                        <span id="requirements-status-{{this.id}}" class="badge bg-success">Complete</span>
+                                    {{else}}
+                                        <span id="requirements-status-{{this.id}}" class="badge bg-warning text-dark">Incomplete</span>
+                                    {{/if}}
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Requirements must be complete"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move to Step 5</button>
+                                <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr><td colspan="6" class="text-center text-muted py-4">No applicants waiting for requirements.</td></tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            
+            {{#if pagination.[1]}}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination flex-wrap justify-content-center mb-0">
+                    {{#each pagination}}
+                        {{#if this.isEllipsis}}
+                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {{else}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                            </li>
+                        {{/if}}
+                    {{/each}}
+                </ul>
+            </nav>
+            {{/if}}
+        {{/if}}
+

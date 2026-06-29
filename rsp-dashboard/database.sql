@@ -109,10 +109,12 @@ CREATE TABLE IF NOT EXISTS positions (
     vacancyAnnouncement TEXT DEFAULT NULL,
     plantillaItem TEXT DEFAULT NULL,
     salaryGrade TEXT DEFAULT NULL,
+    monthlySalary TEXT DEFAULT NULL,
     qsEducation TEXT DEFAULT NULL,
     qsTraining TEXT DEFAULT NULL,
     qsExperience TEXT DEFAULT NULL,
     qsEligibility TEXT DEFAULT NULL,
     in_vacancy BOOLEAN DEFAULT FALSE,
+    vacancyCount INT DEFAULT 1,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
