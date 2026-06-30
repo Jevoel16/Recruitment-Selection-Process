@@ -549,10 +549,7 @@ app.post('/api/applicants', async (req, res) => {
     try {
         const { 
             firstName, lastName, middleName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position,
-            eduDegree, eduYear, eduLink,
-            trainTitle, trainHours, trainLink,
-            expDetails, expYears, expLink,
-            eligDetails, eligRating, eligLink
+            education, training, experience, eligibility
         } = req.body;
         
         let positionCode = 'POS';
@@ -583,18 +580,25 @@ app.post('/api/applicants', async (req, res) => {
         
         await db.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
 
-        // Insert optional related data if provided
-        if (eduDegree && eduYear) {
-            await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, eduDegree, eduYear, eduLink || '']);
+        // Insert optional related data if provided as JSON arrays
+        const eduArray = education ? JSON.parse(education) : [];
+        for (let e of eduArray) {
+            await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, e.degree, e.year, e.link || '']);
         }
-        if (trainTitle && trainHours) {
-            await db.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, trainTitle, trainHours, trainLink || '']);
+
+        const trainArray = training ? JSON.parse(training) : [];
+        for (let t of trainArray) {
+            await db.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, t.title, t.hours, t.link || '']);
         }
-        if (expDetails && expYears) {
-            await db.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, expDetails, expYears, expLink || '']);
+
+        const expArray = experience ? JSON.parse(experience) : [];
+        for (let ex of expArray) {
+            await db.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, ex.details, ex.years, ex.link || '']);
         }
-        if (eligDetails && eligRating) {
-            await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, eligDetails, eligRating, eligLink || '']);
+
+        const eligArray = eligibility ? JSON.parse(eligibility) : [];
+        for (let el of eligArray) {
+            await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, el.details, el.rating, el.link || '']);
         }
 
         console.log(`[ENTRY] New Application Created: ${newCode} (${firstName} ${lastName})`);
@@ -781,10 +785,10 @@ app.post('/api/applicants/:id/assign', async (req, res) => {
 app.put('/api/applicants/:id/info', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink } = req.body;
+        const { firstName, middleName, lastName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink } = req.body;
         await db.query(
-            `UPDATE applicants SET firstName=?, lastName=?, address=?, age=?, sex=?, civilStatus=?, religion=?, disability=?, ethnicGroup=?, emailAddress=?, contactNo=?, pdsLink=? WHERE id=?`, 
-            [firstName, lastName, address, age || null, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink || null, id]
+            `UPDATE applicants SET firstName=?, middleName=?, lastName=?, address=?, age=?, sex=?, civilStatus=?, religion=?, disability=?, ethnicGroup=?, emailAddress=?, contactNo=?, pdsLink=? WHERE id=?`, 
+            [firstName, middleName || '', lastName, address, age || null, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink || null, id]
         );
         res.json({ success: true });
     } catch (error) {

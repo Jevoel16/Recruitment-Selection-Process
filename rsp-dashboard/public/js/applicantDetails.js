@@ -26,11 +26,15 @@ async function openInfoModal(id) {
         document.getElementById('infoModalBody').innerHTML = `
             <form id="infoForm-${id}">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">First Name</label>
                         <input type="text" class="form-control" name="firstName" value="${app.firstName || ''}" required>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label">Middle Name</label>
+                        <input type="text" class="form-control" name="middleName" value="${app.middleName || ''}">
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">Last Name</label>
                         <input type="text" class="form-control" name="lastName" value="${app.lastName || ''}" required>
                     </div>

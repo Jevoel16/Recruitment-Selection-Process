@@ -1,4 +1,4 @@
-const pool = require('./db');
+
 
 const positionsData = [
     {
@@ -3357,35 +3357,4 @@ const positionsData = [
     }
 ];
 
-async function seed() {
-    try {
-        await pool.query('TRUNCATE TABLE positions');
-        let insertCount = 0;
-        
-        for (let pos of positionsData) {
-            await pool.query(
-                'INSERT INTO positions (category, title, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [
-                    pos.category || '', 
-                    pos.title || '', 
-                    pos.salaryGrade || '', 
-                    pos.in_vacancy || 0, 
-                    pos.monthlySalary || '', 
-                    pos.vacancyCount || 1, 
-                    pos.plantillaItem || '', 
-                    pos.qsEducation || '', 
-                    pos.qsTraining || '', 
-                    pos.qsExperience || '', 
-                    pos.qsEligibility || ''
-                ]
-            );
-            insertCount++;
-        }
-        console.log(`Successfully seeded ${insertCount} positions with full Qualification Standards into positions table.`);
-    } catch (err) {
-        console.error("Error seeding positions:", err);
-    } finally {
-        process.exit();
-    }
-}
-seed();
+module.exports = positionsData;

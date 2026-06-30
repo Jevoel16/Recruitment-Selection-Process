@@ -6,7 +6,7 @@
     </div>
     
     <!-- Dashboard Tabs -->
-    <ul class="nav nav-pills mb-4 gap-2" id="dashboardTabs" role="tablist">
+    <ul class="nav nav-pills mb-2 gap-2" id="dashboardTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link {{#unless selectedPosition}}{{#unless showMasterlist}}active{{/unless}}{{/unless}} fw-bold px-4 py-2 rounded-pill shadow-sm" id="metrics-tab" data-bs-toggle="pill" data-bs-target="#metrics" type="button" role="tab"><i class="bi bi-graph-up me-2"></i> Metrics</button>
         </li>
@@ -61,7 +61,7 @@
             </div>
         </div>
 
-                <!-- Categories Tab -->
+        <!-- Categories Tab -->
         <div class="tab-pane fade {{#if selectedPosition}}show active{{/if}}" id="categories" role="tabpanel">
             <div class="glass-panel p-4 rounded-4 shadow-sm h-100 position-relative">
                 
@@ -290,11 +290,15 @@
                             <input type="hidden" name="category" id="wizardCategory">
                             <input type="hidden" name="position" id="wizardPosition">
                             <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">First Name</label>
                                 <input type="text" class="form-control" name="firstName" required placeholder="e.g. John">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label class="form-label">Middle Name</label>
+                                <input type="text" class="form-control" name="middleName" placeholder="e.g. Smith">
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label">Last Name</label>
                                 <input type="text" class="form-control" name="lastName" required placeholder="e.g. Doe">
                             </div>

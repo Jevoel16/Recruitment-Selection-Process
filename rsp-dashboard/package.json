@@ -4,11 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node -e js,hbs server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "nodemon seed.js",
-    "dev": "nodemon db_setup.js dev && nodemon -e js,hbs,json,css server.js",
-    "prod": "nodemon db_setup.js prod && node server.js"
+    "seed": "node seed.js",
+    "dev": "nodemon -e js,hbs server.js"
   },
   "keywords": [],
   "author": "",

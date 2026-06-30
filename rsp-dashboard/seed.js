@@ -2,25 +2,35 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+const positionsData = require('./seed_positions.js');
+
+// --- SETTINGS ---
+const CATEGORY_MODE = 'specific'; // 'specific' or 'random'
+const SPECIFIC_CATEGORIES = ['Non-Teaching'];
+const TOTAL_APPLICANTS = 1000;
+const API_BASE = `http://localhost:${process.env.PORT || 3000}/api`;
+
+const delay = ms => new Promise(res => setTimeout(res, ms));
 
 async function seed() {
-    const connection = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        multipleStatements: true // Allows executing the entire SQL file at once
-    });
-
+    let connection;
     try {
-        console.log('🔄 Starting database seed process...');
+        console.log('🔄 Starting advanced database seed process...');
+
+        connection = await mysql.createConnection({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            multipleStatements: true
+        });
 
         // Ensure DB exists before using
         await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || 'rsp_db'}`);
         await connection.query(`USE ${process.env.DB_NAME || 'rsp_db'}`);
 
-        console.log('🧹 Dropping existing tables to apply any schema updates...');
+        console.log('🧹 Dropping existing tables...');
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants');
+        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants, positions');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         // 1. Run database.sql
@@ -29,187 +39,200 @@ async function seed() {
         
         console.log('📦 Executing database.sql...');
         await connection.query(sqlQuery);
-        console.log('✅ Schema initialized.');
 
-        // 3. Generate Mock Data
-        const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica'];
-        const middleNames = ['Atticus', 'Winston', 'Byron', 'Gideon', 'Theodore', 'Franklin', 'Lincoln', 'Alistair', 'Graham', 'Harrison', 'Maxwell', 'Oliver', 'Sebastian', 'Vincent', 'Xavier', 'Zachary'];
-        const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
-        const offices = ['Engineering Dept', 'HR Dept', 'Marketing Office', 'Executive Suite', 'Finance Dept'];
-
-        const applicationTypes = ['Internal Application', 'External Application'];
-        const districts = ['N1', 'N2', 'N3', 'W1', 'W2', 'W3', 'E1', 'E2', 'S1', 'S2'];
-        const categories = ['ELEM', 'JHS', 'SHS', 'KIND', 'ALS'];
-        const positions = ['Teacher I', 'Teacher II', 'Teacher III', 'Master Teacher I', 'Principal I', 'Administrative Officer II', 'Project Development Officer II'];
-        
-        const generateFirstName = () => firstNames[Math.floor(Math.random() * firstNames.length)];
-        const generateMiddleName = () => middleNames[Math.floor(Math.random() * middleNames.length)];
-        const generateLastName = () => lastNames[Math.floor(Math.random() * lastNames.length)];
-        
-        const generateTracking = () => {
-            const district = districts[Math.floor(Math.random() * districts.length)];
-            const category = categories[Math.floor(Math.random() * categories.length)];
-            const position = positions[Math.floor(Math.random() * positions.length)];
-            return {
-                code: 'TEMP',
-                district,
-                category,
-                position
-            };
-        };
-        // Generates an interview date 1 to 2 weeks away, strictly Monday to Thursday
-        const generateInterviewDate = () => {
-            let valid = false;
-            let d;
-            while (!valid) {
-                const daysToAdd = Math.floor(Math.random() * 8) + 7; // 7 to 14 days
-                d = new Date();
-                d.setDate(d.getDate() + daysToAdd);
-                const dayOfWeek = d.getDay();
-                if (dayOfWeek >= 1 && dayOfWeek <= 4) valid = true; // 1=Mon ... 4=Thu
-            }
-            return d.toISOString().split('T')[0];
-        };
-
-        const insertQuery = `INSERT INTO applicants 
-            (firstName, middleName, lastName, applicationType, applicationCode, district, category, position, status, assignedOffice, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, scoreEducation, scoreTraining, scoreExperience, scorePerformance, scoreOutstandingAccomplishments, scoreApplicationOfEducation, scoreApplicationOfLD, scorePotential, assessmentTotal, assessmentRemarks) 
-            VALUES ?`;
-        const values = [];
-
-        const mockAddress = '123 Tech Avenue, Code City';
-        const mockAge = () => Math.floor(Math.random() * 20) + 22; // 22 to 41
-        const mockSex = () => Math.random() > 0.5 ? 'Male' : 'Female';
-        const mockEmail = (fName, lName) => `${fName}.${lName}`.toLowerCase() + '@example.com';
-        const mockContact = '09123456789';
-
-        // Helper to push mock row
-        const createRow = (status, office, isAssessed = false) => {
-            const fName = generateFirstName();
-            const mName = generateMiddleName();
-            const lName = generateLastName();
-            const applicationType = applicationTypes[Math.floor(Math.random() * applicationTypes.length)];
-            const tracking = generateTracking();
-            
-            let sEdu=null, sTrain=null, sExp=null, sPerf=null, sOut=null, sAppEdu=null, sAppLD=null, sPot=null, sTotal=null, sRemarks='Pending';
-            
-            if (isAssessed) {
-                sEdu = Math.floor(Math.random() * 5) + 5; // 5-9
-                sTrain = Math.floor(Math.random() * 5) + 5; // 5-9
-                sExp = Math.floor(Math.random() * 5) + 5; // 5-9
-                sPerf = Math.floor(Math.random() * 10) + 10; // 10-19
-                sOut = Math.floor(Math.random() * 5) + 5; // 5-9
-                sAppEdu = Math.floor(Math.random() * 5) + 5; // 5-9
-                sAppLD = Math.floor(Math.random() * 5) + 5; // 5-9
-                sPot = Math.floor(Math.random() * 10) + 5; // 5-14
-                sTotal = sEdu + sTrain + sExp + sPerf + sOut + sAppEdu + sAppLD + sPot;
-                sRemarks = 'Assessed';
-            }
-
-            return [fName, mName, lName, applicationType, tracking.code, tracking.district, tracking.category, tracking.position, status, office, mockAddress, mockAge(), mockSex(), 'Single', 'Catholic', 'None', 'None', mockEmail(fName, lName), mockContact, sEdu, sTrain, sExp, sPerf, sOut, sAppEdu, sAppLD, sPot, sTotal, sRemarks];
-        };
-
-        // 10 PENDING (Step 1)
-        for (let i = 0; i < 501; i++) {
-            values.push(createRow('PENDING', null, false));
+        // 2. Insert Positions
+        console.log('📦 Seeding positions table from seed_positions.js...');
+        for (let pos of positionsData) {
+            await connection.query(
+                'INSERT INTO positions (category, title, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [
+                    pos.category || '', pos.title || '', pos.salaryGrade || '', 0, pos.monthlySalary || '', 1, pos.plantillaItem || '', pos.qsEducation || '', pos.qsTraining || '', pos.qsExperience || '', pos.qsEligibility || ''
+                ]
+            );
         }
 
-        // 10 WAITING_FOR_ASSESSMENT (Step 2)
-        for (let i = 0; i < 489; i++) {
-            values.push(createRow('WAITING_FOR_ASSESSMENT', null, false));
+        // 3. Set Open Vacancies
+        console.log('🔓 Opening specific vacancies...');
+        const mandatoryPositions = ['Administrative Officer II', 'Project Development Officer I'];
+        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5 WHERE title IN (?, ?)', mandatoryPositions);
+
+        // Pick 3 random positions based on mode
+        let queryCondition = CATEGORY_MODE === 'specific' ? `title NOT IN (?, ?) AND category IN (?)` : `title NOT IN (?, ?)`;
+        let queryParams = CATEGORY_MODE === 'specific' ? [...mandatoryPositions, SPECIFIC_CATEGORIES] : mandatoryPositions;
+
+        const [availablePositions] = await connection.query(`SELECT id FROM positions WHERE ${queryCondition} ORDER BY RAND() LIMIT 3`, queryParams);
+        if (availablePositions.length > 0) {
+            const randomIds = availablePositions.map(p => p.id);
+            await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5 WHERE id IN (?)', [randomIds]);
         }
 
-        // 10 ASSESSED (Step 3)
-        for (let i = 0; i < 523; i++) {
-            values.push(createRow('ASSESSED', null, true));
-        }
-        
-        // 5 WAITING (Step 4)
-        for (let i = 0; i < 1008; i++) {
-            values.push(createRow('WAITING', offices[0], true));
-        }
+        // Fetch the 5 open positions to assign to applicants
+        const [openPositions] = await connection.query('SELECT title, category FROM positions WHERE in_vacancy = 1');
+        console.log(`Open Positions: ${openPositions.map(p => p.title).join(', ')}`);
 
-        // Execute batch insert
-        const [result] = await connection.query(insertQuery, [values]);
-        console.log(`✅ Inserted ${result.affectedRows} mock applicants.`);
-        
-        // Generate proper applicationCode for each mock applicant
-        const [insertedApplicants] = await connection.query('SELECT id, position, category, district FROM applicants');
-        
-        const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth() + 1;
-        let startYear = currentYear;
-        if (currentMonth < 6) startYear = currentYear - 1;
-        const sy = `SY${startYear}${startYear + 1}`;
-
-        console.log('Generating proper application codes based on position, category, and SY...');
-        for (const app of insertedApplicants) {
-            let positionCode = 'POS';
-            switch(app.position) {
-                case 'Teacher I': positionCode = 'T1'; break;
-                case 'Teacher II': positionCode = 'T2'; break;
-                case 'Teacher III': positionCode = 'T3'; break;
-                case 'Master Teacher I': positionCode = 'MT1'; break;
-                case 'Master Teacher II': positionCode = 'MT2'; break;
-                case 'Principal I': positionCode = 'P1'; break;
-                case 'Principal II': positionCode = 'P2'; break;
-                case 'Head Teacher I': positionCode = 'HT1'; break;
-                case 'Head Teacher III': positionCode = 'HT3'; break;
-                case 'Education Program Supervisor': positionCode = 'EPS'; break;
-                case 'Administrative Officer II': positionCode = 'AO2'; break;
-                case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
-                case 'Administrative Assistant II': positionCode = 'ADAS2'; break;
-                case 'Project Development Officer II': positionCode = 'PDO2'; break;
-            }
-            
-            const baseCode = `${positionCode}-${sy}-${app.category}-${app.district || 'DIST'}`;
-            const applicationCode = `${baseCode}-${app.id}`;
-            await connection.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [applicationCode, app.id]);
-        }
-        console.log(`✅ Updated ${insertedApplicants.length} applicant tracking codes.`);
-
-        // Seed related tables (5-10 for each applicant)
-        console.log(`Generating sub-documents for ${insertedApplicants.length} applicants...`);
-
-        const eduValues = [];
-        const trainValues = [];
-        const expValues = [];
-        const eligValues = [];
-
-        for (const app of insertedApplicants) {
-            const numEdu = Math.floor(Math.random() * 6) + 5; // 5 to 10
-            for(let i=0; i<numEdu; i++) eduValues.push([app.id, `Degree ${i+1}`, 2010+i, 'https://example.com/edu']);
-
-            const numTrain = Math.floor(Math.random() * 6) + 5;
-            for(let i=0; i<numTrain; i++) trainValues.push([app.id, `Training ${i+1}`, (i+1)*10, 'https://example.com/train']);
-
-            const numExp = Math.floor(Math.random() * 6) + 5;
-            for(let i=0; i<numExp; i++) expValues.push([app.id, `Role at Company ${i+1}`, i+1, 'https://example.com/exp']);
-
-            const numElig = Math.floor(Math.random() * 6) + 5;
-            for(let i=0; i<numElig; i++) eligValues.push([app.id, `Eligibility ${i+1}`, `${80+i}%`, 'https://example.com/elig']);
-        }
-
-        const chunkArray = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
-
-        const insertChunks = async (query, valuesArray) => {
-            const chunks = chunkArray(valuesArray, 5000);
-            for (const chunk of chunks) {
-                await connection.query(query, [chunk]);
-            }
-        };
-
-        await insertChunks('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES ?', eduValues);
-        await insertChunks('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES ?', trainValues);
-        await insertChunks('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES ?', expValues);
-        await insertChunks('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES ?', eligValues);
-
-        console.log('✅ Inserted related records (Education, Training, Experience, Eligibility) for all applicants.');
-        
-        console.log('🎉 Seeding completed successfully!');
-    } catch (error) {
-        console.error('❌ Seeding failed:', error.message);
-    } finally {
+        // Close DB connection, shift to API simulation
         await connection.end();
+        console.log('✅ Database setup complete. Starting API simulation...');
+
+        // 4. Generate Applicants via API
+        const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara'];
+        const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+
+        console.log(`🚀 Sending API requests to create ${TOTAL_APPLICANTS} applicants (this will take time)...`);
+        
+        let allApplicantIds = [];
+
+        // Batch generation to avoid socket exhaustion
+        const BATCH_SIZE = 50;
+        for (let i = 0; i < TOTAL_APPLICANTS; i += BATCH_SIZE) {
+            const batchPromises = [];
+            for (let j = 0; j < BATCH_SIZE && (i + j) < TOTAL_APPLICANTS; j++) {
+                const fName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const lName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                const positionObj = openPositions[Math.floor(Math.random() * openPositions.length)];
+                
+                const payload = {
+                    firstName: fName,
+                    lastName: lName,
+                    middleName: 'Seed',
+                    address: '123 Seed Street',
+                    age: Math.floor(Math.random() * 20) + 22,
+                    sex: Math.random() > 0.5 ? 'Male' : 'Female',
+                    civilStatus: 'Single',
+                    religion: 'Catholic',
+                    disability: 'None',
+                    ethnicGroup: 'None',
+                    emailAddress: `${fName}.${lName}${i+j}@example.com`.toLowerCase(),
+                    contactNo: '09123456789',
+                    pdsLink: 'http://example.com/pds',
+                    category: positionObj.category,
+                    position: positionObj.title,
+                    education: JSON.stringify([{ degree: 'BS Seed', year: 2020, link: 'http://link' }]),
+                    training: JSON.stringify([{ title: 'Seed Training', hours: 40, link: 'http://link' }]),
+                    experience: JSON.stringify([{ details: 'Seed XP', years: 2, link: 'http://link' }]),
+                    eligibility: JSON.stringify([{ details: 'Seed Elig', rating: '85', link: 'http://link' }])
+                };
+
+                batchPromises.push(
+                    fetch(`${API_BASE}/applicants`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }).then(r => r.json()).catch(err => ({ success: false, error: err }))
+                );
+            }
+            const results = await Promise.all(batchPromises);
+            results.forEach(r => {
+                if (r && r.success && r.id) allApplicantIds.push(r.id);
+            });
+            console.log(`   Created ${allApplicantIds.length} / ${TOTAL_APPLICANTS} applicants...`);
+            await delay(100); // Small timeout between batches
+        }
+
+        console.log(`✅ Successfully created ${allApplicantIds.length} applicants via API.`);
+
+        // Distribute applicants into Steps
+        const chunk = Math.floor(allApplicantIds.length / 5);
+        const step2Ids = allApplicantIds.slice(chunk, allApplicantIds.length); 
+        const step3Ids = allApplicantIds.slice(chunk * 2, allApplicantIds.length); 
+        const step4Ids = allApplicantIds.slice(chunk * 3, allApplicantIds.length); 
+        const step5Ids = allApplicantIds.slice(chunk * 4, allApplicantIds.length); 
+
+        console.log(`⏩ Moving ${step2Ids.length} applicants to Step 2 (Qualifying requirements)...`);
+        for (let i = 0; i < step2Ids.length; i += BATCH_SIZE) {
+            const batch = step2Ids.slice(i, i + BATCH_SIZE);
+            const batchPromises = batch.map(async id => {
+                const details = await fetch(`${API_BASE}/applicants/${id}/details`).then(r => r.json());
+                const qualifyDoc = async (type, docs) => {
+                    if (docs && docs.length > 0) {
+                        for (let doc of docs) {
+                            await fetch(`${API_BASE}/applicants/${id}/${type}/${doc.id}/status`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ status: 'QUALIFIED' })
+                            });
+                        }
+                    }
+                };
+                await qualifyDoc('education', details.education);
+                await qualifyDoc('training', details.training);
+                await qualifyDoc('experience', details.experience);
+                await qualifyDoc('eligibility', details.eligibility);
+
+                await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST' });
+            });
+            await Promise.all(batchPromises);
+            await delay(100);
+        }
+
+        console.log(`⏩ Moving ${step3Ids.length} applicants to Step 3 (Assessing and Scoring)...`);
+        for (let i = 0; i < step3Ids.length; i += BATCH_SIZE) {
+            const batch = step3Ids.slice(i, i + BATCH_SIZE);
+            const batchPromises = batch.map(async id => {
+                const scorePayload = {
+                    education: Math.floor(Math.random() * 5) + 5,
+                    training: Math.floor(Math.random() * 5) + 5,
+                    experience: Math.floor(Math.random() * 5) + 5,
+                    performance: Math.floor(Math.random() * 10) + 10,
+                    outstandingAccomplishments: Math.floor(Math.random() * 5) + 5,
+                    applicationOfEducation: Math.floor(Math.random() * 5) + 5,
+                    applicationOfLD: Math.floor(Math.random() * 5) + 5,
+                    potential: Math.floor(Math.random() * 10) + 5,
+                    isComplete: true
+                };
+                await fetch(`${API_BASE}/applicants/${id}/assess`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(scorePayload)
+                });
+                await fetch(`${API_BASE}/applicants/${id}/score`, { method: 'POST' });
+            });
+            await Promise.all(batchPromises);
+            await delay(100);
+        }
+
+        console.log(`⏩ Moving ${step4Ids.length} applicants to Step 4 (Requirements phase)...`);
+        for (let i = 0; i < step4Ids.length; i += BATCH_SIZE) {
+            const batch = step4Ids.slice(i, i + BATCH_SIZE);
+            const batchPromises = batch.map(id => 
+                fetch(`${API_BASE}/applicants/${id}/proceed-requirements`, { method: 'POST' })
+            );
+            await Promise.all(batchPromises);
+            await delay(100);
+        }
+
+        console.log(`⏩ Moving ${step5Ids.length} applicants to Step 5 (Assigned)...`);
+        const offices = ['Engineering Dept', 'HR Dept', 'Marketing Office', 'Executive Suite', 'Finance Dept'];
+        for (let i = 0; i < step5Ids.length; i += BATCH_SIZE) {
+            const batch = step5Ids.slice(i, i + BATCH_SIZE);
+            const batchPromises = batch.map(async id => {
+                await fetch(`${API_BASE}/applicants/${id}/requirements/all`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ value: true })
+                });
+                await fetch(`${API_BASE}/applicants/${id}/toggle-assignment-req`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'COMPLETE' })
+                });
+                await fetch(`${API_BASE}/applicants/${id}/assign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ office: offices[Math.floor(Math.random() * offices.length)] })
+                });
+            });
+            await Promise.all(batchPromises);
+            await delay(100);
+        }
+
+        console.log('🎉 Seeding via API completed successfully!');
+        process.exit(0);
+
+    } catch (error) {
+        console.error('❌ Seeding failed:', error);
+        if (connection) await connection.end();
+        process.exit(1);
     }
 }
 

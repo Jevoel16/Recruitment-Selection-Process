@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-06-30 14:07 (v0.7.1-Alpha+202606301407)
+### FIXED
+- Addressed issue where the Add Applicant Wizard submitted prematurely when the Enter key was pressed in form fields.
+- Fixed `training` section bug in the Add Applicant Wizard by using an explicit `prefixMap` instead of unreliable substring logic for dynamic table rendering.
+- Resolved an empty UI score column bug in `step5.hbs` by correctly accessing the `scores.total` mapped attribute instead of an undefined variable.
+
+### ADDED
+- Implemented an advanced, high-concurrency API-driven seeder (`seed.js`) that automatically simulates 1,000 applicants and dynamically progresses them across workflow stages to stress-test the environment.
+- Added nodemon `.hbs` file watch support in `package.json` for both `rsp-dashboard` and `rsp-portal` to prevent caching issues during template development.
+- Extracted and modularized position data into `seed_positions.js` to serve as a unified source for the main application and new API seeder.
+- Cleaned up the project root by removing outdated Python helper/refactoring scripts.
+
+
 ## 2026-06-30 09:25 (v0.7.0-Alpha+202606300925)
 ### ADDED
 - Masterlist integrated natively into the Dashboard tabs alongside Vacancy Setup.

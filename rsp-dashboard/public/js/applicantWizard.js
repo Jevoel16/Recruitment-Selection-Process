@@ -97,6 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addApplicantForm = document.getElementById('addApplicantForm');
     if (addApplicantForm) {
+        addApplicantForm.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+                e.preventDefault();
+            }
+        });
+        
         addApplicantForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);

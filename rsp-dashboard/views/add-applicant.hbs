@@ -125,20 +125,20 @@
                             <small class="text-muted">Enter highest or most relevant education (Optional)</small>
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
                             <label class="form-label fw-semibold">Degree / Course</label>
-                            <input type="text" class="form-control" name="eduDegree" placeholder="e.g. BS Computer Science">
+                            <input type="text" class="form-control" id="edu_degree" placeholder="e.g. BS Computer Science">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold">Year Graduated</label>
-                            <input type="number" class="form-control" name="eduYear" placeholder="e.g. 2020">
+                            <input type="number" class="form-control" id="edu_year" placeholder="e.g. 2020">
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Digital Copy Link</label>
-                            <input type="url" class="form-control" name="eduLink" placeholder="Google Drive / Dropbox Link">
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-success w-100" id="btn-add-edu"><i class="bi bi-plus-lg"></i></button>
                         </div>
                     </div>
+                    <div class="mt-3" id="eduList"></div>
                     <div class="d-flex justify-content-end mt-4 pt-3 border-top">
                         <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextStep(3)">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
                     </div>
@@ -153,20 +153,20 @@
                             <small class="text-muted">Enter most relevant training (Optional)</small>
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
                             <label class="form-label fw-semibold">Title of Training</label>
-                            <input type="text" class="form-control" name="trainTitle" placeholder="e.g. Leadership Seminar">
+                            <input type="text" class="form-control" id="train_title" placeholder="e.g. Leadership Seminar">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold">Number of Hours</label>
-                            <input type="number" class="form-control" name="trainHours" placeholder="e.g. 40">
+                            <input type="number" class="form-control" id="train_hours" placeholder="e.g. 40">
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Digital Copy Link</label>
-                            <input type="url" class="form-control" name="trainLink" placeholder="Google Drive / Dropbox Link">
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-success w-100" id="btn-add-train"><i class="bi bi-plus-lg"></i></button>
                         </div>
                     </div>
+                    <div class="mt-3" id="trainList"></div>
                     <div class="d-flex justify-content-end mt-4 pt-3 border-top">
                         <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextStep(4)">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
                     </div>
@@ -181,20 +181,20 @@
                             <small class="text-muted">Enter most relevant experience (Optional)</small>
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
                             <label class="form-label fw-semibold">Experience Details (Company & Role)</label>
-                            <input type="text" class="form-control" name="expDetails" placeholder="e.g. Software Engineer at Tech Corp">
+                            <input type="text" class="form-control" id="exp_details" placeholder="e.g. Software Engineer at Tech Corp">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold">Number of Years</label>
-                            <input type="number" class="form-control" name="expYears" step="0.1" placeholder="e.g. 2.5">
+                            <input type="number" class="form-control" id="exp_years" step="0.1" placeholder="e.g. 2.5">
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Digital Copy Link</label>
-                            <input type="url" class="form-control" name="expLink" placeholder="Google Drive / Dropbox Link">
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-success w-100" id="btn-add-exp"><i class="bi bi-plus-lg"></i></button>
                         </div>
                     </div>
+                    <div class="mt-3" id="expList"></div>
                     <div class="d-flex justify-content-end mt-4 pt-3 border-top">
                         <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextStep(5)">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
                     </div>
@@ -209,20 +209,20 @@
                             <small class="text-muted">Enter most relevant eligibility (Optional)</small>
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
                             <label class="form-label fw-semibold">Eligibility Details</label>
-                            <input type="text" class="form-control" name="eligDetails" placeholder="e.g. Civil Service Professional">
+                            <input type="text" class="form-control" id="elig_details" placeholder="e.g. Civil Service Professional">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold">Rating</label>
-                            <input type="text" class="form-control" name="eligRating" placeholder="e.g. 85.5%">
+                            <input type="text" class="form-control" id="elig_rating" placeholder="e.g. 85.5%">
                         </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Digital Copy Link</label>
-                            <input type="url" class="form-control" name="eligLink" placeholder="Google Drive / Dropbox Link">
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-success w-100" id="btn-add-elig"><i class="bi bi-plus-lg"></i></button>
                         </div>
                     </div>
+                    <div class="mt-3" id="eligList"></div>
                     <div class="d-flex justify-content-end mt-4 pt-3 border-top">
                         <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Save Applicant <i class="bi bi-check-circle ms-2"></i></button>
                     </div>
@@ -393,15 +393,123 @@
         document.getElementById(`wizardStep${stepNum}`).classList.remove('d-none');
     }
 
-    document.getElementById('addApplicantForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
-        btn.disabled = true;
+    const wizardData = {
+        education: [],
+        training: [],
+        experience: [],
+        eligibility: []
+    };
 
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
+    function renderWizardList(type) {
+        const prefixMap = { education: 'edu', training: 'train', experience: 'exp', eligibility: 'elig' };
+        const listDiv = document.getElementById(`${prefixMap[type]}List`);
+        if (!listDiv) return;
+        
+        let html = '<ul class="list-group">';
+        if (wizardData[type].length === 0) {
+            html += `<li class="list-group-item text-muted small border-0 px-0">No ${type} records added yet.</li>`;
+        } else {
+            wizardData[type].forEach((item, index) => {
+                let text = '';
+                if (type === 'education') text = `<strong>${item.degree}</strong> (${item.year})`;
+                if (type === 'training') text = `<strong>${item.title}</strong> (${item.hours} hrs)`;
+                if (type === 'experience') text = `<strong>${item.details}</strong> (${item.years} yrs)`;
+                if (type === 'eligibility') text = `<strong>${item.details}</strong> (Rating: ${item.rating})`;
+                
+                let linkHtml = item.link ? `<br><a href="${item.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : '';
+                
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center rounded shadow-sm mb-2">
+                    <span>${text}${linkHtml}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeWizardItem('${type}', ${index})"><i class="bi bi-trash"></i></button>
+                </li>`;
+            });
+        }
+        html += '</ul>';
+        listDiv.innerHTML = html;
+    }
+
+    window.removeWizardItem = (type, index) => {
+        wizardData[type].splice(index, 1);
+        renderWizardList(type);
+    };
+
+    document.getElementById('btn-add-edu')?.addEventListener('click', () => {
+        const degree = document.getElementById('edu_degree').value;
+        const year = document.getElementById('edu_year').value;
+        const link = document.getElementById('edu_link')?.value || '';
+        if (degree && year) {
+            wizardData.education.push({ degree, year, link });
+            document.getElementById('edu_degree').value = '';
+            document.getElementById('edu_year').value = '';
+            if (document.getElementById('edu_link')) document.getElementById('edu_link').value = '';
+            renderWizardList('education');
+        } else alert("Please provide degree and year.");
+    });
+
+    document.getElementById('btn-add-train')?.addEventListener('click', () => {
+        const title = document.getElementById('train_title').value;
+        const hours = document.getElementById('train_hours').value;
+        const link = document.getElementById('train_link')?.value || '';
+        if (title && hours) {
+            wizardData.training.push({ title, hours, link });
+            document.getElementById('train_title').value = '';
+            document.getElementById('train_hours').value = '';
+            if (document.getElementById('train_link')) document.getElementById('train_link').value = '';
+            renderWizardList('training');
+        } else alert("Please provide title and hours.");
+    });
+
+    document.getElementById('btn-add-exp')?.addEventListener('click', () => {
+        const details = document.getElementById('exp_details').value;
+        const years = document.getElementById('exp_years').value;
+        const link = document.getElementById('exp_link')?.value || '';
+        if (details && years) {
+            wizardData.experience.push({ details, years, link });
+            document.getElementById('exp_details').value = '';
+            document.getElementById('exp_years').value = '';
+            if (document.getElementById('exp_link')) document.getElementById('exp_link').value = '';
+            renderWizardList('experience');
+        } else alert("Please provide details and years.");
+    });
+
+    document.getElementById('btn-add-elig')?.addEventListener('click', () => {
+        const details = document.getElementById('elig_details').value;
+        const rating = document.getElementById('elig_rating').value;
+        const link = document.getElementById('elig_link')?.value || '';
+        if (details && rating) {
+            wizardData.eligibility.push({ details, rating, link });
+            document.getElementById('elig_details').value = '';
+            document.getElementById('elig_rating').value = '';
+            if (document.getElementById('elig_link')) document.getElementById('elig_link').value = '';
+            renderWizardList('eligibility');
+        } else alert("Please provide details and rating.");
+    });
+
+    // Initial render
+    ['education', 'training', 'experience', 'eligibility'].forEach(renderWizardList);
+
+    const addAppForm = document.getElementById('addApplicantForm');
+    if (addAppForm) {
+        addAppForm.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
+        
+        addAppForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+            btn.disabled = true;
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            data.education = JSON.stringify(wizardData.education);
+            data.training = JSON.stringify(wizardData.training);
+            data.experience = JSON.stringify(wizardData.experience);
+            data.eligibility = JSON.stringify(wizardData.eligibility);
 
         try {
             const res = await fetch('/api/applicants', {
@@ -424,7 +532,8 @@
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
-    });
+        });
+    }
 </script>
 
 {{> modals}}

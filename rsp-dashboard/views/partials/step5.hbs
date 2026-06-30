@@ -31,7 +31,13 @@
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
                             <td>{{this.assignedOffice}}</td>
-                            <td>{{this.interviewScore}}</td>
+                            <td class="fw-bold text-success">
+                                {{#unless (eq this.scores.total null)}}
+                                    {{this.scores.total}}
+                                {{else}}
+                                    -
+                                {{/unless}}
+                            </td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-primary action-btn" onclick="printLetter('{{this.name}}', '{{this.assignedOffice}}', '', '{{this.category}}')">
                                     <i class="bi bi-file-earmark-pdf"></i> Generate PDF
