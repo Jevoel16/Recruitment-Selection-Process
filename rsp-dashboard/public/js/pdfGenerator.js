@@ -241,3 +241,184 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
         console.error('Failed to update status', e);
     }
 }
+
+window.printInitialEvalPdf = async function(id) {
+    const { jsPDF } = window.jspdf || window;
+    if (!jsPDF) {
+        alert('jsPDF library failed to load.');
+        return;
+    }
+
+    let data;
+    try {
+        const res = await fetch(`/api/applicants/${id}/details`);
+        data = await res.json();
+    } catch(err) {
+        alert('Failed to fetch applicant data');
+        return;
+    }
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    let hasCustomFont = false;
+    try {
+        const fontRes = await fetch('/fonts/Canterbury.ttf');
+        if (fontRes.ok) {
+            const arrayBuffer = await fontRes.arrayBuffer();
+            let binary = '';
+            const bytes = new Uint8Array(arrayBuffer);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64Font = btoa(binary);
+            doc.addFileToVFS('Canterbury.ttf', base64Font);
+            doc.addFont('Canterbury.ttf', 'Canterbury', 'normal');
+            hasCustomFont = true;
+        }
+    } catch (err) {
+        console.error('Failed to load Canterbury font', err);
+    }
+
+    const seal1 = await loadImageForPDF('/images/logos/DepEd Seal.png');
+    if (seal1) doc.addImage(seal1, 'PNG', 92.5, 2.5, 25, 15);
+
+    doc.setFont('Times', 'bold');
+    doc.setFontSize(10);
+    doc.rect(160, 10, 30, 8);
+    doc.text('ANNEX E-3', 175, 15.5, { align: 'center' });
+
+    if (hasCustomFont) {
+        doc.setFont("Canterbury", "normal");
+        doc.setFontSize(11);
+    } else {
+        doc.setFont("Times", "normal");
+        doc.setFontSize(11);
+    }
+    doc.setTextColor(0);
+    doc.text("Republic of the Philippines", 105, 23, { align: "center" });
+    
+    if (hasCustomFont) {
+        doc.setFont("Canterbury", "normal");
+        doc.setFontSize(16);
+    } else {
+        doc.setFont("Times", "bold");
+        doc.setFontSize(16);
+    }
+    doc.text("Department of Education", 105, 28, { align: "center" });
+    
+    doc.setFont("Times", "bold");
+    doc.setFontSize(10);
+    doc.text("REGION X-NORTHERN MINDANAO", 105, 33, { align: "center" });
+    doc.text("PERSONNEL DIVISION", 105, 37, { align: "center" });
+
+    const d = new Date();
+    const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    doc.setFont('Times', 'normal');
+    doc.setFontSize(11);
+    doc.text(dateStr, 20, 50);
+
+    const appName = data.name || 'Unknown Applicant';
+    doc.setFont('Times', 'bold');
+    doc.text(appName.toUpperCase(), 20, 60);
+    
+    doc.setFont('Times', 'normal');
+    const address = data.address || 'Iligan City';
+    doc.text(address, 20, 65);
+
+    doc.text(`Dear ${appName.split(' ')[0]},`, 20, 80);
+    doc.setFont('Times', 'bold');
+    doc.text('Congratulations!', 20, 90);
+
+    doc.setFont('Times', 'normal');
+    const pos = data.position || 'Applicant';
+    const office = data.assignedOffice || 'Schools Division of Iligan City';
+    
+    const p1 = `We are pleased to inform you that based on the initial evaluation, we have found your qualifications to be substantial vis-a-vis the Civil Service Commission (CSC) approved Qualification Standards (QS) of ${pos} position under ${office}. Below are the results of the initial evaluation conducted by the undersigned dated ${dateStr}:`;
+    
+    const lines = doc.splitTextToSize(p1, 170);
+    doc.text(lines, 20, 100);
+
+    let startY = 125;
+    doc.setDrawColor(0);
+    doc.setFillColor(230, 230, 230);
+    doc.rect(20, startY, 170, 8, 'F');
+    doc.rect(20, startY, 170, 8);
+    
+    doc.setFont('Times', 'bold');
+    doc.setFontSize(9);
+    doc.text('Position Applied for', 22, startY + 5);
+    doc.text('CSC-approved QS', 57, startY + 5);
+    doc.text('Your Qualifications', 107, startY + 5);
+    doc.text('Remarks', 162, startY + 5);
+
+    const getRemark = (items) => {
+        if(!items || items.length === 0) return 'Disqualified';
+        if(items.some(i => i.status === 'DISQUALIFIED')) return 'Disqualified';
+        if(items.some(i => i.status === 'PENDING' || !i.status)) return 'Pending';
+        return 'Qualified';
+    };
+
+    const rows = [
+        { qs: 'Education: \n' + (data.positionStandards?.qsEducation || 'N/A'), app: (data.education || []).map(e => e.degree || e.title).join(', ') || 'None', rm: getRemark(data.education) },
+        { qs: 'Experience: \n' + (data.positionStandards?.qsExperience || 'N/A'), app: (data.experience || []).map(e => e.details).join(', ') || 'None', rm: getRemark(data.experience) },
+        { qs: 'Training: \n' + (data.positionStandards?.qsTraining || 'N/A'), app: (data.training || []).map(e => e.title).join(', ') || 'None', rm: getRemark(data.training) },
+        { qs: 'Eligibility: \n' + (data.positionStandards?.qsEligibility || 'N/A'), app: (data.eligibility || []).map(e => e.title || e.details).join(', ') || 'None', rm: getRemark(data.eligibility) === 'Qualified' ? 'Eligible' : getRemark(data.eligibility) }
+    ];
+
+    let currentY = startY + 8;
+    doc.setFont('Times', 'normal');
+
+    rows.forEach((row, i) => {
+        const qsLines = doc.splitTextToSize(row.qs, 46);
+        const appLines = doc.splitTextToSize(row.app, 51);
+        const maxLines = Math.max(qsLines.length, appLines.length);
+        const rowHeight = Math.max(10, maxLines * 5);
+
+        doc.rect(20, currentY, 170, rowHeight);
+        if (i === 0) {
+            const titleLines = doc.splitTextToSize(pos, 31);
+            doc.setFont('Times', 'bold');
+            doc.text(titleLines, 22, currentY + 5);
+            doc.setFont('Times', 'normal');
+        }
+        doc.text(qsLines, 57, currentY + 5);
+        doc.text(appLines, 107, currentY + 5);
+        doc.text(row.rm, 162, currentY + 5);
+
+        doc.line(55, currentY, 55, currentY + rowHeight);
+        doc.line(105, currentY, 105, currentY + rowHeight);
+        doc.line(160, currentY, 160, currentY + rowHeight);
+
+        currentY += rowHeight;
+    });
+
+    currentY += 10;
+    doc.setFont('Times', 'normal');
+    doc.setFontSize(11);
+    const appCode = data.applicationCode || '[Application Code]';
+    const p2 = `Please be advised of your assigned application code ${appCode} which shall be used as you proceed with the next stage of the selection process. You may refer to the official issuances of SDO Iligan City for the additional announcements in this regard.`;
+    doc.text(doc.splitTextToSize(p2, 170), 20, currentY);
+
+    currentY += 15;
+    doc.text('For inquiries, you may contact personnel000@deped.gov.ph.', 20, currentY);
+
+    currentY += 10;
+    doc.text('Thank you.', 20, currentY);
+
+    currentY += 15;
+    doc.text('Very truly yours,', 20, currentY);
+
+    currentY += 25;
+    doc.setFont('Times', 'bold');
+    doc.text('HRMO DESIGNATE', 20, currentY);
+    doc.setFont('Times', 'normal');
+    doc.text('Human Resource Management Officer', 20, currentY + 5);
+
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text('(Insert Office Address)', 20, 275);
+    doc.text('(Insert Telephone Nos.): (02) 0000-0000 Insert Email Address: personnel000@deped.gov.ph', 20, 280);
+
+    doc.save(`Initial_Eval_${appName.replace(/\\s+/g, '_')}.pdf`);
+}

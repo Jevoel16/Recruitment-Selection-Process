@@ -1499,3 +1499,36 @@ async function startServer() {
 }
 
 startServer();
+
+app.put('/api/education/:id', async (req, res) => {
+    try {
+        const { degree, yearGraduated } = req.body;
+        await db.execute('UPDATE applicant_education SET degree = ?, yearGraduated = ? WHERE id = ?', [degree, yearGraduated, req.params.id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/training/:id', async (req, res) => {
+    try {
+        const { title, hours } = req.body;
+        await db.execute('UPDATE applicant_training SET title = ?, hours = ? WHERE id = ?', [title, hours, req.params.id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/experience/:id', async (req, res) => {
+    try {
+        const { details, years } = req.body;
+        await db.execute('UPDATE applicant_experience SET details = ?, years = ? WHERE id = ?', [details, years, req.params.id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/eligibility/:id', async (req, res) => {
+    try {
+        const { details, rating } = req.body;
+        await db.execute('UPDATE applicant_eligibility SET details = ?, rating = ? WHERE id = ?', [details, rating, req.params.id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+

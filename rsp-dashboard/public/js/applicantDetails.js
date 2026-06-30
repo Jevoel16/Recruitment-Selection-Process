@@ -113,7 +113,7 @@ async function openInfoModal(id) {
         alert(error.message); }
 }
 
-async function openSummaryModal(id, name) {
+async function openSummaryModal(id, name, hideActions = false) {
     try {
         document.getElementById('summaryApplicantId').value = id;
         document.getElementById('summaryApplicantName').innerText = name;
@@ -161,15 +161,23 @@ async function openSummaryModal(id, name) {
         const hasPending = checkPending(data.education) || checkPending(data.training) || checkPending(data.experience) || checkPending(data.eligibility);
         
         const sumQualifyBtn = document.getElementById('summaryQualifyBtn');
-        if (sumQualifyBtn) {
-            sumQualifyBtn.disabled = hasPending;
-            if (hasPending) {
-                sumQualifyBtn.title = "All documents must be evaluated first";
-                sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Assess all docs to Qualify';
-            } else {
-                sumQualifyBtn.title = "";
-                sumQualifyBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Qualify & Move to Step 2';
+        const sumDisqualifyBtn = document.getElementById('summaryDisqualifyBtn');
+        if (hideActions) {
+            if (sumQualifyBtn) sumQualifyBtn.style.display = 'none';
+            if (sumDisqualifyBtn) sumDisqualifyBtn.style.display = 'none';
+        } else {
+            if (sumQualifyBtn) {
+                sumQualifyBtn.style.display = 'inline-block';
+                sumQualifyBtn.disabled = hasPending;
+                if (hasPending) {
+                    sumQualifyBtn.title = "All documents must be evaluated first";
+                    sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Assess all docs to Qualify';
+                } else {
+                    sumQualifyBtn.title = "";
+                    sumQualifyBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Qualify & Move to Step 2';
+                }
             }
+            if (sumDisqualifyBtn) sumDisqualifyBtn.style.display = 'inline-block';
         }
 
         bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).show();
@@ -191,5 +199,55 @@ window.confirmSummaryDisqualify = () => {
     fetch(`/api/applicants/${id}/disqualify`, { method: 'POST' })
         .then(res => res.ok ? window.location.reload() : alert('Error'))
         .catch(err => console.error(err));
+}
+
+
+window.openApplicantDetailsModal = function(id, name, assignedOffice, category, appCode, status) {
+    document.getElementById('unifiedModalId').value = id;
+    document.getElementById('unifiedModalName').innerText = name;
+    document.getElementById('unifiedModalAssignedOffice').value = assignedOffice || '';
+    document.getElementById('unifiedModalCategory').value = category || '';
+    document.getElementById('unifiedModalAppCode').value = appCode || '';
+
+    const hasStep2 = ['WAITING_FOR_ASSESSMENT', 'ASSESSED', 'WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
+    const hasStep4 = ['WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
+    const hasStep5 = ['ASSIGNED', 'COMPLETED'].includes(status);
+
+    const btnEval = document.getElementById('unifiedBtnEval');
+    const btnAssessSum = document.getElementById('unifiedBtnAssessSum');
+    const btnReq = document.getElementById('unifiedBtnReq');
+    const btnPdf = document.getElementById('unifiedBtnPdf');
+
+    if (btnEval) btnEval.disabled = !hasStep2;
+    if (btnAssessSum) btnAssessSum.disabled = !hasStep2;
+    if (btnReq) btnReq.disabled = !hasStep4;
+    if (btnPdf) btnPdf.disabled = !hasStep5;
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('unifiedDetailsModal')).show();
+}
+
+window.launchFromUnified = function(type) {
+    // We intentionally DO NOT hide the unifiedDetailsModal here, 
+    // so the requested sub-modal appears over it.
+    
+    const id = document.getElementById('unifiedModalId').value;
+    const name = document.getElementById('unifiedModalName').innerText;
+    const assignedOffice = document.getElementById('unifiedModalAssignedOffice').value;
+    const category = document.getElementById('unifiedModalCategory').value;
+    const appCode = document.getElementById('unifiedModalAppCode').value;
+
+    switch(type) {
+        case 'info': openInfoModal(id); break;
+        case 'edu': openEduModal(id); break;
+        case 'train': openTrainModal(id); break;
+        case 'exp': openExpModal(id); break;
+        case 'elig': openEligModal(id); break;
+        case 'step1_summary': openSummaryModal(id, name, true); break;
+        case 'step1_pdf': printInitialEvalPdf(id); break;
+        case 'eval_assessment': openAssessmentModal(id, name); break;
+        case 'step2_summary': openStep2SummaryModal(id, name, true); break;
+        case 'requirements': openRequirementsModal(id, name); break;
+        case 'generate_pdf': printLetter(id, name, assignedOffice, '', category, appCode); break;
+    }
 }
 

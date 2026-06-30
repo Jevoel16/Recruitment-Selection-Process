@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-01 01:59 (v0.8.1-Alpha+202607010159)
+### ADDED
+- Implemented "Generate PDF (Eval)" capability for applicants in Step 1, producing formatted Initial Evaluation documents based on the official ANNEX E-3 template. The button is correctly locked until an applicant's remarks are updated to 'Assessed'.
+- Added fully functional edit (pencil) icons to the Education, Training, Experience, and Eligibility modals, allowing for real-time document updates.
+- Added matching `PUT` API endpoints to `server.js` to process document updates seamlessly without page reloads.
+
+### CHANGED
+- Redesigned the "View Requirements" modal into a modern 3-column checklist UI and extracted it into a unified partial (`modal_requirements.hbs`) ensuring design consistency across the Masterlist and Step 4 workflows.
+- Replaced standalone "View Certificate" links in document modals with compact edit/delete action button groups.
+- Restructured `dashboard_modals.hbs` stacking order to ensure all dynamically generated sub-modals render correctly in front of the parent Applicant Details modal.
+
 ## 2026-06-30 16:30 (v0.8.0-Alpha+202606301630)
 ### ADDED
 - Implemented an `Assigned Office` filter within the Step 5 (Assignment Orders) module to categorize outputs.

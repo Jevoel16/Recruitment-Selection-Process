@@ -39,12 +39,12 @@
                     <table class="table table-hover align-middle mb-0 bg-white">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4">Tracking #</th>
+                                <th class="ps-4">Application Code</th>
                                 <th>Applicant Name</th>
                                 <th>Category</th>
                                 <th>Position</th>
-                                <th>Current Status / Step</th>
-                                <th class="text-center pe-4">Info</th>
+                                <th>Current Step</th>
+                                <th class="text-center pe-4">Applicant Details</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -65,7 +65,7 @@
                                     {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Completed</span>{{/if}}
                                 </td>
                                 <td class="text-center pe-4">
-                                    <button class="btn btn-sm btn-outline-primary shadow-sm rounded-circle px-2 py-1" onclick="openInfoModal({{this.id}})" title="Personal Info"><i class="bi bi-person-lines-fill"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary shadow-sm rounded-circle px-2 py-1" onclick="openApplicantDetailsModal({{this.id}}, '{{this.name}}', '{{this.assignedOffice}}', '{{this.category}}', '{{this.applicationCode}}', '{{this.status}}')" title="Applicant Details"><i class="bi bi-card-list"></i></button>
                                 </td>
                             </tr>
                             {{else}}
@@ -94,4 +94,4 @@
                     </ul>
                 </nav>
             </div>
-        </div>
+        </div>

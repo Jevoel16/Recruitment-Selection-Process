@@ -73,6 +73,11 @@
                                 {{#if (eq this.status 'PENDING')}}
                                 <button class="btn btn-sm btn-primary action-btn" data-name="{{this.name}}" onclick="openSummaryModal({{this.id}}, this.getAttribute('data-name'))"><i class="bi bi-arrow-right-circle"></i> Move to Step 2</button>
                                 {{/if}}
+                                {{#if (eq this.docRemark 'Assessed')}}
+                                <button class="btn btn-sm btn-danger action-btn ms-1" onclick="printInitialEvalPdf({{this.id}})"><i class="bi bi-file-earmark-pdf"></i> Generate PDF (Eval)</button>
+                                {{else}}
+                                <button class="btn btn-sm btn-secondary action-btn ms-1" disabled title="Requires Assessed remarks"><i class="bi bi-file-earmark-pdf"></i> Generate PDF (Eval)</button>
+                                {{/if}}
                                 <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
                             </td>
                         </tr>

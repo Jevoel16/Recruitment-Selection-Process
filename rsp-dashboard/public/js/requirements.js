@@ -89,14 +89,14 @@ async function openRequirementsModal(id, skipFetch = false) {
 
         const itemsHtml = REQUIREMENT_FIELDS.map(({ field, label }) => {
             const checked = app[field] ? 'checked' : '';
+            const bgClass = app[field] ? 'bg-success bg-opacity-10 border-success border-opacity-50' : 'bg-white border-light-subtle';
             return `
-                <div class="col-md-6">
-                    <label class="requirement-item d-flex align-items-start gap-3 p-3 rounded-3 border h-100">
-                        <input class="form-check-input mt-1" type="checkbox" ${checked} onchange="updateRequirementField(${id}, '${field}', this.checked)">
-                        <span>
-                            <span class="d-block fw-semibold">${label}</span>
-                            <small class="text-muted">Stored as a boolean requirement flag.</small>
-                        </span>
+                <div class="col-md-6 col-lg-4">
+                    <label class="d-flex align-items-center p-3 rounded-3 border ${bgClass} transition-all cursor-pointer shadow-sm h-100" style="cursor: pointer;">
+                        <div class="d-flex align-items-center gap-3 w-100">
+                            <input class="form-check-input mt-0 shadow-none border-secondary" style="width: 1.25rem; height: 1.25rem; cursor: pointer;" type="checkbox" ${checked} onchange="updateRequirementField(${id}, '${field}', this.checked)">
+                            <span class="fw-semibold text-dark m-0" style="font-size: 0.95rem;">${label}</span>
+                        </div>
                     </label>
                 </div>
             `;
@@ -110,20 +110,26 @@ async function openRequirementsModal(id, skipFetch = false) {
 
         document.getElementById('requirementsModalBody').innerHTML = `
             <input type="hidden" id="requirementsApplicantId" value="${id}">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            
+            <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-4 border">
                 <div>
-                    <h6 class="mb-1">${app.name}</h6>
-                    <div class="text-muted small">Toggle each checkbox to save it immediately.</div>
+                    <h6 class="mb-0 fw-bold text-dark">${app.name}</h6>
+                    <small class="text-muted">Click items to toggle completion</small>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span id="requirements-overall-status" class="badge ${isComplete ? 'bg-success' : 'bg-warning text-dark'}">${isComplete ? 'Complete' : 'Incomplete'}</span>
-                    <button type="button" class="btn ${btnClass} btn-sm" onclick="setAllRequirements(${id}, ${targetValue})">
-                        <i class="bi ${btnIcon}"></i> ${btnText}
-                    </button>
+                <div class="text-end">
+                    <span id="requirements-overall-status" class="badge ${isComplete ? 'bg-success' : 'bg-warning text-dark'} mb-2 d-block py-2 px-3 rounded-pill">${isComplete ? 'Complete' : 'Incomplete'}</span>
                 </div>
             </div>
-            <div class="row g-3">
+
+            <div class="row g-2 mb-4" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;">
                 ${itemsHtml}
+            </div>
+
+            <div class="d-flex justify-content-end pt-3 border-top gap-2">
+                <button type="button" class="btn ${btnClass} flex-grow-1" onclick="setAllRequirements(${id}, ${targetValue})">
+                    <i class="bi ${btnIcon}"></i> ${btnText}
+                </button>
+                <button type="button" class="btn btn-secondary flex-grow-1" data-bs-dismiss="modal">Close</button>
             </div>
         `;
 
