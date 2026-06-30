@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-06-30 09:25 (v0.7.0-Alpha+202606300925)
+### ADDED
+- Masterlist integrated natively into the Dashboard tabs alongside Vacancy Setup.
+- Added standard circle/ellipsis pagination to the Masterlist view.
+- Extended the "New Applicant Wizard" into a multi-step sequence (Personal Info, Education, Training, Experience, Eligibility).
+- Added `Middle Name` field to the applicant submission form.
+- Introduced a `Slot` column within the Vacancy Setup, mapped directly from the vacancy counts.
+- Implemented a vacancy status filter (Vacant/Non-vacant/All) in the Dashboard.
+- Added hard restrictions: Plantilla Items are limited to 100 entries, and saving is blocked if fields are left empty.
+
+### CHANGED
+- Unified pagination styling components across Step 2 position selection and Masterlist.
+- Removed the standalone "Masterlist" link from the sidebar menu in favor of Dashboard tab integration.
+- Consolidated "Add Applicant" modal layout to match the visual width and structure of other side panel UI components.
+
 ## 2026-06-29 16:50 (v0.6.0-Alpha+202606291650)
 ### ADDED
 - Dynamic Plantilla setup with auto-generating fields corresponding to Vacancy Counts.

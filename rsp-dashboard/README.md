@@ -10,6 +10,8 @@ A web-based platform to digitize the recruitment selection process.
 ## Features
 - **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades and fully editable text-based qualification standards.
 - **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values.
+- **Masterlist & Vacancy Dashboard:** Centralized dashboard for managing applicant masterlists alongside dynamic vacancy toggles and slot monitoring.
+- **Multi-Step Applicant Wizard:** Seamless data entry flow for applicant information ranging from Personal details to Education, Training, Experience, and Eligibility.
 - **Step 1:** Notice of Requirements (Qualify/Disqualify Applicants)
 - **Step 2:** Deliberation Sheet (Assess & Input Interview Scores)
 - **Step 3:** Comparative Assessments (Leaderboard based on Scores)

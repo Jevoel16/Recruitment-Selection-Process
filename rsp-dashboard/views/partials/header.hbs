@@ -34,8 +34,8 @@
                         <i class="bi bi-speedometer2 fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Dashboard</span>
                     </a>
                 </li>
-                <li class="nav-item mb-2 mt-1">
-                    <a href="/add-applicant" class="nav-link text-white w-100 text-start p-3 rounded-3 shadow-sm btn-add-glass border-0" title="Add Applicant" style="{{#unless addApplicantActive}}background-color: var(--bs-primary);{{else}}background-color: var(--bs-primary-dark);{{/unless}}">
+                <li class="nav-item">
+                    <a href="/add-applicant" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if addApplicantActive}}active{{/if}}" title="Add Applicant">
                         <i class="bi bi-person-plus-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Add Applicant</span>
                     </a>
                 </li>

@@ -71,7 +71,9 @@ app.get('/dashboard', async (req, res) => {
         const groupedPositions = {};
         let totalVacantCount = 0;
         let totalPositionsCount = 0;
+        let positionList = [];
         for (const row of rows) {
+            if (row.title) positionList.push(row.title);
             if (!groupedPositions[row.category]) {
                 groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [], vacantCount: 0, totalCount: 0 };
             }
@@ -84,7 +86,69 @@ app.get('/dashboard', async (req, res) => {
             }
             groupedPositions[row.category].positions.push(row);
         }
-        res.render('dashboard', { dashboardActive: true, groupedPositions, totalVacantCount, totalPositionsCount });
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const offset = (page - 1) * limit;
+        const searchQuery = req.query.q || '';
+        const positionFilter = req.query.position || '';
+
+        let baseQuery = `FROM applicants WHERE 1=1`;
+        const queryParams = [];
+
+        if (searchQuery) {
+            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+            const searchPattern = `%${searchQuery}%`;
+            queryParams.push(searchPattern, searchPattern);
+        }
+
+        if (positionFilter) {
+            baseQuery += ` AND position = ?`;
+            queryParams.push(positionFilter);
+        }
+
+        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
+        const totalRecords = countResult[0].total;
+        const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+        const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
+
+        const showMasterlist = req.query.tab === 'masterlist';
+
+        const pagination = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                let pUrl = `/dashboard?tab=masterlist&page=${i}&`;
+                if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
+                if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
+                pagination.push({
+                    page: i,
+                    isCurrent: i === page,
+                    url: pUrl.replace(/&$/, '')
+                });
+            } else if (i === page - 3 || i === page + 3) {
+                pagination.push({ isEllipsis: true, page: '...' });
+            }
+        }
+        const cleanPagination = pagination.filter((p, index, arr) => {
+            if (p.isEllipsis && arr[index - 1] && arr[index - 1].isEllipsis) return false;
+            return true;
+        });
+
+        res.render('dashboard', { 
+            dashboardActive: true, 
+            groupedPositions, 
+            totalVacantCount, 
+            totalPositionsCount,
+            applicants,
+            currentPage: page,
+            totalPages,
+            searchQuery,
+            positionFilter,
+            positionList: Array.from(new Set(positionList)).sort(),
+            pagination: cleanPagination,
+            showMasterlist
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Database error');
@@ -99,7 +163,9 @@ app.get('/dashboard/:id', async (req, res, next) => {
         let selectedPosition = null;
         let totalVacantCount = 0;
         let totalPositionsCount = 0;
+        let positionList = [];
         for (const row of rows) {
+            if (row.title) positionList.push(row.title);
             if (row.id == req.params.id) selectedPosition = row;
             if (!groupedPositions[row.category]) {
                 groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [], vacantCount: 0, totalCount: 0 };
@@ -113,7 +179,70 @@ app.get('/dashboard/:id', async (req, res, next) => {
             }
             groupedPositions[row.category].positions.push(row);
         }
-        res.render('dashboard', { dashboardActive: true, groupedPositions, selectedPosition, totalVacantCount, totalPositionsCount });
+        
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const offset = (page - 1) * limit;
+        const searchQuery = req.query.q || '';
+        const positionFilter = req.query.position || '';
+
+        let baseQuery = `FROM applicants WHERE 1=1`;
+        const queryParams = [];
+
+        if (searchQuery) {
+            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+            const searchPattern = `%${searchQuery}%`;
+            queryParams.push(searchPattern, searchPattern);
+        }
+
+        if (positionFilter) {
+            baseQuery += ` AND position = ?`;
+            queryParams.push(positionFilter);
+        }
+
+        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
+        const totalRecords = countResult[0].total;
+        const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+        const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
+
+        const showMasterlist = req.query.tab === 'masterlist';
+
+        const pagination = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                let pUrl = `/dashboard/${req.params.id}?tab=masterlist&page=${i}&`;
+                if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
+                if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
+                pagination.push({
+                    page: i,
+                    isCurrent: i === page,
+                    url: pUrl.replace(/&$/, '')
+                });
+            } else if (i === page - 3 || i === page + 3) {
+                pagination.push({ isEllipsis: true, page: '...' });
+            }
+        }
+        const cleanPagination = pagination.filter((p, index, arr) => {
+            if (p.isEllipsis && arr[index - 1] && arr[index - 1].isEllipsis) return false;
+            return true;
+        });
+
+        res.render('dashboard', { 
+            dashboardActive: true, 
+            groupedPositions, 
+            selectedPosition,
+            totalVacantCount, 
+            totalPositionsCount,
+            applicants,
+            currentPage: page,
+            totalPages,
+            searchQuery,
+            positionFilter,
+            positionList: Array.from(new Set(positionList)).sort(),
+            pagination: cleanPagination,
+            showMasterlist
+        });
     } catch (e) {
         console.error(e);
         res.status(500).send('Error');
@@ -168,6 +297,57 @@ app.get('/add-applicant', async (req, res) => {
             groupedPositions[row.category].positions.push(row);
         }
         res.render('add-applicant', { addApplicantActive: true, groupedPositions });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database error');
+    }
+});
+
+app.get('/masterlist', async (req, res) => {
+    res.redirect('/masterlist/1');
+});
+
+app.get('/masterlist/:page', async (req, res) => {
+    const page = parseInt(req.params.page) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const searchQuery = req.query.q || '';
+    const positionFilter = req.query.position || '';
+
+    let baseQuery = `FROM applicants WHERE 1=1`;
+    const queryParams = [];
+
+    if (searchQuery) {
+        baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+        const searchPattern = `%${searchQuery}%`;
+        queryParams.push(searchPattern, searchPattern);
+    }
+
+    if (positionFilter) {
+        baseQuery += ` AND position = ?`;
+        queryParams.push(positionFilter);
+    }
+
+    try {
+        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
+        const totalRecords = countResult[0].total;
+        const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+        const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
+
+        const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
+        const positionList = positions.map(p => p.position);
+
+        res.render('masterlist', {
+            masterlistActive: true,
+            applicants: rows,
+            currentPage: page,
+            totalPages,
+            searchQuery,
+            positionFilter,
+            positionList,
+            paginationArray: Array.from({ length: totalPages }, (_, i) => i + 1)
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Database error');
@@ -367,7 +547,13 @@ async function syncAssignmentRequirementStatus(id) {
 // Add new applicant
 app.post('/api/applicants', async (req, res) => {
     try {
-        const { firstName, lastName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position } = req.body;
+        const { 
+            firstName, lastName, middleName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position,
+            eduDegree, eduYear, eduLink,
+            trainTitle, trainHours, trainLink,
+            expDetails, expYears, expLink,
+            eligDetails, eligRating, eligLink
+        } = req.body;
         
         let positionCode = 'POS';
         switch(position) {
@@ -389,13 +575,27 @@ app.post('/api/applicants', async (req, res) => {
 
         const [result] = await db.query(
             'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-            [firstName, lastName, '', 'Walk-in', null, category || null, position || null, 'TEMP', address || null, age || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
+            [firstName, lastName, middleName || '', 'Walk-in', null, category || null, position || null, 'TEMP', address || null, age || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
         );
         
         const applicantId = result.insertId;
         const newCode = `${positionCode}-${sy}-${applicantId}`;
         
         await db.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
+
+        // Insert optional related data if provided
+        if (eduDegree && eduYear) {
+            await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, eduDegree, eduYear, eduLink || '']);
+        }
+        if (trainTitle && trainHours) {
+            await db.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, trainTitle, trainHours, trainLink || '']);
+        }
+        if (expDetails && expYears) {
+            await db.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, expDetails, expYears, expLink || '']);
+        }
+        if (eligDetails && eligRating) {
+            await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, eligDetails, eligRating, eligLink || '']);
+        }
 
         console.log(`[ENTRY] New Application Created: ${newCode} (${firstName} ${lastName})`);
         res.json({ success: true, applicationCode: newCode, id: applicantId });
