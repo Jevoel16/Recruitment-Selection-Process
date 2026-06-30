@@ -1,0 +1,97 @@
+        <!-- Masterlist Tab -->
+        <div class="tab-pane fade {{#if showMasterlist}}show active{{/if}}" id="masterlist" role="tabpanel">
+            <div class="glass-panel p-4 rounded-4 shadow-sm h-100 position-relative">
+                <div class="mb-3">
+                    <form method="GET" action="/dashboard" class="row g-2">
+                        <input type="hidden" name="tab" value="masterlist">
+                        <div class="col-md-6">
+                            <div class="input-group glass-panel h-100 shadow-sm">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name, applicant code, or position..." value="{{searchQuery}}" onkeypress="if(event.key === 'Enter') this.form.submit();">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
+                                <select name="category" class="form-select border-0 shadow-none bg-transparent" onchange="this.form.submit()">
+                                    <option value="">All Categories</option>
+                                    <option value="Non-Teaching" {{#if (eq categoryFilter 'Non-Teaching')}}selected{{/if}}>Non-Teaching</option>
+                                    <option value="Related Teaching" {{#if (eq categoryFilter 'Related Teaching')}}selected{{/if}}>Related Teaching</option>
+                                    <option value="School Administration" {{#if (eq categoryFilter 'School Administration')}}selected{{/if}}>School Administration</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
+                                <select name="step" class="form-select border-0 shadow-none bg-transparent" onchange="this.form.submit()">
+                                    <option value="">All Steps</option>
+                                    <option value="step1" {{#if (eq stepFilter 'step1')}}selected{{/if}}>Step 1 (Documents)</option>
+                                    <option value="step2" {{#if (eq stepFilter 'step2')}}selected{{/if}}>Step 2 (Qualifications)</option>
+                                    <option value="step3" {{#if (eq stepFilter 'step3')}}selected{{/if}}>Step 3 (Assessment)</option>
+                                    <option value="step4" {{#if (eq stepFilter 'step4')}}selected{{/if}}>Step 4 (Requirements)</option>
+                                    <option value="step5" {{#if (eq stepFilter 'step5')}}selected{{/if}}>Step 5 (Assignment)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="rounded-4 overflow-hidden shadow-sm border border-light">
+                    <table class="table table-hover align-middle mb-0 bg-white">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Tracking #</th>
+                                <th>Applicant Name</th>
+                                <th>Category</th>
+                                <th>Position</th>
+                                <th>Current Status / Step</th>
+                                <th class="text-center pe-4">Info</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each applicants}}
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                                <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                                <td>{{this.category}}</td>
+                                <td>{{this.position}}</td>
+                                <td>
+                                    {{#if (eq this.status 'PENDING')}}<span class="badge bg-warning text-dark">Step 1: Pending</span>{{/if}}
+                                    {{#if (eq this.status 'QUALIFIED')}}<span class="badge bg-success">Step 1: Qualified</span>{{/if}}
+                                    {{#if (eq this.status 'DISQUALIFIED')}}<span class="badge bg-danger">Step 1: Disqualified</span>{{/if}}
+                                    {{#if (eq this.status 'WAITING_FOR_ASSESSMENT')}}<span class="badge bg-info text-dark">Step 2: Deliberation</span>{{/if}}
+                                    {{#if (eq this.status 'ASSESSED')}}<span class="badge bg-primary">Step 3: Assessment</span>{{/if}}
+                                    {{#if (eq this.status 'WAITING')}}<span class="badge bg-secondary">Step 4: Requirements</span>{{/if}}
+                                    {{#if (eq this.status 'ASSIGNED')}}<span class="badge bg-success shadow-sm border border-light">Step 5: Assigned</span>{{/if}}
+                                    {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Completed</span>{{/if}}
+                                </td>
+                                <td class="text-center pe-4">
+                                    <button class="btn btn-sm btn-outline-primary shadow-sm rounded-circle px-2 py-1" onclick="openInfoModal({{this.id}})" title="Personal Info"><i class="bi bi-person-lines-fill"></i></button>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                    No applicants found matching the criteria.
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination flex-wrap justify-content-center mb-0">
+                        {{#each pagination}}
+                            {{#if this.isEllipsis}}
+                                <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                            {{else}}
+                                <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                    <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                                </li>
+                            {{/if}}
+                        {{/each}}
+                    </ul>
+                </nav>
+            </div>
+        </div>

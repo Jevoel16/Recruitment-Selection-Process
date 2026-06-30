@@ -1,0 +1,86 @@
+    <!-- Outstanding Accomplishments Calculator Modal -->
+    <div class="modal fade glass-modal" id="outAccCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-secondary bg-opacity-10 text-secondary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-star-fill text-warning"></i> Outstanding Accomplishments</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="outAccNational" onchange="calculateOutAccPoints()">
+                        <label class="form-check-label fw-bold text-success" for="outAccNational">
+                            <i class="bi bi-trophy-fill"></i> National Level Individual Award
+                        </label>
+                        <div class="form-text small">Checking this will instantly grant Maximum Points.</div>
+                    </div>
+
+                    <div id="outAccComponentsDiv">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">a. Awards and Recognition (Max 4)</label>
+                            <select class="form-select form-select-sm" id="outAccAward" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="2">Citation (1) / Academic (1) / Outstanding Emp (Lower Level) (2 pts)</option>
+                                <option value="3">Citation (2) / Academic (2) (3 pts)</option>
+                                <option value="4">Citation (3+) / Academic (3+) / Outstanding Emp (Higher Level) (4 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">b. Research and Innovation (Max 4)</label>
+                            <select class="form-select form-select-sm" id="outAccResearch" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="1">MOV A only (1 pt)</option>
+                                <option value="2">MOVs A, B (2 pts)</option>
+                                <option value="3">MOVs A, B, C (3 pts)</option>
+                                <option value="4">MOVs A, B, C, D or E (4 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">c. SME / NTWGs (Max 3)</label>
+                            <select class="form-select form-select-sm" id="outAccSME" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="2">MOVs A & B only (2 pts)</option>
+                                <option value="3">All MOVs A, B, C (3 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">d. Resource Speakership (Max 2)</label>
+                            <select class="form-select form-select-sm" id="outAccSpeaker" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="1">Lower Level Speakership (1 pt)</option>
+                                <option value="2">Higher Level Speakership (2 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">e. NEAP Accredited Facilitator (Max 2)</label>
+                            <select class="form-select form-select-sm" id="outAccNEAP" onchange="calculateOutAccPoints()">
+                                <option value="0">None (0 pts)</option>
+                                <option value="1">Accredited Regional Trainer (1 pt)</option>
+                                <option value="1.5">Accredited National Trainer (1.5 pts)</option>
+                                <option value="2">Accredited National Assessor (2 pts)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted fw-bold">Sum of Components:</span>
+                        <span class="fs-6 fw-bold text-secondary" id="outAccSum">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted fw-bold">Max Allowed Points (SG Cap):</span>
+                        <span class="fs-6 fw-bold text-danger" id="outAccMax">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Final Credited Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedOutAccPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary text-white w-100 fw-bold shadow-sm" onclick="applyOutAccPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>

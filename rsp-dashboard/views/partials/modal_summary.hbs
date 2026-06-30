@@ -1,0 +1,28 @@
+    <!-- Step 1 Move to Step 2 Summary Modal -->
+    <div class="modal fade glass-modal" id="summaryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 bg-primary bg-opacity-10 text-primary pb-3">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-card-checklist"></i> Applicant Document Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="summaryApplicantId">
+                    <h5 id="summaryApplicantName" class="text-center text-primary fw-bold mb-4"></h5>
+                    
+                    <div id="summaryDetails" class="mb-4">
+                        <!-- Populated via JS -->
+                    </div>
+                    
+                    <hr class="my-4 border-secondary border-opacity-25">
+                    
+                    <div class="d-flex justify-content-end gap-3">
+                        <button type="button" class="btn btn-danger px-4 fw-bold" id="summaryDisqualifyBtn" onclick="disqualifyFromSummary()">Disqualify</button>
+                        <button type="button" class="btn btn-success px-4 fw-bold shadow-sm" id="summaryQualifyBtn">
+                            <i class="bi bi-check-circle me-1"></i> Qualify & Move to Step 2
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

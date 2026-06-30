@@ -1,0 +1,51 @@
+    <!-- Potential Calculator Modal -->
+    <div class="modal fade glass-modal" id="potentialCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-success bg-opacity-10 text-success">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-fill-up"></i> Potential Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="potentialGeneralDiv" class="d-none">
+                        <div class="alert alert-info small border-0">
+                            <strong>General Services Detected.</strong> According to guidelines, General Services uses alternative evaluative assessments designed by the HRMPSB. Enter the raw total score directly (Max 55 points).
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Total Potential Score</label>
+                            <input type="number" class="form-control" id="potGeneralInput" step="0.01" max="55" placeholder="e.g. 50" oninput="calculatePotentialPoints()">
+                        </div>
+                    </div>
+
+                    <div id="potentialOtherDiv">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">a. Written Examinations (WE) - Max 5 pts</label>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potWEInput" step="0.01" max="100" placeholder="Rating in percentage (0-100)" oninput="calculatePotentialPoints()">
+                            <div class="form-text mt-0">Score = (x / 100) * 5</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">b. Skills or Work Sample Test (S/WST) - Max 10 pts</label>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potSWSTInput" step="0.01" max="100" placeholder="Rating in percentage (0-100)" oninput="calculatePotentialPoints()">
+                            <div class="form-text mt-0">Score = (x / 100) * 10</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">c. Behavioural Events Interview (BEI) - Max 5 pts</label>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potBEIInput" step="0.01" max="5" placeholder="Raw BEI points (0-5)" oninput="calculatePotentialPoints()">
+                            <div class="form-text mt-0">Enter cumulative raw points given.</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Total Potential Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedPotentialPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success text-white w-100 fw-bold shadow-sm" onclick="applyPotentialPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -116,7 +116,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    transitionModal('addApplicantModal', 'openEduModal', data.id);
+                    document.getElementById('successApplicationCode').innerText = data.applicationCode;
+                    const successModalEl = document.getElementById('successModal');
+                    const modal = new bootstrap.Modal(successModalEl);
+                    
+                    // Cleanup current modal then show success modal
+                    const currentModal = bootstrap.Modal.getInstance(document.getElementById('addApplicantModal'));
+                    if (currentModal) currentModal.hide();
+                    
+                    document.getElementById('successModalProceedBtn').onclick = () => {
+                        transitionModal('successModal', 'openEduModal', data.id);
+                    };
+                    
+                    setTimeout(() => modal.show(), 400);
                 }
             } catch (err) {
                 console.error(err);

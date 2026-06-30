@@ -519,8 +519,14 @@
             });
             if (res.ok) {
                 const responseData = await res.json();
-                // Redirect directly to the new applicant's requirement page in step 1
-                window.location.href = `/step1/1?search=${encodeURIComponent(data.firstName + ' ' + data.lastName)}`;
+                document.getElementById('successApplicationCode').innerText = responseData.applicationCode;
+                const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                document.getElementById('successModalProceedBtn').onclick = () => {
+                    modal.hide();
+                    // Redirect directly to the new applicant's requirement page in step 1
+                    window.location.href = `/step1/1?search=${encodeURIComponent(data.firstName + ' ' + data.lastName)}`;
+                };
+                modal.show();
             } else {
                 alert('Failed to save applicant');
                 btn.innerHTML = originalText;

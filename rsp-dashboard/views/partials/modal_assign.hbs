@@ -1,0 +1,22 @@
+    <!-- Assign Modal -->
+    <div class="modal fade glass-modal" id="assignModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Assign Office / School</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assignForm">
+                        <input type="hidden" id="assignId">
+                        <p>Assigning: <strong id="assignName" class="text-success"></strong></p>
+                        <div class="mb-4">
+                            <label class="form-label">Assigned Office / School</label>
+                            <input type="text" class="form-control" id="assignedOffice" required placeholder="e.g. IT Department">
+                        </div>
+                        <button type="submit" class="btn btn-success text-white w-100">Confirm Assignment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>

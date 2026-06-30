@@ -6,7 +6,7 @@ const loadImageForPDF = (src) => new Promise((resolve) => {
     img.src = src;
 });
 
-window.printLetter = async function(name, office, dateStr, category, applicationCode) {
+window.printLetter = async function(id, name, office, dateStr, category, applicationCode) {
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
         alert('jsPDF library failed to load. Please try again.');
@@ -225,5 +225,19 @@ window.printLetter = async function(name, office, dateStr, category, application
     doc.text("Doc. Ref. Code: DEPED-ILIGAN-AO-2026   |   Rev: 00   |   Page 1 of 1", 110, 290, { align: "left" });
 
     // Save and download PDF
-    doc.save(`${name.replace(/\s+/g, '_')}_assignment_order.pdf`);
+    const currentDate = new Date();
+    const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const yyyy = currentDate.getFullYear();
+    const formattedDateStr = `${mm}${yyyy}`;
+    doc.save(`AO-${name.replace(/\s+/g, '_')}-${formattedDateStr}.pdf`);
+    
+    try {
+        await fetch(`/api/applicants/${id}/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        window.location.reload();
+    } catch (e) {
+        console.error('Failed to update status', e);
+    }
 }

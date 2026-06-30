@@ -1,0 +1,22 @@
+    <!-- Score Modal -->
+    <div class="modal fade glass-modal" id="scoreModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Input Interview Score</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scoreForm">
+                        <input type="hidden" id="scoreId">
+                        <p>Applicant: <strong id="scoreName" class="text-info"></strong></p>
+                        <div class="mb-3">
+                            <label class="form-label">Score (0-100)</label>
+                            <input type="number" class="form-control form-control-lg text-center fw-bold fs-3" id="interviewScore" min="0" max="100" required>
+                        </div>
+                        <button type="submit" class="btn btn-info text-white w-100">Submit Assessment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>

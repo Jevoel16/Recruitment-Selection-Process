@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-06-30 16:30 (v0.8.0-Alpha+202606301630)
+### ADDED
+- Implemented an `Assigned Office` filter within the Step 5 (Assignment Orders) module to categorize outputs.
+- Restructured `dashboard.hbs` and `index_modals.hbs` into modular component partials for improved maintainability.
+
+### CHANGED
+- Modified the Assignment Order PDF generation logic to correctly update applicant status to `COMPLETED` and clear them from the Step 5 UI seamlessly.
+- Re-formatted exported Excel and PDF filenames for dynamic consistency (e.g., `{Position}-IER-{MMYYYY}.xlsx`, `AO-{firstname}_{lastname}-{MMYYYY}.pdf`).
+
+### FIXED
+- Corrected PDF cache-busting configurations (`pdfGenerator.js?v=1.1`) to prevent stale PDF generation issues.
+- Fixed a syntax error involving string interpolation in the `<button>` `onclick` handler in `step5.hbs`.
+- Resolved an issue in the Evaluative Assessment Modal where the `Position` label failed to render correctly.
+
 ## 2026-06-30 14:07 (v0.7.1-Alpha+202606301407)
 ### FIXED
 - Addressed issue where the Add Applicant Wizard submitted prematurely when the Enter key was pressed in form fields.

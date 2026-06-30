@@ -1,0 +1,42 @@
+    <!-- Application of L&D Calculator Modal -->
+    <div class="modal fade glass-modal" id="appLNDCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-primary bg-opacity-10 text-primary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-lightbulb-fill text-warning"></i> Application of L&D</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Intervention Relevance</label>
+                        <select class="form-select mb-2" id="appLNDRelevance" onchange="calculateAppLNDPoints()">
+                            <option value="relevant">Relevant Intervention</option>
+                            <option value="not_relevant">Not Relevant Intervention</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="appLNDMOVsDiv">
+                        <label class="form-label fw-bold">MOVs Submitted</label>
+                        <select class="form-select" id="appLNDMOVs" onchange="calculateAppLNDPoints()">
+                            <option value="0">None (0 pts)</option>
+                            <option value="AB">Only A & B (Cert. of Training + Action Plan)</option>
+                            <option value="ABC">Only A, B & C (+ Local Adoption Cert.)</option>
+                            <option value="ABCD">ALL MOVs (A, B, C, D) (+ Higher Level Adoption Cert.)</option>
+                        </select>
+                        <div class="form-text small text-muted">A: Cert. of Training | B: Action Plan | C: Local Adoption | D: Higher Level Adoption</div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedAppLNDPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary text-white w-100 fw-bold shadow-sm" onclick="applyAppLNDPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>

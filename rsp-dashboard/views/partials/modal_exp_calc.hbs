@@ -1,0 +1,101 @@
+    <!-- Experience Calculator Modal -->
+    <div class="modal fade glass-modal" id="expCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-success bg-opacity-10 text-success">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-briefcase-fill"></i> Experience Increment Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Applicant's Experience Level</label>
+                        <select class="form-select" id="applicantExpLevel" onchange="calculateExpPoints()">
+                            <option value="1">Level 1: Less than 6 months</option>
+                            <option value="2">Level 2: 6 months - <1 year</option>
+                            <option value="3">Level 3: 1 year - <1 year 6 months</option>
+                            <option value="4">Level 4: 1 year 6 months - <2 years</option>
+                            <option value="5">Level 5: 2 years - <2 years 6 months</option>
+                            <option value="6">Level 6: 2 years 6 months - <3 years</option>
+                            <option value="7">Level 7: 3 years - <3 years 6 months</option>
+                            <option value="8">Level 8: 3 years 6 months - <4 years</option>
+                            <option value="9">Level 9: 4 years - <4 years 6 months</option>
+                            <option value="10">Level 10: 4 years 6 months - <5 years</option>
+                            <option value="11">Level 11: 5 years - <5 years 6 months</option>
+                            <option value="12">Level 12: 5 years 6 months - <6 years</option>
+                            <option value="13">Level 13: 6 years - <6 years 6 months</option>
+                            <option value="14">Level 14: 6 years 6 months - <7 years</option>
+                            <option value="15">Level 15: 7 years - <7 years 6 months</option>
+                            <option value="16">Level 16: 7 years 6 months - <8 years</option>
+                            <option value="17">Level 17: 8 years - <8 years 6 months</option>
+                            <option value="18">Level 18: 8 years 6 months - <9 years</option>
+                            <option value="19">Level 19: 9 years - <9 years 6 months</option>
+                            <option value="20">Level 20: 9 years 6 months - <10 years</option>
+                            <option value="21">Level 21: 10 years - <10 years 6 months</option>
+                            <option value="22">Level 22: 10 years 6 months - <11 years</option>
+                            <option value="23">Level 23: 11 years - <11 years 6 months</option>
+                            <option value="24">Level 24: 11 years 6 months - <12 years</option>
+                            <option value="25">Level 25: 12 years - <12 years 6 months</option>
+                            <option value="26">Level 26: 12 years 6 months - <13 years</option>
+                            <option value="27">Level 27: 13 years - <13 years 6 months</option>
+                            <option value="28">Level 28: 13 years 6 months - <14 years</option>
+                            <option value="29">Level 29: 14 years - <14 years 6 months</option>
+                            <option value="30">Level 30: 14 years 6 months - <15 years</option>
+                            <option value="31">Level 31: 15 years or more</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Position's Standard Requirement</label>
+                        <select class="form-select" id="standardExpLevel" onchange="calculateExpPoints()">
+                            <option value="1">Level 1: Less than 6 months</option>
+                            <option value="2">Level 2: 6 months - <1 year</option>
+                            <option value="3">Level 3: 1 year - <1 year 6 months</option>
+                            <option value="4">Level 4: 1 year 6 months - <2 years</option>
+                            <option value="5">Level 5: 2 years - <2 years 6 months</option>
+                            <option value="6">Level 6: 2 years 6 months - <3 years</option>
+                            <option value="7">Level 7: 3 years - <3 years 6 months</option>
+                            <option value="8">Level 8: 3 years 6 months - <4 years</option>
+                            <option value="9">Level 9: 4 years - <4 years 6 months</option>
+                            <option value="10">Level 10: 4 years 6 months - <5 years</option>
+                            <option value="11">Level 11: 5 years - <5 years 6 months</option>
+                            <option value="12">Level 12: 5 years 6 months - <6 years</option>
+                            <option value="13">Level 13: 6 years - <6 years 6 months</option>
+                            <option value="14">Level 14: 6 years 6 months - <7 years</option>
+                            <option value="15">Level 15: 7 years - <7 years 6 months</option>
+                            <option value="16">Level 16: 7 years 6 months - <8 years</option>
+                            <option value="17">Level 17: 8 years - <8 years 6 months</option>
+                            <option value="18">Level 18: 8 years 6 months - <9 years</option>
+                            <option value="19">Level 19: 9 years - <9 years 6 months</option>
+                            <option value="20">Level 20: 9 years 6 months - <10 years</option>
+                            <option value="21">Level 21: 10 years - <10 years 6 months</option>
+                            <option value="22">Level 22: 10 years 6 months - <11 years</option>
+                            <option value="23">Level 23: 11 years - <11 years 6 months</option>
+                            <option value="24">Level 24: 11 years 6 months - <12 years</option>
+                            <option value="25">Level 25: 12 years - <12 years 6 months</option>
+                            <option value="26">Level 26: 12 years 6 months - <13 years</option>
+                            <option value="27">Level 27: 13 years - <13 years 6 months</option>
+                            <option value="28">Level 28: 13 years 6 months - <14 years</option>
+                            <option value="29">Level 29: 14 years - <14 years 6 months</option>
+                            <option value="30">Level 30: 14 years 6 months - <15 years</option>
+                            <option value="31">Level 31: 15 years or more</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted fw-bold">Final Increment Level:</span>
+                        <span class="fs-5 fw-bold text-primary" id="finalExpIncrementLevel">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedExpPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success text-white w-100 fw-bold shadow-sm" onclick="applyExpPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -4,6 +4,39 @@ const hbs = require('hbs');
 const path = require('path');
 const db = require('./db');
 
+function getShortenedPosition(position) {
+    if (!position) return 'APP';
+    
+    let cleanPos = position.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    const match = cleanPos.match(/\s([IVX]+)$/i);
+    let numberSuffix = '';
+    if (match) {
+        const roman = match[1].toUpperCase();
+        const romanMap = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10 };
+        numberSuffix = romanMap[roman] || '';
+        cleanPos = cleanPos.substring(0, cleanPos.length - match[0].length).trim();
+    }
+
+    let base = '';
+    const upperPos = position.toUpperCase();
+    if (upperPos.includes('ADMINISTRATIVE ASSISTANT')) base = 'ADAS';
+    else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
+    else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'AO';
+    else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
+    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
+    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+    else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
+    else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
+    else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
+    else if (upperPos.includes('TEACHER')) base = 'T';
+    else if (upperPos.includes('WATCHMAN')) base = 'WCH';
+    else {
+        base = cleanPos.split(/\s+/).map(w => w[0]).join('').toUpperCase();
+    }
+    
+    return base + numberSuffix;
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const requirementFields = [
@@ -30,6 +63,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
 app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
+app.use('/jspdf', express.static(path.join(__dirname, 'node_modules/jspdf')));
 
 // View Engine
 app.set('view engine', 'hbs');
@@ -65,6 +99,31 @@ hbs.registerHelper('formatDate', function(date) {
 
 app.get('/', (req, res) => res.redirect('/dashboard'));
 
+app.get('/api/dashboard/metrics', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM positions');
+        const groupedPositions = {};
+        let totalVacantCount = 0;
+        let totalPositionsCount = 0;
+        for (const row of rows) {
+            let cat = row.category.replace(/\s+/g, '-');
+            if (!groupedPositions[cat]) {
+                groupedPositions[cat] = { categoryName: row.category, hasVacancy: false, vacantCount: 0, totalCount: 0 };
+            }
+            groupedPositions[cat].totalCount++;
+            totalPositionsCount++;
+            if (row.in_vacancy) {
+                groupedPositions[cat].hasVacancy = true;
+                groupedPositions[cat].vacantCount++;
+                totalVacantCount++;
+            }
+        }
+        res.json({ totalVacantCount, totalPositionsCount, groupedPositions });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/dashboard', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
@@ -91,20 +150,35 @@ app.get('/dashboard', async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
         const searchQuery = req.query.q || '';
-        const positionFilter = req.query.position || '';
+        const categoryFilter = req.query.category || '';
+        const stepFilter = req.query.step || '';
 
         let baseQuery = `FROM applicants WHERE 1=1`;
         const queryParams = [];
 
         if (searchQuery) {
-            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR position LIKE ?)`;
             const searchPattern = `%${searchQuery}%`;
-            queryParams.push(searchPattern, searchPattern);
+            queryParams.push(searchPattern, searchPattern, searchPattern);
         }
 
-        if (positionFilter) {
-            baseQuery += ` AND position = ?`;
-            queryParams.push(positionFilter);
+        if (categoryFilter) {
+            baseQuery += ` AND category = ?`;
+            queryParams.push(categoryFilter);
+        }
+
+        if (stepFilter) {
+            if (stepFilter === 'step1') {
+                baseQuery += ` AND status IN ('PENDING', 'QUALIFIED', 'DISQUALIFIED')`;
+            } else if (stepFilter === 'step2') {
+                baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT'`;
+            } else if (stepFilter === 'step3') {
+                baseQuery += ` AND status = 'ASSESSED'`;
+            } else if (stepFilter === 'step4') {
+                baseQuery += ` AND status = 'WAITING'`;
+            } else if (stepFilter === 'step5') {
+                baseQuery += ` AND status = 'ASSIGNED'`;
+            }
         }
 
         const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
@@ -120,7 +194,8 @@ app.get('/dashboard', async (req, res) => {
             if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
                 let pUrl = `/dashboard?tab=masterlist&page=${i}&`;
                 if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
-                if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
+                if (categoryFilter) pUrl += `category=${encodeURIComponent(categoryFilter)}&`;
+                if (stepFilter) pUrl += `step=${encodeURIComponent(stepFilter)}&`;
                 pagination.push({
                     page: i,
                     isCurrent: i === page,
@@ -144,8 +219,8 @@ app.get('/dashboard', async (req, res) => {
             currentPage: page,
             totalPages,
             searchQuery,
-            positionFilter,
-            positionList: Array.from(new Set(positionList)).sort(),
+            categoryFilter,
+            stepFilter,
             pagination: cleanPagination,
             showMasterlist
         });
@@ -395,6 +470,7 @@ app.get('/:step/:page', async (req, res, next) => {
     const limit = 10;
     const offset = (page - 1) * limit;
     const searchQuery = req.query.q || '';
+    const officeFilter = req.query.office || '';
     const config = stepsConfig[step];
     
     let baseQuery = `FROM applicants WHERE ${config.conditions}`;
@@ -406,9 +482,14 @@ app.get('/:step/:page', async (req, res, next) => {
         queryParams.push(searchPattern, searchPattern);
     }
 
-    if (positionFilter && (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4')) {
+    if (positionFilter && (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5')) {
         baseQuery += ` AND position = ?`;
         queryParams.push(positionFilter);
+    }
+    
+    if (officeFilter && step === 'step5') {
+        baseQuery += ` AND assignedOffice = ?`;
+        queryParams.push(officeFilter);
     }
 
     try {
@@ -419,9 +500,15 @@ app.get('/:step/:page', async (req, res, next) => {
         const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY ${config.orderBy} LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
         let positionList = [];
-        if (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4') {
+        if (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5') {
             const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
             positionList = positions.map(p => p.position);
+        }
+        
+        let officeList = [];
+        if (step === 'step5') {
+            const [offices] = await db.query(`SELECT DISTINCT assignedOffice FROM applicants WHERE assignedOffice IS NOT NULL AND assignedOffice != '' ORDER BY assignedOffice ASC`);
+            officeList = offices.map(o => o.assignedOffice);
         }
 
         const mappedRows = rows.map(row => {
@@ -498,6 +585,8 @@ app.get('/:step/:page', async (req, res, next) => {
             searchQuery,
             positionFilter,
             positionList,
+            officeFilter,
+            officeList,
             pagination: cleanPagination,
             step1Active: step === 'step1',
             step2Active: step === 'step2',
@@ -552,23 +641,8 @@ app.post('/api/applicants', async (req, res) => {
             education, training, experience, eligibility
         } = req.body;
         
-        let positionCode = 'POS';
-        switch(position) {
-            case 'Administrative Aide I': positionCode = 'ADA1'; break;
-            case 'Watchman I': positionCode = 'WCHM1'; break;
-            case 'Administrative Officer I': positionCode = 'ADOF1'; break;
-            case 'Administrative Assistant III': positionCode = 'ADAS3'; break;
-            case 'Legal Assistant I': positionCode = 'LEA1'; break;
-            case 'Project Development Officer I': positionCode = 'PDO1'; break;
-            case 'Administrative Officer II': positionCode = 'ADOF2'; break;
-            case 'Administrative Officer IV': positionCode = 'ADOF4'; break;
-            case 'School Principal I': positionCode = 'SP1'; break;
-            case 'Project Development Officer II': positionCode = 'PDO2'; break;
-            case 'Education Program Supervisor': positionCode = 'EPSVR'; break;
-        }
-
+        let positionCode = getShortenedPosition(position);
         const currentYear = new Date().getFullYear();
-        const sy = currentYear;
 
         const [result] = await db.query(
             'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
@@ -576,7 +650,22 @@ app.post('/api/applicants', async (req, res) => {
         );
         
         const applicantId = result.insertId;
-        const newCode = `${positionCode}-${sy}-${applicantId}`;
+        
+        // Find current max increment for this position and year
+        const [rows] = await db.query(
+            "SELECT applicationCode FROM applicants WHERE applicationCode LIKE ? AND id != ? ORDER BY id DESC LIMIT 1",
+            [`${positionCode}-${currentYear}-%`, applicantId]
+        );
+        let increment = 1;
+        if (rows.length > 0 && rows[0].applicationCode) {
+            const parts = rows[0].applicationCode.split('-');
+            const lastIncrement = parseInt(parts[parts.length - 1], 10);
+            if (!isNaN(lastIncrement)) {
+                increment = lastIncrement + 1;
+            }
+        }
+        
+        const newCode = `${positionCode}-${currentYear}-${increment}`;
         
         await db.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
 
@@ -775,6 +864,18 @@ app.post('/api/applicants/:id/assign', async (req, res) => {
         const { office } = req.body;
         await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ? WHERE id = ?`, [office, id]);
         console.log(`[ASSIGNMENT] Applicant ID ${id} assigned to office: ${office} (Step 5)`);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Complete Applicant (Step 5 -> Masterlist)
+app.post('/api/applicants/:id/complete', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query(`UPDATE applicants SET status = 'COMPLETED' WHERE id = ?`, [id]);
+        console.log(`[COMPLETION] Applicant ID ${id} completed (PDF Generated)`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -1070,9 +1171,15 @@ app.get('/api/export/ier', async (req, res) => {
 </table>
 </body>
 </html>`;
+        const d = new Date();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const dateStr = `${month}${year}`;
+        const safePos = positionFilter ? positionFilter.replace(/[^a-zA-Z0-9-]/g, '-') : '';
+        const filename = positionFilter ? `${safePos}-IER-${dateStr}.xls` : `IER-${dateStr}.xls`;
 
         res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
-        res.setHeader('Content-Disposition', 'attachment; filename="IER.xls"');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(html);
     } catch (error) {
         console.error(error);
@@ -1287,8 +1394,15 @@ app.get('/api/export/car', async (req, res) => {
 </body>
 </html>`;
 
+        const d = new Date();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const dateStr = `${month}${year}`;
+        const safePos = positionFilter ? positionFilter.replace(/[^a-zA-Z0-9-]/g, '-') : '';
+        const filename = positionFilter ? `${safePos}-CAR-${dateStr}.xls` : `CAR-${dateStr}.xls`;
+
         res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
-        res.setHeader('Content-Disposition', 'attachment; filename="CAR.xls"');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(html);
     } catch (error) {
         console.error(error);

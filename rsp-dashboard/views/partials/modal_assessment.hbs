@@ -1,0 +1,125 @@
+    <!-- Step 2 Assessment Modal (Template for all categories) -->
+    <div class="modal fade glass-modal" id="assessmentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-info bg-opacity-10 text-info">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-card-checklist"></i> Evaluative Assessment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="assessmentForm">
+                        <input type="hidden" id="assessmentApplicantId">
+                        <h5 id="assessmentApplicantName" class="text-center text-info fw-bold mb-3"></h5>
+                        <p class="text-center text-muted mb-4">Category: <span id="assessmentCategory" class="fw-bold">Non-Teaching</span> | Position: <span id="assessmentPosition" class="fw-bold">-</span> | Salary Grade: <span id="assessmentSG" class="fw-bold">-</span></p>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Criteria</th>
+                                        <th class="text-center" style="width: 150px;">Score</th>
+                                        <th class="text-center" style="width: 150px;">Max Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assessmentCriteriaBody">
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>a. Education</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openEduCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td style="width: 150px;"><input type="number" class="form-control" name="education" id="educationInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-education">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>b. Training</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openTrainCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="training" id="trainingInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-training">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>c. Experience</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openExpCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="experience" id="experienceInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-experience">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>d. Performance</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openPerfCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="performance" id="performanceInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-performance">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>e. Outstanding Accomplishments</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openOutAccCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="outstandingAccomplishments" id="outstandingAccomplishmentsInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-outstandingAccomplishments">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>f. Application of Education</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openAppEduCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="applicationOfEducation" id="appEduInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-applicationOfEducation">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>g. Application of L&D</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openAppLNDCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="applicationOfLD" id="appLNDInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-applicationOfLD">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>h. Potential (Written Test, BEI, Work Sample Test)</span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="openPotentialCalcModal()"><i class="bi bi-calculator"></i> Calculate</button>
+                                            </div>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="potential" id="potentialInput"></td>
+                                        <td class="text-center fw-bold text-muted align-middle" id="max-potential">-</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="fw-bold table-light">
+                                        <td class="text-end">Total Score</td>
+                                        <td class="text-center text-info fs-5" id="assessmentTotalScore">0</td>
+                                        <td class="text-center text-secondary fs-5" id="assessmentMaxTotal">100</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-info text-white w-100 btn-lg shadow-sm fw-bold">
+                                <i class="bi bi-save me-1"></i> Save Assessment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>

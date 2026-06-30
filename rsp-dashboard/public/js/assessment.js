@@ -13,12 +13,15 @@ async function openAssessmentModal(id, name) {
     try {
         const data = await fetchDetails(id);
         const app = data.applicant;
+        const posStandards = data.positionStandards || {};
         
         const category = app.category || 'Non-Teaching';
-        const sg = app.salaryGrade || '1'; 
+        const sg = posStandards.salaryGrade || '1'; 
+        const position = app.position || 'N/A';
         
         document.getElementById('assessmentCategory').innerText = category;
         document.getElementById('assessmentSG').innerText = `${sg}`;
+        document.getElementById('assessmentPosition').innerText = position;
         
         // Determine Category Key
         let categoryKey = 'SG 1-9';
@@ -619,11 +622,13 @@ async function openStep2SummaryModal(id, name, isReadOnly = false) {
     try {
         const data = await fetchDetails(id);
         const app = data.applicant;
+        const posStandards = data.positionStandards || {};
         
         let html = `
-            <div class="row g-3">
-                <div class="col-md-6"><strong>Position:</strong> ${app.position || 'N/A'}</div>
-                <div class="col-md-6"><strong>Category:</strong> ${app.category || 'N/A'}</div>
+            <div class="row g-3 text-center mb-4">
+                <div class="col-md-4"><strong>Category:</strong><br>${app.category || 'N/A'}</div>
+                <div class="col-md-4"><strong>Position:</strong><br>${app.position || 'N/A'}</div>
+                <div class="col-md-4"><strong>Salary Grade:</strong><br>${posStandards.salaryGrade || 'N/A'}</div>
             </div>
             <h6 class="mt-4 mb-3 fw-bold text-secondary border-bottom pb-2">Evaluation Assessment Summary</h6>
             <div class="table-responsive">

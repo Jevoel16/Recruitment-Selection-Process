@@ -85,7 +85,7 @@ async function seed() {
         // Batch generation to avoid socket exhaustion
         const BATCH_SIZE = 50;
         for (let i = 0; i < TOTAL_APPLICANTS; i += BATCH_SIZE) {
-            const batchPromises = [];
+            const results = [];
             for (let j = 0; j < BATCH_SIZE && (i + j) < TOTAL_APPLICANTS; j++) {
                 const fName = firstNames[Math.floor(Math.random() * firstNames.length)];
                 const lName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -113,15 +113,18 @@ async function seed() {
                     eligibility: JSON.stringify([{ details: 'Seed Elig', rating: '85', link: 'http://link' }])
                 };
 
-                batchPromises.push(
-                    fetch(`${API_BASE}/applicants`, {
+                try {
+                    const res = await fetch(`${API_BASE}/applicants`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
-                    }).then(r => r.json()).catch(err => ({ success: false, error: err }))
-                );
+                    });
+                    const data = await res.json();
+                    results.push(data);
+                } catch (err) {
+                    results.push({ success: false, error: err });
+                }
             }
-            const results = await Promise.all(batchPromises);
             results.forEach(r => {
                 if (r && r.success && r.id) allApplicantIds.push(r.id);
             });

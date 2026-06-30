@@ -1,0 +1,343 @@
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('positionForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('savePositionBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Saving...';
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/positions/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if(result.success) {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    btn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Saved Successfully';
+                    setTimeout(() => {
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-primary');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                } else {
+                    alert('Error saving position standards.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+});
+</script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        document.querySelectorAll('.vacancy-toggle').forEach(toggle => {
+            toggle.addEventListener('change', async function() {
+                const id = this.getAttribute('data-id');
+                const in_vacancy = this.checked;
+                
+                // Toggle the button state immediately
+                const pBtn = document.getElementById('plantilla-btn-' + id);
+                if(pBtn) {
+                    pBtn.disabled = !in_vacancy;
+                }
+                
+                // Update the slot count display
+                const slotTd = document.getElementById('slot-count-' + id);
+                if (slotTd) {
+                    if (in_vacancy && pBtn) {
+                        slotTd.innerText = pBtn.getAttribute('data-count') || '0';
+                    } else {
+                        slotTd.innerText = '0';
+                    }
+                }
+
+                try {
+                    const response = await fetch(`/api/positions/${id}/vacancy`, {
+
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ in_vacancy })
+                    });
+                    const res = await response.json();
+                    if(!res.success) throw new Error('Failed to update vacancy status');
+                } catch(e) {
+                    console.error(e);
+                    alert('Error toggling vacancy');
+                    this.checked = !in_vacancy;
+                }
+            });
+        });
+
+        document.querySelectorAll('.position-info-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('positionInfoModalTitle').innerText = this.getAttribute('data-title');
+                document.getElementById('modalPosId').value = this.getAttribute('data-id');
+                document.getElementById('modalPosVacancy').value = this.getAttribute('data-vacancy');
+                                const plantillaStr = this.getAttribute('data-plantilla') || '';
+                const pHidden = document.getElementById('modalPosPlantillaHidden');
+                if(pHidden) pHidden.value = plantillaStr;
+                
+                const pList = document.getElementById('modalPosPlantillaList');
+                if(pList) {
+                    pList.innerHTML = '';
+                    const items = plantillaStr.split(',').map(s => s.trim()).filter(s => s);
+                    if (items.length > 0) {
+                        const ul = document.createElement('ul');
+                        ul.className = 'mb-0 ps-3';
+                        ul.style.columnCount = '2';
+                        ul.style.columnGap = '0.5rem';
+                        ul.style.fontSize = '0.75rem';
+                        items.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item;
+                            ul.appendChild(li);
+                        });
+                        pList.appendChild(ul);
+                    } else {
+                        pList.innerHTML = '<span class="fst-italic" style="font-size: 0.75rem;">None</span>';
+                    }
+                }
+                document.getElementById('modalPosSalaryGrade').value = this.getAttribute('data-salary');
+                document.getElementById('modalPosMonthlySalary').value = this.getAttribute('data-monthly');
+                document.getElementById('modalPosEdu').value = this.getAttribute('data-edu');
+                document.getElementById('modalPosTrain').value = this.getAttribute('data-train');
+                document.getElementById('modalPosExp').value = this.getAttribute('data-exp');
+                document.getElementById('modalPosElig').value = this.getAttribute('data-elig');
+            });
+        });
+    });
+
+
+
+        function renderPlantillaInputs(count, existingValues = []) {
+            const container = document.getElementById('plantillaItemsContainer');
+            container.innerHTML = '';
+            for(let i = 0; i < count; i++) {
+                const val = existingValues[i] ? existingValues[i].trim() : '';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control plantilla-item-input';
+                input.placeholder = `Plantilla Number ${i + 1}`;
+                input.value = val;
+                input.required = true;
+                container.appendChild(input);
+            }
+        }
+
+        const vacCountInput = document.getElementById('plantillaVacancyCount');
+        if (vacCountInput) {
+            vacCountInput.addEventListener('input', function() {
+                let count = parseInt(this.value);
+                if (count > 100) {
+                    this.value = 100;
+                    count = 100;
+                }
+                if (isNaN(count) || count < 1) return;
+                // Preserve current inputs before re-rendering
+                const currentInputs = Array.from(document.querySelectorAll('.plantilla-item-input')).map(inp => inp.value);
+                renderPlantillaInputs(count, currentInputs);
+            });
+        }
+
+        document.querySelectorAll('.plantilla-setup-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('plantillaModalTitle').innerText = this.getAttribute('data-title');
+                document.getElementById('plantillaPosId').value = this.getAttribute('data-id');
+                
+                const count = parseInt(this.getAttribute('data-count')) || 1;
+                document.getElementById('plantillaVacancyCount').value = count;
+                
+                const plantillaStr = this.getAttribute('data-plantilla') || '';
+                const existingValues = plantillaStr.split(',').map(s => s.trim()).filter(s => s);
+                
+                renderPlantillaInputs(count, existingValues);
+            });
+        });
+
+        const plantillaForm = document.getElementById('plantillaForm');
+        if(plantillaForm) {
+            plantillaForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('savePlantillaBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving...';
+                btn.disabled = true;
+
+                const id = document.getElementById('plantillaPosId').value;
+                const vacancyCount = document.getElementById('plantillaVacancyCount').value;
+                
+                const inputs = Array.from(document.querySelectorAll('.plantilla-item-input'));
+                const hasEmpty = inputs.some(inp => inp.value.trim() === '');
+                if (hasEmpty) {
+                    alert('Please fill out all Plantilla Item fields before saving.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+                const plantillaItem = inputs.map(inp => inp.value.trim()).join(', ');
+
+                try {
+                    const response = await fetch(`/api/positions/${id}/plantilla`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ vacancyCount, plantillaItem })
+                    });
+                    const res = await response.json();
+                    if(res.success) {
+                        btn.classList.replace('btn-success', 'btn-primary');
+                        btn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Saved';
+                        
+                        // update the button data attributes in UI
+                        const pBtn = document.getElementById('plantilla-btn-' + id);
+                        if(pBtn) {
+                            pBtn.setAttribute('data-count', vacancyCount);
+                            pBtn.setAttribute('data-plantilla', plantillaItem);
+                        }
+                        
+                        // update the Slot column dynamically
+                        const slotTd = document.getElementById('slot-count-' + id);
+                        if(slotTd) {
+                            slotTd.innerText = vacancyCount;
+                        }
+                        
+                        const infoBtn = document.querySelector(`button.position-info-btn[data-id="${id}"]`);
+                        if(infoBtn) {
+                            infoBtn.setAttribute('data-plantilla', plantillaItem);
+                        }
+                        
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('plantillaModal')).hide();
+                            btn.classList.replace('btn-primary', 'btn-success');
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        }, 1000);
+                    }
+                } catch(err) {
+                    console.error(err);
+                    alert('Error saving plantilla');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+    function filterVacancyTable() {
+        const query = document.getElementById('vacancySearch').value.toLowerCase();
+        const selectedCategory = document.getElementById('vacancyCategory').value;
+        const selectedStatus = document.getElementById('vacancyStatus').value;
+        
+        // Hide/Show Rows
+        document.querySelectorAll('.vacancy-row').forEach(row => {
+            const title = row.getAttribute('data-title').toLowerCase();
+            const category = row.getAttribute('data-category');
+            const checkbox = row.querySelector('.vacancy-toggle');
+            const isVacant = checkbox ? checkbox.checked : false;
+            
+            const matchCategory = !selectedCategory || category === selectedCategory;
+            const matchQuery = !query || title.includes(query);
+            let matchStatus = true;
+            if (selectedStatus === 'vacant') matchStatus = isVacant;
+            else if (selectedStatus === 'non-vacant') matchStatus = !isVacant;
+            
+            if (matchCategory && matchQuery && matchStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Hide/Show Category Group Headers based on visible rows
+        document.querySelectorAll('.vacancy-category-group').forEach(group => {
+            const category = group.getAttribute('data-category');
+            if (selectedCategory && category !== selectedCategory) {
+                group.style.display = 'none';
+                return;
+            }
+            
+            const rowsInCategory = document.querySelectorAll(`.vacancy-row[data-category="${category}"]`);
+            let hasVisibleRow = Array.from(rowsInCategory).some(row => row.style.display !== 'none');
+            
+            if (hasVisibleRow || (!query && (!selectedCategory || selectedCategory === category))) {
+                group.style.display = '';
+            } else {
+                group.style.display = 'none';
+            }
+        });
+    }
+        async function refreshMetricsTab() {
+            try {
+                const response = await fetch('/api/dashboard/metrics');
+                const data = await response.json();
+                
+                const mainCount = document.getElementById('metricsTotalVacant');
+                if (mainCount) mainCount.innerText = data.totalVacantCount + ' / ' + data.totalPositionsCount;
+                
+                for (const cat in data.groupedPositions) {
+                    const catData = data.groupedPositions[cat];
+                    const catName = catData.categoryName;
+                    
+                    const catCount = document.querySelector(`[data-category-count="${catName}"]`);
+                    if (catCount) {
+                        catCount.innerText = catData.vacantCount;
+                        if (catData.hasVacancy) {
+                            catCount.classList.add('text-success');
+                            catCount.classList.remove('text-muted');
+                        } else {
+                            catCount.classList.remove('text-success');
+                            catCount.classList.add('text-muted');
+                        }
+                    }
+                    
+                    const catBadge = document.querySelector(`[data-category-badge="${catName}"]`);
+                    if (catBadge) {
+                        if (catData.hasVacancy) {
+                            catBadge.classList.replace('bg-secondary', 'bg-success');
+                            catBadge.innerText = 'Active';
+                        } else {
+                            catBadge.classList.replace('bg-success', 'bg-secondary');
+                            catBadge.innerText = 'No Vacancy';
+                        }
+                    }
+                    
+                    const catCard = document.querySelector(`[data-category-card="${catName}"]`);
+                    if (catCard) {
+                        if (catData.hasVacancy) {
+                            catCard.classList.replace('border-secondary', 'border-success');
+                            catCard.classList.remove('opacity-75');
+                        } else {
+                            catCard.classList.replace('border-success', 'border-secondary');
+                            catCard.classList.add('opacity-75');
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error('Error fetching metrics', e);
+            }
+        }
+
+        document.getElementById('dashboardTabs').addEventListener('shown.bs.tab', function (event) {
+            if (event.target.id === 'metrics-tab') {
+                refreshMetricsTab();
+            }
+        });
+    </script>

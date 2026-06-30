@@ -1,0 +1,49 @@
+    <!-- Application of Education Calculator Modal -->
+    <div class="modal fade glass-modal" id="appEduCalcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-primary bg-opacity-10 text-primary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-book-half"></i> Application of Education</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Evaluation Method</label>
+                        <select class="form-select mb-2" id="appEduEvalMethod" onchange="toggleAppEduInputs(); calculateAppEduPoints()">
+                            <option value="relevant">Experienced: Relevant Intervention</option>
+                            <option value="not_relevant">Experienced: Not Relevant Intervention</option>
+                            <option value="no_exp">No Experience: GWA Percentage Scale</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="appEduMOVsDiv">
+                        <label class="form-label fw-bold">MOVs Submitted</label>
+                        <select class="form-select" id="appEduMOVs" onchange="calculateAppEduPoints()">
+                            <option value="0">None (0 pts)</option>
+                            <option value="A">Only A (Action Plan) </option>
+                            <option value="AB">Only A & B (Action Plan + Accomp. Report)</option>
+                            <option value="ABC">ALL MOVs (A, B, C)</option>
+                        </select>
+                        <div class="form-text small text-muted">A: Action Plan | B: Accomplishment Report | C: Cert. of Utilization</div>
+                    </div>
+
+                    <div class="mb-3 d-none" id="appEduGWADiv">
+                        <label class="form-label fw-bold">GWA Transmuted to Percentage (x)</label>
+                        <input type="number" class="form-control" id="appEduGWAInput" step="0.01" max="100" placeholder="e.g. 82.75" oninput="calculateAppEduPoints()">
+                        <div class="form-text small text-muted">Enter percentage from 0 to 100.</div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-muted fw-bold">Calculated Points:</span>
+                        <span class="fs-4 fw-bold text-success" id="calculatedAppEduPoints">0</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary text-white w-100 fw-bold shadow-sm" onclick="applyAppEduPoints()">
+                        <i class="bi bi-check-circle"></i> Apply Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
