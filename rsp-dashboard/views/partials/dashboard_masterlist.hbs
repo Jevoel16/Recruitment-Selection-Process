@@ -6,7 +6,7 @@
                         <input type="hidden" name="tab" value="masterlist">
                         <div class="col-md-6">
                             <div class="input-group glass-panel h-100 shadow-sm">
-                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
                                 <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name, applicant code, or position..." value="{{searchQuery}}" onkeypress="if(event.key === 'Enter') this.form.submit();">
                             </div>
                         </div>
@@ -25,7 +25,7 @@
                                 <select name="step" class="form-select border-0 shadow-none bg-transparent" onchange="this.form.submit()">
                                     <option value="">All Steps</option>
                                     <option value="step1" {{#if (eq stepFilter 'step1')}}selected{{/if}}>Step 1 (Documents)</option>
-                                    <option value="step2" {{#if (eq stepFilter 'step2')}}selected{{/if}}>Step 2 (Qualifications)</option>
+                                    <option value="step2" {{#if (eq stepFilter 'step2')}}selected{{/if}}>Step 2 (Deliberation)</option>
                                     <option value="step3" {{#if (eq stepFilter 'step3')}}selected{{/if}}>Step 3 (Assessment)</option>
                                     <option value="step4" {{#if (eq stepFilter 'step4')}}selected{{/if}}>Step 4 (Requirements)</option>
                                     <option value="step5" {{#if (eq stepFilter 'step5')}}selected{{/if}}>Step 5 (Assignment)</option>
@@ -35,26 +35,25 @@
                     </form>
                 </div>
 
-                <div class="rounded-4 overflow-hidden shadow-sm border border-light">
-                    <table class="table table-hover align-middle mb-0 bg-white">
+                <div class="rounded-4 shadow-sm border border-light table-responsive-wrapper bg-white">
+                    <table class="table table-hover align-middle mb-0 bg-white custom-table">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4">Application Code</th>
-                                <th>Applicant Name</th>
-                                <th>Category</th>
-                                <th>Position</th>
-                                <th>Current Step</th>
-                                <th class="text-center pe-4">Applicant Details</th>
+                                <th class="ps-4 pe-3 text-nowrap">Application Code</th>
+                                <th class="px-3 w-100">Applicant Name</th>
+                                <th class="px-4 text-nowrap">Category</th>
+                                <th class="px-4 text-nowrap">Current Step</th>
+                                <th class="text-center px-4 text-nowrap">Applicant Details</th>
+                                <th class="text-center pe-4 ps-3 text-nowrap">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {{#each applicants}}
                             <tr>
-                                <td class="ps-4"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                                <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
-                                <td>{{this.category}}</td>
-                                <td>{{this.position}}</td>
-                                <td>
+                                <td class="ps-4 pe-3 text-nowrap"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                                <td class="fw-medium px-3 applicant-name-display-{{this.id}}">{{this.name}}</td>
+                                <td class="px-4 text-nowrap">{{this.category}}</td>
+                                <td class="px-4 text-nowrap">
                                     {{#if (eq this.status 'PENDING')}}<span class="badge bg-warning text-dark">Step 1: Pending</span>{{/if}}
                                     {{#if (eq this.status 'QUALIFIED')}}<span class="badge bg-success">Step 1: Qualified</span>{{/if}}
                                     {{#if (eq this.status 'DISQUALIFIED')}}<span class="badge bg-danger">Step 1: Disqualified</span>{{/if}}
@@ -64,8 +63,14 @@
                                     {{#if (eq this.status 'ASSIGNED')}}<span class="badge bg-success shadow-sm border border-light">Step 5: Assigned</span>{{/if}}
                                     {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Completed</span>{{/if}}
                                 </td>
-                                <td class="text-center pe-4">
-                                    <button class="btn btn-sm btn-outline-primary shadow-sm rounded-circle px-2 py-1" onclick="openApplicantDetailsModal({{this.id}}, '{{this.name}}', '{{this.assignedOffice}}', '{{this.category}}', '{{this.applicationCode}}', '{{this.status}}')" title="Applicant Details"><i class="bi bi-card-list"></i></button>
+                                <td class="text-center px-4 text-nowrap">
+                                    <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="openApplicantDetailsModal({{this.id}}, '{{this.name}}', '{{this.assignedOffice}}', '{{this.category}}', '{{this.applicationCode}}', '{{this.status}}')" title="Applicant Details"><i class="bi bi-card-list"></i> Details</button>
+                                </td>
+                                <td class="text-center pe-4 ps-3 text-nowrap">
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openUpdateStatusModal({{this.id}}, '{{this.name}}', '{{this.status}}')" title="Update Status"><i class="bi bi-pencil"></i> Update</button>
+                                        <button class="btn btn-sm btn-danger action-btn shadow-sm px-2 py-1" onclick="deleteApplicant({{this.id}})" title="Delete Applicant"><i class="bi bi-trash"></i> Delete</button>
+                                    </div>
                                 </td>
                             </tr>
                             {{else}}
@@ -80,6 +85,7 @@
                     </table>
                 </div>
 
+                {{#if pagination.[1]}}
                 <nav aria-label="Page navigation" class="mt-4">
                     <ul class="pagination flex-wrap justify-content-center mb-0">
                         {{#each pagination}}
@@ -93,5 +99,6 @@
                         {{/each}}
                     </ul>
                 </nav>
+                {{/if}}
             </div>
         </div>

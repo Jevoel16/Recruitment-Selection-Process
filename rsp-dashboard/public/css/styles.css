@@ -77,12 +77,25 @@ body {
 }
 
 /* Tables */
+.table-responsive-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+.custom-table {
+    width: 100% !important;
+}
+.custom-table th,
+.custom-table td {
+    text-align: center;
+    vertical-align: middle;
+}
 .custom-table th {
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     color: color-mix(in srgb, var(--black) 50%, var(--white));
+    text-align: center !important;
 }
 .custom-table tbody tr {
     transition: background 0.2s ease;
@@ -155,6 +168,10 @@ body {
 }
 .action-btn {
     transition: transform 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    gap: 0.35rem;
 }
 .action-btn:hover {
     transform: scale(1.05);

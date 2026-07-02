@@ -20,11 +20,11 @@ if (scoreForm) {
                 body: JSON.stringify({ score, office })
             });
             if (res.ok) {
-                window.location.reload();
+                window.showToast('Score submitted successfully!', 'success', true);
             }
         } catch (err) {
             console.error(err);
-            alert('Error submitting score');
+            window.showToast('Error submitting score', 'danger');
         }
     });
 }

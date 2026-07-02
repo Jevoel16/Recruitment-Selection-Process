@@ -3,37 +3,48 @@ function getDisplayFileLink(link) {
     return link.startsWith('http') ? link : `/uploads/${link}`;
 }
 
-async function promptUpdateRecord(type, recordId, applicantId, currentTitle, secondaryVal, secondaryKey, modalType) {
-    const newVal = prompt(`Update ${type} (Primary Info):`, currentTitle);
-    if (newVal === null) return;
-    
-    let newSec = null;
-    if (secondaryKey) {
-        newSec = prompt(`Update ${secondaryKey}:`, secondaryVal);
-        if (newSec === null) return;
+async function prepareUpdateRecord(type, recordId, applicantId, currentTitle, secondaryVal, secondaryKey, modalType) {
+    let formId, titleInputName, secInputName, btnTextPrefix;
+    if (modalType === 'edu') {
+        formId = `addEdu-${applicantId}`;
+        titleInputName = 'title';
+        secInputName = 'year_graduated';
+        btnTextPrefix = 'Education';
+    } else if (modalType === 'train') {
+        formId = `addTrain-${applicantId}`;
+        titleInputName = 'title';
+        secInputName = 'hours';
+        btnTextPrefix = 'Training';
+    } else if (modalType === 'exp') {
+        formId = `addExp-${applicantId}`;
+        titleInputName = 'details';
+        secInputName = 'years';
+        btnTextPrefix = 'Experience';
+    } else if (modalType === 'elig') {
+        formId = `addElig-${applicantId}`;
+        titleInputName = 'title';
+        secInputName = 'rating';
+        btnTextPrefix = 'Eligibility';
     }
 
-    let payload = {};
-    if (type === 'education') payload = { degree: newVal, yearGraduated: parseInt(newSec) };
-    else if (type === 'training') payload = { title: newVal, hours: parseInt(newSec) };
-    else if (type === 'experience') payload = { details: newVal, years: parseInt(newSec) };
-    else if (type === 'eligibility') payload = { details: newVal, rating: newSec || '' };
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    form.elements[titleInputName].value = currentTitle;
+    if (form.elements[secInputName] && secondaryVal !== undefined && secondaryVal !== 'undefined' && secondaryVal !== null) {
+        form.elements[secInputName].value = secondaryVal;
+    }
     
-    try {
-        const res = await fetch(`/api/${type}/${recordId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-            if (modalType === 'edu') openEduModal(applicantId);
-            else if (modalType === 'train') openTrainModal(applicantId);
-            else if (modalType === 'exp') openExpModal(applicantId);
-            else if (modalType === 'elig') openEligModal(applicantId);
-        } else {
-            alert('Failed to update record');
-        }
-    } catch (e) { console.error(e); }
+    // Store update state
+    form.dataset.mode = 'update';
+    form.dataset.recordId = recordId;
+
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn) {
+        btn.textContent = `Update ${btnTextPrefix}`;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-info', 'text-white');
+    }
 }
 
 function setFloatingStandard(modalId, text) {
@@ -61,8 +72,9 @@ function setFloatingStandard(modalId, text) {
 async function setHighestDegree(applicantId, eduId) {
     try {
         const res = await fetch(`/api/applicants/${applicantId}/education/${eduId}/highest`, { method: 'POST' });
-        if (!res.ok) alert('Failed to set highest degree.');
-    } catch(err) { console.error(err); }
+        if (!res.ok) window.showToast('Failed to set highest degree.', 'danger');
+        else window.showToast('Highest degree updated successfully.', 'success');
+    } catch(err) { console.error(err); window.showToast('Failed to set highest degree.', 'danger'); }
 }
 
 window.currentDocApplicantId = null;
@@ -95,7 +107,7 @@ async function openEduModal(id, isWizard = false) {
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="promptUpdateRecord('education', ${e.id}, ${id}, '${e.degree.replace(/'/g, "\\'")}', '${e.yearGraduated}', 'Year Graduated', 'edu')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('education', ${e.id}, ${id}, '${e.degree.replace(/'/g, "\\'")}', '${e.yearGraduated}', 'Year Graduated', 'edu')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('education', ${e.id}, ${id}, 'edu')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -118,12 +130,24 @@ async function openEduModal(id, isWizard = false) {
         
         document.getElementById(`addEdu-${id}`).addEventListener('submit', async (e) => {
             e.preventDefault();
+            const form = e.target;
+            const isUpdate = form.dataset.mode === 'update';
+            const recordId = form.dataset.recordId;
             try {
-                const res = await fetch(`/api/applicants/${id}/education`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: e.target.title.value, year_graduated: e.target.year_graduated.value })
-                });
+                let res;
+                if (isUpdate) {
+                    res = await fetch(`/api/education/${recordId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ degree: form.title.value, yearGraduated: parseInt(form.year_graduated.value) })
+                    });
+                } else {
+                    res = await fetch(`/api/applicants/${id}/education`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: form.title.value, year_graduated: form.year_graduated.value })
+                    });
+                }
                 if(res.ok) openEduModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
@@ -131,7 +155,7 @@ async function openEduModal(id, isWizard = false) {
         if (!eModal.classList.contains('show')) {
             bootstrap.Modal.getOrCreateInstance(eModal).show();
         }
-    } catch (err) { alert(err.message); }
+    } catch (err) { window.showToast(err.message, 'danger'); }
 }
 
 async function openTrainModal(id, isWizard = false) {
@@ -154,7 +178,7 @@ async function openTrainModal(id, isWizard = false) {
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${t.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('training', ${id}, ${t.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${t.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('training', ${id}, ${t.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="promptUpdateRecord('training', ${t.id}, ${id}, '${t.title.replace(/'/g, "\\'")}', '${t.hours}', 'Hours', 'train')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('training', ${t.id}, ${id}, '${t.title.replace(/'/g, "\\'")}', '${t.hours}', 'Hours', 'train')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('training', ${t.id}, ${id}, 'train')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -177,12 +201,24 @@ async function openTrainModal(id, isWizard = false) {
         
         document.getElementById(`addTrain-${id}`).addEventListener('submit', async (e) => {
             e.preventDefault();
+            const form = e.target;
+            const isUpdate = form.dataset.mode === 'update';
+            const recordId = form.dataset.recordId;
             try {
-                const res = await fetch(`/api/applicants/${id}/training`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: e.target.title.value, hours: e.target.hours.value })
-                });
+                let res;
+                if (isUpdate) {
+                    res = await fetch(`/api/training/${recordId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: form.title.value, hours: parseInt(form.hours.value) })
+                    });
+                } else {
+                    res = await fetch(`/api/applicants/${id}/training`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: form.title.value, hours: form.hours.value })
+                    });
+                }
                 if(res.ok) openTrainModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
@@ -190,7 +226,7 @@ async function openTrainModal(id, isWizard = false) {
         if (!tModal.classList.contains('show')) {
             bootstrap.Modal.getOrCreateInstance(tModal).show();
         }
-    } catch (err) { alert(err.message); }
+    } catch (err) { window.showToast(err.message, 'danger'); }
 }
 
 async function openExpModal(id, isWizard = false) {
@@ -212,7 +248,7 @@ async function openExpModal(id, isWizard = false) {
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="promptUpdateRecord('experience', ${e.id}, ${id}, '${e.details.replace(/'/g, "\\'")}', '${e.years}', 'Years', 'exp')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('experience', ${e.id}, ${id}, '${e.details.replace(/'/g, "\\'")}', '${e.years}', 'Years', 'exp')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('experience', ${e.id}, ${id}, 'exp')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -235,12 +271,24 @@ async function openExpModal(id, isWizard = false) {
         
         document.getElementById(`addExp-${id}`).addEventListener('submit', async (e) => {
             e.preventDefault();
+            const form = e.target;
+            const isUpdate = form.dataset.mode === 'update';
+            const recordId = form.dataset.recordId;
             try {
-                const res = await fetch(`/api/applicants/${id}/experience`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ details: e.target.details.value, years: e.target.years.value })
-                });
+                let res;
+                if (isUpdate) {
+                    res = await fetch(`/api/experience/${recordId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ details: form.details.value, years: parseInt(form.years.value) })
+                    });
+                } else {
+                    res = await fetch(`/api/applicants/${id}/experience`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ details: form.details.value, years: form.years.value })
+                    });
+                }
                 if(res.ok) openExpModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
@@ -248,7 +296,7 @@ async function openExpModal(id, isWizard = false) {
         if (!expModalEl.classList.contains('show')) {
             bootstrap.Modal.getOrCreateInstance(expModalEl).show();
         }
-    } catch (err) { alert(err.message); }
+    } catch (err) { window.showToast(err.message, 'danger'); }
 }
 
 async function openEligModal(id, isWizard = false) {
@@ -271,7 +319,7 @@ async function openEligModal(id, isWizard = false) {
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="promptUpdateRecord('eligibility', ${e.id}, ${id}, '${(e.title || e.details).replace(/'/g, "\\'")}', '${e.rating || ''}', 'Rating', 'elig')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('eligibility', ${e.id}, ${id}, '${(e.title || e.details).replace(/'/g, "\\'")}', '${e.rating || ''}', 'Rating', 'elig')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('eligibility', ${e.id}, ${id}, 'elig')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -294,12 +342,24 @@ async function openEligModal(id, isWizard = false) {
         
         document.getElementById(`addElig-${id}`).addEventListener('submit', async (e) => {
             e.preventDefault();
+            const form = e.target;
+            const isUpdate = form.dataset.mode === 'update';
+            const recordId = form.dataset.recordId;
             try {
-                const res = await fetch(`/api/applicants/${id}/eligibility`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: e.target.title.value, rating: e.target.rating.value })
-                });
+                let res;
+                if (isUpdate) {
+                    res = await fetch(`/api/eligibility/${recordId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ details: form.title.value, rating: form.rating.value })
+                    });
+                } else {
+                    res = await fetch(`/api/applicants/${id}/eligibility`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: form.title.value, rating: form.rating.value })
+                    });
+                }
                 if(res.ok) openEligModal(id, isWizard);
             } catch(err) { console.error(err); }
         });
@@ -307,7 +367,7 @@ async function openEligModal(id, isWizard = false) {
         if (!eligModalEl.classList.contains('show')) {
             bootstrap.Modal.getOrCreateInstance(eligModalEl).show();
         }
-    } catch (err) { alert(err.message); }
+    } catch (err) { window.showToast(err.message, 'danger'); }
 }
 
 async function updateDocStatus(type, applicantId, docId, status) {

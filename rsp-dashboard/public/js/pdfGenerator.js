@@ -6,10 +6,10 @@ const loadImageForPDF = (src) => new Promise((resolve) => {
     img.src = src;
 });
 
-window.printLetter = async function(id, name, office, dateStr, category, applicationCode) {
+window.printLetter = async function(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation) {
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
-        alert('jsPDF library failed to load. Please try again.');
+        window.showToast('jsPDF library failed to load. Please try again.', 'danger');
         return;
     }
 
@@ -189,9 +189,9 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
     doc.setFontSize(9);
     doc.text("cc:", 20, currentY + 35);
     doc.setFont("Times", "bold");
-    doc.text("LEONARDA LUNA ARAZO", 30, currentY + 35);
+    doc.text(ccName && ccName.trim() !== '' ? ccName.toUpperCase() : "LEONARDA LUNA ARAZO", 30, currentY + 35);
     doc.setFont("Times", "normal");
-    doc.text("School Principal I", 30, currentY + 40);
+    doc.text(ccDesignation && ccDesignation.trim() !== '' ? ccDesignation : "School Principal I", 30, currentY + 40);
     
     // Footer section
     doc.setDrawColor(200, 200, 200);
@@ -245,7 +245,7 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
 window.printInitialEvalPdf = async function(id) {
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
-        alert('jsPDF library failed to load.');
+        window.showToast('jsPDF library failed to load.', 'danger');
         return;
     }
 
@@ -254,7 +254,7 @@ window.printInitialEvalPdf = async function(id) {
         const res = await fetch(`/api/applicants/${id}/details`);
         data = await res.json();
     } catch(err) {
-        alert('Failed to fetch applicant data');
+        window.showToast('Failed to fetch applicant data', 'danger');
         return;
     }
 

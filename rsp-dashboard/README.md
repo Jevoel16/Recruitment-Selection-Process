@@ -16,7 +16,8 @@ A web-based platform to digitize the recruitment selection process.
 - **Step 1:** Initial Evaluation (Qualify/Disqualify Applicants & Generate Official PDF Evaluation forms)
 - **Step 2:** Deliberation Sheet (Assess & Input Interview Scores)
 - **Step 3:** Comparative Assessments (Leaderboard based on Scores)
-- **Step 4:** Assignment Orders (Generate & Print A4 Assignment Letters)
+- **Step 4:** Requirements Collection & Tracking (Monitor missing requirements and qualify for Assignment)
+- **Step 5:** Assignment Orders (Generate & Print A4 Assignment Letters with advanced formatting and CC support)
 
 ## Installation & Setup
 1. Clone or download this directory.

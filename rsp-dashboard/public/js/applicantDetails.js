@@ -5,8 +5,22 @@ async function fetchDetails(id) {
 }
 
 // Reusable deleter
-async function deleteRecord(type, recordId, applicantId, modalType) {
-    if(!confirm('Delete this record?')) return;
+function deleteRecord(type, recordId, applicantId, modalType) {
+    document.getElementById('deleteConfirmType').value = type;
+    document.getElementById('deleteConfirmRecordId').value = recordId;
+    document.getElementById('deleteConfirmApplicantId').value = applicantId;
+    document.getElementById('deleteConfirmModalType').value = modalType || '';
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteConfirmModal')).show();
+}
+
+window.executeDeleteRecord = async function() {
+    const type = document.getElementById('deleteConfirmType').value;
+    const recordId = document.getElementById('deleteConfirmRecordId').value;
+    const applicantId = document.getElementById('deleteConfirmApplicantId').value;
+    const modalType = document.getElementById('deleteConfirmModalType').value;
+    
+    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+    
     try {
         const res = await fetch(`/api/${type}/${recordId}`, { method: 'DELETE' });
         if(res.ok) {
@@ -14,37 +28,73 @@ async function deleteRecord(type, recordId, applicantId, modalType) {
             else if (modalType === 'train') openTrainModal(applicantId);
             else if (modalType === 'exp') openExpModal(applicantId);
             else if (modalType === 'elig') openEligModal(applicantId);
-            else window.location.reload();
+            else window.showToast('Successfully deleted!', 'success', true);
+        } else {
+            window.showToast('Error deleting record.', 'danger');
         }
-    } catch(err) { console.error(err); }
+    } catch(err) { console.error(err); window.showToast('Error deleting record.', 'danger'); }
 }
 
 async function openInfoModal(id) {
     try {
         const data = await fetchDetails(id);
         const app = data.applicant;
+        let addr = {};
+        try { addr = JSON.parse(app.address || '{}'); } catch(e) { addr = { res_house: app.address }; }
+
         document.getElementById('infoModalBody').innerHTML = `
-            <form id="infoForm-${id}">
+            <form id="infoForm-${id}" class="mt-3 p-3 glass-panel rounded-4">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">First Name</label>
-                        <input type="text" class="form-control" name="firstName" value="${app.firstName || ''}" required>
+                        <input type="text" class="form-control" name="firstName" value="${app.firstName || ''}" required oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Middle Name</label>
-                        <input type="text" class="form-control" name="middleName" value="${app.middleName || ''}">
+                        <input type="text" class="form-control" name="middleName" value="${app.middleName || ''}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Last Name</label>
-                        <input type="text" class="form-control" name="lastName" value="${app.lastName || ''}" required>
+                        <input type="text" class="form-control" name="lastName" value="${app.lastName || ''}" required oninput="this.value = this.value.toUpperCase();">
                     </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Address</label>
-                        <input type="text" class="form-control" name="address" value="${app.address || ''}">
+                    
+                    <div class="col-md-12 border rounded-3 p-3 bg-light">
+                        <h6 class="text-primary fw-bold mb-3">Residential Address</h6>
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small">House/Block/Lot No.</label>
+                                <input type="text" class="form-control form-control-sm" name="res_house" value="${addr.res_house || ''}" oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small">Street</label>
+                                <input type="text" class="form-control form-control-sm" name="res_street" value="${addr.res_street || ''}" oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small">Subdivision/Village</label>
+                                <input type="text" class="form-control form-control-sm" name="res_subdivision" value="${addr.res_subdivision || ''}" oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small">Barangay <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" name="res_barangay" value="${addr.res_barangay || ''}" required oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">City/Municipality <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" name="res_city" value="${addr.res_city || ''}" required oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Province <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" name="res_province" value="${addr.res_province || ''}" required oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Zip Code</label>
+                                <input type="text" class="form-control form-control-sm" name="res_zip" value="${addr.res_zip || ''}" oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                        </div>
+
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Age</label>
-                        <input type="number" class="form-control" name="age" value="${app.age || ''}">
+                        <label class="form-label">Birthdate</label>
+                        <input type="date" class="form-control" name="birthdate" value="${app.birthdate || ''}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Sex</label>
@@ -56,19 +106,19 @@ async function openInfoModal(id) {
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Civil Status</label>
-                        <input type="text" class="form-control" name="civilStatus" value="${app.civilStatus || ''}">
+                        <input type="text" class="form-control" name="civilStatus" value="${app.civilStatus || ''}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Religion</label>
-                        <input type="text" class="form-control" name="religion" value="${app.religion || ''}">
+                        <input type="text" class="form-control" name="religion" value="${app.religion || ''}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Disability</label>
-                        <input type="text" class="form-control" name="disability" value="${app.disability || ''}">
+                        <input type="text" class="form-control" name="disability" value="${app.disability || ''}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Ethnic Group</label>
-                        <input type="text" class="form-control" name="ethnicGroup" value="${app.ethnicGroup || ''}">
+                        <input type="text" class="form-control" name="ethnicGroup" value="${app.ethnicGroup || ''}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
@@ -89,6 +139,12 @@ async function openInfoModal(id) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const body = Object.fromEntries(formData.entries());
+            
+            const addressObj = {
+                res_house: body.res_house, res_street: body.res_street, res_subdivision: body.res_subdivision,
+                res_barangay: body.res_barangay, res_city: body.res_city, res_province: body.res_province, res_zip: body.res_zip
+            };
+            body.address = JSON.stringify(addressObj);
             try {
                 const res = await fetch(`/api/applicants/${id}/info`, {
                     method: 'PUT',
@@ -109,8 +165,7 @@ async function openInfoModal(id) {
         if (!iModal.classList.contains('show')) {
             bootstrap.Modal.getOrCreateInstance(iModal).show();
         }
-    } catch (error) {
-        alert(error.message); }
+    } catch (error) { console.error(error); window.showToast(error.message, 'danger'); }
 }
 
 async function openSummaryModal(id, name, hideActions = false) {
@@ -187,7 +242,6 @@ async function openSummaryModal(id, name, hideActions = false) {
 window.disqualifyFromSummary = () => {
     const id = document.getElementById('summaryApplicantId').value;
     const name = document.getElementById('summaryApplicantName').innerText;
-    bootstrap.Modal.getInstance(document.getElementById('summaryModal')).hide();
     
     document.getElementById('summaryDisqualifyId').value = id;
     document.getElementById('summaryDisqualifyName').innerText = name;
@@ -197,7 +251,7 @@ window.disqualifyFromSummary = () => {
 window.confirmSummaryDisqualify = () => {
     const id = document.getElementById('summaryDisqualifyId').value;
     fetch(`/api/applicants/${id}/disqualify`, { method: 'POST' })
-        .then(res => res.ok ? window.location.reload() : alert('Error'))
+        .then(res => res.ok ? window.showToast('Successfully disqualified', 'success', true) : window.showToast('Error disqualifying', 'danger'))
         .catch(err => console.error(err));
 }
 
@@ -251,3 +305,47 @@ window.launchFromUnified = function(type) {
     }
 }
 
+
+
+
+window.openUpdateStatusModal = function(id, name, currentStatus) {
+    document.getElementById('updateStatusId').value = id;
+    document.getElementById('updateStatusName').innerText = name;
+    
+    const select = document.getElementById('updateStatusSelect');
+    if (select.querySelector(`option[value="${currentStatus}"]`)) {
+        select.value = currentStatus;
+    } else {
+        select.value = 'PENDING';
+    }
+    
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('updateStatusModal')).show();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const updateForm = document.getElementById('updateStatusForm');
+    if (updateForm) {
+        updateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('updateStatusId').value;
+            const status = document.getElementById('updateStatusSelect').value;
+            
+            try {
+                const res = await fetch(`/api/applicants/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if(res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('updateStatusModal')).hide();
+                    window.showToast('Status successfully updated!', 'success', true);
+                } else {
+                    window.showToast('Error updating status', 'danger');
+                }
+            } catch(err) {
+                console.error(err);
+                window.showToast('Error updating status', 'danger');
+            }
+        });
+    }
+});

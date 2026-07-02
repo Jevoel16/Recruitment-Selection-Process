@@ -6,6 +6,8 @@
     </div>
     
     <form id="addApplicantForm">
+        <input type="hidden" id="wizardCategory" name="category">
+        <input type="hidden" id="wizardPosition" name="position">
                 <!-- Step 0: Category & Position -->
                 <div id="wizardStep0">
                     <h6 id="categorySelectionTitle" class="mb-4 text-center fw-bold text-secondary">Select Applicant Category</h6>
@@ -37,194 +39,234 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Step 1: Personal Info -->
                 <div id="wizardStep1" class="d-none">
-                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-                        <button type="button" class="btn btn-sm btn-light me-3 border shadow-sm" onclick="backToPositions()"><i class="bi bi-arrow-left"></i> Back</button>
-                        <div>
-                            <h5 class="mb-0 fw-bold text-primary">Personal Information</h5>
-                            <small class="text-muted" id="selectedPositionText"></small>
-                        </div>
-                    </div>
-                    
-                    <input type="hidden" name="category" id="wizardCategory">
-                    <input type="hidden" name="position" id="wizardPosition">
-                    
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="firstName" required placeholder="e.g. John">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Middle Name</label>
-                            <input type="text" class="form-control" name="middleName" placeholder="e.g. Smith">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="lastName" required placeholder="e.g. Doe">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Address</label>
-                            <input type="text" class="form-control" name="address" placeholder="Complete address">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Age</label>
-                            <input type="number" class="form-control" name="age" min="18">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Sex</label>
-                            <select class="form-select" name="sex">
-                                <option value="">Select...</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Civil Status</label>
-                            <select class="form-select" name="civilStatus">
-                                <option value="">Select...</option>
-                                <option value="Single">Single</option>
-                                <option value="Married">Married</option>
-                                <option value="Widowed">Widowed</option>
-                                <option value="Separated">Separated</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Religion</label>
-                            <input type="text" class="form-control" name="religion">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Disability</label>
-                            <input type="text" class="form-control" name="disability" placeholder="N/A if none">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ethnic Group</label>
-                            <input type="text" class="form-control" name="ethnicGroup">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Email Address</label>
-                            <input type="email" class="form-control" name="emailAddress" placeholder="email@example.com">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Contact No.</label>
-                            <input type="text" class="form-control" name="contactNo" placeholder="09XX XXX XXXX">
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                        <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextStep(2)">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
-                    </div>
-                </div>
+                    <ul class="nav nav-pills nav-fill mb-4 bg-light rounded-pill p-1 shadow-sm" id="applicantTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active rounded-pill fw-bold" id="tab-personal" data-bs-toggle="pill" data-bs-target="#pane-personal" type="button" role="tab">Personal Info</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill fw-bold" id="tab-eligibility" data-bs-toggle="pill" data-bs-target="#pane-eligibility" type="button" role="tab">Eligibility</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill fw-bold" id="tab-education" data-bs-toggle="pill" data-bs-target="#pane-education" type="button" role="tab">Education</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill fw-bold" id="tab-training" data-bs-toggle="pill" data-bs-target="#pane-training" type="button" role="tab">Training</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill fw-bold" id="tab-experience" data-bs-toggle="pill" data-bs-target="#pane-experience" type="button" role="tab">Experience</button>
+                        </li>
+                    </ul>
 
-                <!-- Step 2: Educational Background -->
-                <div id="wizardStep2" class="d-none">
-                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-                        <button type="button" class="btn btn-sm btn-light me-3 border shadow-sm" onclick="prevStep(1)"><i class="bi bi-arrow-left"></i> Back</button>
-                        <div>
-                            <h5 class="mb-0 fw-bold text-primary">Educational Background</h5>
-                            <small class="text-muted">Enter highest or most relevant education (Optional)</small>
-                        </div>
+                    <div class="mb-4 d-flex justify-content-between align-items-center">
+                        <span class="text-primary fw-semibold" id="selectedPositionText"></span>
+                        <button type="button" class="btn btn-sm btn-light border shadow-sm" onclick="backToPositions()"><i class="bi bi-arrow-left"></i> Change Position</button>
                     </div>
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
-                            <label class="form-label fw-semibold">Degree / Course</label>
-                            <input type="text" class="form-control" id="edu_degree" placeholder="e.g. BS Computer Science">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Year Graduated</label>
-                            <input type="number" class="form-control" id="edu_year" placeholder="e.g. 2020">
-                        </div>
-                        <div class="col-md-1">
-                            <button type="button" class="btn btn-success w-100" id="btn-add-edu"><i class="bi bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-                    <div class="mt-3" id="eduList"></div>
-                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                        <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextStep(3)">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
-                    </div>
-                </div>
 
-                <!-- Step 3: Training Background -->
-                <div id="wizardStep3" class="d-none">
-                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-                        <button type="button" class="btn btn-sm btn-light me-3 border shadow-sm" onclick="prevStep(2)"><i class="bi bi-arrow-left"></i> Back</button>
-                        <div>
-                            <h5 class="mb-0 fw-bold text-primary">Training Background</h5>
-                            <small class="text-muted">Enter most relevant training (Optional)</small>
-                        </div>
-                    </div>
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
-                            <label class="form-label fw-semibold">Title of Training</label>
-                            <input type="text" class="form-control" id="train_title" placeholder="e.g. Leadership Seminar">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Number of Hours</label>
-                            <input type="number" class="form-control" id="train_hours" placeholder="e.g. 40">
-                        </div>
-                        <div class="col-md-1">
-                            <button type="button" class="btn btn-success w-100" id="btn-add-train"><i class="bi bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-                    <div class="mt-3" id="trainList"></div>
-                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                        <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextStep(4)">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
-                    </div>
-                </div>
+                    <div class="tab-content" id="applicantTabsContent">
+                        <!-- Personal Info Pane -->
+                        <div class="tab-pane fade show active" id="pane-personal" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="firstName" required placeholder="e.g. JOHN" oninput="this.value = this.value.toUpperCase();">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Middle Name</label>
+                                    <input type="text" class="form-control" name="middleName" placeholder="e.g. SMITH" oninput="this.value = this.value.toUpperCase();">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="lastName" required placeholder="e.g. DOE" oninput="this.value = this.value.toUpperCase();">
+                                </div>
+                                
+                                <div class="col-md-12 border rounded-3 p-3 bg-light">
+                                    <h6 class="text-primary fw-bold mb-3">Residential Address</h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold small">House/Block/Lot No.</label>
+                                            <input type="text" class="form-control form-control-sm" name="res_house" oninput="this.value = this.value.toUpperCase();">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold small">Street</label>
+                                            <input type="text" class="form-control form-control-sm" name="res_street" oninput="this.value = this.value.toUpperCase();">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold small">Subdivision/Village</label>
+                                            <input type="text" class="form-control form-control-sm" name="res_subdivision" oninput="this.value = this.value.toUpperCase();">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold small">Barangay <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-sm" name="res_barangay" required oninput="this.value = this.value.toUpperCase();">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">City/Municipality <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-sm" name="res_city" required oninput="this.value = this.value.toUpperCase();">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">Province <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-sm" name="res_province" required oninput="this.value = this.value.toUpperCase();">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold small">Zip Code</label>
+                                            <input type="text" class="form-control form-control-sm" name="res_zip" oninput="this.value = this.value.toUpperCase();">
+                                        </div>
+                                    </div>
 
-                <!-- Step 4: Experience Background -->
-                <div id="wizardStep4" class="d-none">
-                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-                        <button type="button" class="btn btn-sm btn-light me-3 border shadow-sm" onclick="prevStep(3)"><i class="bi bi-arrow-left"></i> Back</button>
-                        <div>
-                            <h5 class="mb-0 fw-bold text-primary">Experience Background</h5>
-                            <small class="text-muted">Enter most relevant experience (Optional)</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Birthdate <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="birthdate" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Sex <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="sex" required>
+                                        <option value="">Select...</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Civil Status <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="civilStatus" required oninput="this.value = this.value.toUpperCase();">
+                                        <option value="">Select...</option>
+                                        <option value="Single">Single</option>
+                                        <option value="Married">Married</option>
+                                        <option value="Widowed">Widowed</option>
+                                        <option value="Separated">Separated</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Religion</label>
+                                    <input type="text" class="form-control" name="religion" oninput="this.value = this.value.toUpperCase();">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Disability</label>
+                                    <input type="text" class="form-control" name="disability" oninput="this.value = this.value.toUpperCase();" placeholder="N/A if none">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Ethnic Group</label>
+                                    <input type="text" class="form-control" name="ethnicGroup" oninput="this.value = this.value.toUpperCase();">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Email Address</label>
+                                    <input type="email" class="form-control" name="emailAddress" placeholder="email@example.com">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Contact No. <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="contactNo" placeholder="09XX XXX XXXX" required>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                                <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextTab('tab-eligibility')">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
-                            <label class="form-label fw-semibold">Experience Details (Company & Role)</label>
-                            <input type="text" class="form-control" id="exp_details" placeholder="e.g. Software Engineer at Tech Corp">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Number of Years</label>
-                            <input type="number" class="form-control" id="exp_years" step="0.1" placeholder="e.g. 2.5">
-                        </div>
-                        <div class="col-md-1">
-                            <button type="button" class="btn btn-success w-100" id="btn-add-exp"><i class="bi bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-                    <div class="mt-3" id="expList"></div>
-                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                        <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextStep(5)">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
-                    </div>
-                </div>
 
-                <!-- Step 5: Eligibility Background -->
-                <div id="wizardStep5" class="d-none">
-                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-                        <button type="button" class="btn btn-sm btn-light me-3 border shadow-sm" onclick="prevStep(4)"><i class="bi bi-arrow-left"></i> Back</button>
-                        <div>
-                            <h5 class="mb-0 fw-bold text-primary">Eligibility Background</h5>
-                            <small class="text-muted">Enter most relevant eligibility (Optional)</small>
+                        <!-- Eligibility Pane -->
+                        <div class="tab-pane fade" id="pane-eligibility" role="tabpanel">
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h5 class="mb-0 fw-bold text-primary">Eligibility Background</h5>
+                                <small class="text-muted">Enter relevant eligibility/licenses</small>
+                            </div>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Eligibility Details (e.g. RA 1080)</label>
+                                    <input type="text" class="form-control" id="elig_details" placeholder="e.g. RA 1080 (CPA)">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Rating</label>
+                                    <input type="number" class="form-control" id="elig_rating" step="0.01" placeholder="e.g. 85.5">
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-success w-100" id="btn-add-elig"><i class="bi bi-plus-lg"></i></button>
+                                </div>
+                            </div>
+                            <div class="mt-3" id="eligList"></div>
+                            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                                <button type="button" class="btn btn-light border shadow-sm px-4 fw-bold" onclick="nextTab('tab-personal')"><i class="bi bi-arrow-left-circle me-2"></i> Back</button>
+                                <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextTab('tab-education')">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
-                            <label class="form-label fw-semibold">Eligibility Details</label>
-                            <input type="text" class="form-control" id="elig_details" placeholder="e.g. Civil Service Professional">
+
+                        <!-- Education Pane -->
+                        <div class="tab-pane fade" id="pane-education" role="tabpanel">
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h5 class="mb-0 fw-bold text-primary">Educational Background</h5>
+                                <small class="text-muted">Enter highest or most relevant education</small>
+                            </div>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Degree / Course</label>
+                                    <input type="text" class="form-control" id="edu_degree" placeholder="e.g. BS Computer Science">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Year Graduated</label>
+                                    <input type="number" class="form-control" id="edu_year" placeholder="e.g. 2020">
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-success w-100" id="btn-add-edu"><i class="bi bi-plus-lg"></i></button>
+                                </div>
+                            </div>
+                            <div class="mt-3" id="eduList"></div>
+                            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                                <button type="button" class="btn btn-light border shadow-sm px-4 fw-bold" onclick="nextTab('tab-eligibility')"><i class="bi bi-arrow-left-circle me-2"></i> Back</button>
+                                <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextTab('tab-training')">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Rating</label>
-                            <input type="text" class="form-control" id="elig_rating" placeholder="e.g. 85.5%">
+
+                        <!-- Training Pane -->
+                        <div class="tab-pane fade" id="pane-training" role="tabpanel">
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h5 class="mb-0 fw-bold text-primary">Training Background</h5>
+                                <small class="text-muted">Enter most relevant training</small>
+                            </div>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Title of Training</label>
+                                    <input type="text" class="form-control" id="train_title" placeholder="e.g. Leadership Seminar">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Number of Hours</label>
+                                    <input type="number" class="form-control" id="train_hours" placeholder="e.g. 40">
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-success w-100" id="btn-add-train"><i class="bi bi-plus-lg"></i></button>
+                                </div>
+                            </div>
+                            <div class="mt-3" id="trainList"></div>
+                            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                                <button type="button" class="btn btn-light border shadow-sm px-4 fw-bold" onclick="nextTab('tab-education')"><i class="bi bi-arrow-left-circle me-2"></i> Back</button>
+                                <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="nextTab('tab-experience')">Next <i class="bi bi-arrow-right-circle ms-2"></i></button>
+                            </div>
                         </div>
-                        <div class="col-md-1">
-                            <button type="button" class="btn btn-success w-100" id="btn-add-elig"><i class="bi bi-plus-lg"></i></button>
+
+                        <!-- Experience Pane -->
+                        <div class="tab-pane fade" id="pane-experience" role="tabpanel">
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h5 class="mb-0 fw-bold text-primary">Experience Background</h5>
+                                <small class="text-muted">Enter most relevant experience</small>
+                            </div>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Experience Details (Company & Role)</label>
+                                    <input type="text" class="form-control" id="exp_details" placeholder="e.g. Software Engineer at Tech Corp">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Number of Years</label>
+                                    <input type="number" class="form-control" id="exp_years" step="0.1" placeholder="e.g. 2.5">
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-success w-100" id="btn-add-exp"><i class="bi bi-plus-lg"></i></button>
+                                </div>
+                            </div>
+                            <div class="mt-3" id="expList"></div>
+                            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                                <button type="button" class="btn btn-light border shadow-sm px-4 fw-bold" onclick="nextTab('tab-training')"><i class="bi bi-arrow-left-circle me-2"></i> Back</button>
+                                <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Save Applicant <i class="bi bi-check-circle ms-2"></i></button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="mt-3" id="eligList"></div>
-                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Save Applicant <i class="bi bi-check-circle ms-2"></i></button>
                     </div>
                 </div>
             </form>
@@ -383,14 +425,12 @@
         document.getElementById('wizardStep1').classList.remove('d-none');
     }
 
-    function nextStep(stepNum) {
-        document.querySelectorAll('[id^="wizardStep"]').forEach(el => el.classList.add('d-none'));
-        document.getElementById(`wizardStep${stepNum}`).classList.remove('d-none');
-    }
-
-    function prevStep(stepNum) {
-        document.querySelectorAll('[id^="wizardStep"]').forEach(el => el.classList.add('d-none'));
-        document.getElementById(`wizardStep${stepNum}`).classList.remove('d-none');
+    function nextTab(tabId) {
+        const tabEl = document.querySelector('#' + tabId);
+        if (tabEl) {
+            const tab = new bootstrap.Tab(tabEl);
+            tab.show();
+        }
     }
 
     const wizardData = {
@@ -426,11 +466,13 @@
         }
         html += '</ul>';
         listDiv.innerHTML = html;
+        saveDraft();
     }
 
-    window.removeWizardItem = (type, index) => {
+    window.removeWizardItem = function(type, index) {
         wizardData[type].splice(index, 1);
         renderWizardList(type);
+        saveDraft();
     };
 
     document.getElementById('btn-add-edu')?.addEventListener('click', () => {
@@ -443,7 +485,8 @@
             document.getElementById('edu_year').value = '';
             if (document.getElementById('edu_link')) document.getElementById('edu_link').value = '';
             renderWizardList('education');
-        } else alert("Please provide degree and year.");
+            saveDraft();
+        } else alert("Please provide both degree and year.");
     });
 
     document.getElementById('btn-add-train')?.addEventListener('click', () => {
@@ -456,7 +499,8 @@
             document.getElementById('train_hours').value = '';
             if (document.getElementById('train_link')) document.getElementById('train_link').value = '';
             renderWizardList('training');
-        } else alert("Please provide title and hours.");
+            saveDraft();
+        } else alert("Please provide both title and hours.");
     });
 
     document.getElementById('btn-add-exp')?.addEventListener('click', () => {
@@ -469,7 +513,8 @@
             document.getElementById('exp_years').value = '';
             if (document.getElementById('exp_link')) document.getElementById('exp_link').value = '';
             renderWizardList('experience');
-        } else alert("Please provide details and years.");
+            saveDraft();
+        } else alert("Please provide both details and years.");
     });
 
     document.getElementById('btn-add-elig')?.addEventListener('click', () => {
@@ -482,14 +527,97 @@
             document.getElementById('elig_rating').value = '';
             if (document.getElementById('elig_link')) document.getElementById('elig_link').value = '';
             renderWizardList('eligibility');
+            saveDraft();
         } else alert("Please provide details and rating.");
     });
 
     // Initial render
     ['education', 'training', 'experience', 'eligibility'].forEach(renderWizardList);
 
+    let isFormDirty = false;
+
+    function saveDraft() {
+        const form = document.getElementById('addApplicantForm');
+        if (!form) return;
+        isFormDirty = true;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        let activeTab = 'tab-personal';
+        const activeTabEl = document.querySelector('#applicantTabs .nav-link.active');
+        if (activeTabEl) {
+            activeTab = activeTabEl.id;
+        }
+
+        const draft = {
+            formData: data,
+            wizardData: wizardData,
+            activeTab: activeTab
+        };
+        localStorage.setItem('addApplicantDraft', JSON.stringify(draft));
+    }
+
+    // Also trigger saveDraft when tabs are changed
+    document.addEventListener('shown.bs.tab', function (event) {
+        if (event.target.closest('#applicantTabs')) {
+            saveDraft();
+        }
+    });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (isFormDirty) {
+            const confirmationMessage = 'You have unsaved changes. Are you sure you want to leave?';
+            e.returnValue = confirmationMessage;
+            return confirmationMessage;
+        }
+    });
+
     const addAppForm = document.getElementById('addApplicantForm');
     if (addAppForm) {
+        addAppForm.addEventListener('input', saveDraft);
+        addAppForm.addEventListener('change', saveDraft);
+        
+        // Auto-restore draft
+        const savedDraft = localStorage.getItem('addApplicantDraft');
+        if (savedDraft) {
+            try {
+                const draft = JSON.parse(savedDraft);
+                
+                // Restore form fields
+                for (const [key, value] of Object.entries(draft.formData)) {
+                    const inputs = addAppForm.querySelectorAll(`[name="${key}"]`);
+                    inputs.forEach(input => {
+                        if (input.type === 'checkbox' || input.type === 'radio') {
+                            if (input.value === value) input.checked = true;
+                        } else {
+                            input.value = value;
+                        }
+                    });
+                }
+                
+                // Restore wizardData
+                if (draft.wizardData) {
+                    Object.assign(wizardData, draft.wizardData);
+                    ['education', 'training', 'experience', 'eligibility'].forEach(renderWizardList);
+                }
+                
+                // Restore active tab
+                if (draft.activeTab) {
+                    nextTab(draft.activeTab);
+                }
+
+                // If a category/position was already selected, move directly to step 1
+                if (draft.formData.category && draft.formData.position) {
+                    selectPosition(draft.formData.category, draft.formData.position);
+                }
+            } catch(err) {
+                console.error("Failed to restore draft", err);
+            }
+        } else {
+            // No draft found, form is not dirty
+            isFormDirty = false;
+        }
+
         addAppForm.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA') {
                 e.preventDefault();
@@ -506,6 +634,12 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             
+            const addressObj = {
+                res_house: data.res_house, res_street: data.res_street, res_subdivision: data.res_subdivision,
+                res_barangay: data.res_barangay, res_city: data.res_city, res_province: data.res_province, res_zip: data.res_zip
+            };
+            data.address = JSON.stringify(addressObj);
+            
             data.education = JSON.stringify(wizardData.education);
             data.training = JSON.stringify(wizardData.training);
             data.experience = JSON.stringify(wizardData.experience);
@@ -519,13 +653,21 @@
             });
             if (res.ok) {
                 const responseData = await res.json();
+                isFormDirty = false; // Prevent beforeunload warning
+                localStorage.removeItem('addApplicantDraft');
                 document.getElementById('successApplicationCode').innerText = responseData.applicationCode;
                 const modal = new bootstrap.Modal(document.getElementById('successModal'));
                 document.getElementById('successModalProceedBtn').onclick = () => {
                     modal.hide();
-                    // Redirect directly to the new applicant's requirement page in step 1
-                    window.location.href = `/step1/1?search=${encodeURIComponent(data.firstName + ' ' + data.lastName)}`;
+                    window.location.href = '/step1/1?search=' + encodeURIComponent(data.firstName + ' ' + data.lastName);
                 };
+                const closeBtn = document.getElementById('successModalCloseBtn');
+                if(closeBtn) {
+                    closeBtn.onclick = () => {
+                        modal.hide();
+                        window.location.reload();
+                    };
+                }
                 modal.show();
             } else {
                 alert('Failed to save applicant');
@@ -542,6 +684,9 @@
     }
 </script>
 
+<script>
+
+</script>
 {{> modals}}
 </div>
 </div>
@@ -556,5 +701,6 @@
 <script src="/js/documents.js"></script>
 <script src="/js/assessment.js"></script>
 <script src="/js/main.js"></script>
+<script src="/js/modal_stack.js"></script>
 </body>
 </html>

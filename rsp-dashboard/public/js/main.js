@@ -18,19 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
         sumQualifyBtn.addEventListener('click', async () => {
             const id = document.getElementById('summaryApplicantId').value;
             const name = document.getElementById('summaryApplicantName').innerText;
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).hide();
             openQualifyModal(id, name);
         });
     }
 
-    const sumDisqualifyBtn = document.getElementById('summaryDisqualifyBtn');
-    if (sumDisqualifyBtn) {
-        sumDisqualifyBtn.addEventListener('click', () => {
-            const id = document.getElementById('summaryApplicantId').value;
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).hide();
-            disqualifyApplicant(id);
-        });
-    }
+
 
     const updateRowRemarks = async () => {
         if (!window.currentDocApplicantId) return;
@@ -64,4 +56,55 @@ document.addEventListener('DOMContentLoaded', () => {
             el.addEventListener('hidden.bs.modal', updateRowRemarks);
         }
     });
+});
+
+window.showToast = function(message, type = 'success', reloadAfter = false) {
+    if (reloadAfter) {
+        sessionStorage.setItem('pendingToast', JSON.stringify({ message, type }));
+        window.location.reload();
+        return;
+    }
+
+    let toastContainer = document.getElementById('globalToastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        toastContainer.id = 'globalToastContainer';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toastId = 'toast-' + Date.now();
+    const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+    
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    const toastEl = document.getElementById(toastId);
+    const bsToast = new bootstrap.Toast(toastEl, { delay: 1500 });
+    bsToast.show();
+    
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const pendingToast = sessionStorage.getItem('pendingToast');
+    if (pendingToast) {
+        sessionStorage.removeItem('pendingToast');
+        try {
+            const { message, type } = JSON.parse(pendingToast);
+            window.showToast(message, type, false);
+        } catch(e) {}
+    }
 });

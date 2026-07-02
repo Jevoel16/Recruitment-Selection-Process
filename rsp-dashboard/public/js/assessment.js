@@ -3,6 +3,7 @@
 // ==========================================
 
 let currentAssessmentId = null;
+let currentPositionStandards = null;
 
 async function openAssessmentModal(id, name) {
     currentAssessmentId = id;
@@ -13,7 +14,8 @@ async function openAssessmentModal(id, name) {
     try {
         const data = await fetchDetails(id);
         const app = data.applicant;
-        const posStandards = data.positionStandards || {};
+        currentPositionStandards = data.positionStandards || {};
+        const posStandards = currentPositionStandards;
         
         const category = app.category || 'Non-Teaching';
         const sg = posStandards.salaryGrade || '1'; 
@@ -116,11 +118,11 @@ if (assessmentForm) {
                 body: JSON.stringify(data)
             });
             if (res.ok) {
-                window.location.reload();
+                window.showToast('Assessment saved successfully!', 'success', true);
             }
         } catch (err) {
             console.error(err);
-            alert('Error saving assessment');
+            window.showToast('Error saving assessment', 'danger');
         }
     });
     
@@ -150,6 +152,7 @@ if (assessmentForm) {
 
 function openEduCalcModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('eduCalcModal')).show();
+    if (typeof setFloatingStandard === 'function') setFloatingStandard('eduCalcModal', currentPositionStandards?.qsEducation || null);
     calculateEduPoints();
 }
 
@@ -220,6 +223,7 @@ function applyEduPoints() {
 
 function openTrainCalcModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('trainCalcModal')).show();
+    if (typeof setFloatingStandard === 'function') setFloatingStandard('trainCalcModal', currentPositionStandards?.qsTraining || null);
     calculateTrainPoints();
 }
 
@@ -276,6 +280,7 @@ function applyTrainPoints() {
 
 function openExpCalcModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('expCalcModal')).show();
+    if (typeof setFloatingStandard === 'function') setFloatingStandard('expCalcModal', currentPositionStandards?.qsExperience || null);
     calculateExpPoints();
 }
 
@@ -332,6 +337,7 @@ function applyExpPoints() {
 
 function openPerfCalcModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('perfCalcModal')).show();
+    if (typeof setFloatingStandard === 'function') setFloatingStandard('perfCalcModal', 'Performance Rating must be at least Very Satisfactory for the last rating period.');
     togglePerfInputs();
     calculatePerfPoints();
 }
@@ -673,11 +679,11 @@ if (step2SummaryForm) {
                 body: JSON.stringify({})
             });
             if (res.ok) {
-                window.location.reload();
+                window.showToast('Moved to Step 3 successfully!', 'success', true);
             }
         } catch (err) {
             console.error(err);
-            alert('Error submitting score');
+            window.showToast('Error submitting score', 'danger');
         }
     });
 }

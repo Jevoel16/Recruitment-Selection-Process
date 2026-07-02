@@ -59,7 +59,7 @@ async function updateRequirementField(id, field, value) {
         throw new Error('Failed to update requirement');
     } catch (err) {
         console.error(err);
-        alert('Unable to update the requirement checkbox.');
+        window.showToast('Unable to update the requirement checkbox.', 'danger');
         return null;
     }
 }
@@ -77,7 +77,7 @@ async function setAllRequirements(id, value) {
         }
     } catch (err) {
         console.error(err);
-        alert('Unable to update requirements.');
+        window.showToast('Unable to update requirements.', 'danger');
     }
 }
 
@@ -138,6 +138,6 @@ async function openRequirementsModal(id, skipFetch = false) {
         if (!reqModal.classList.contains('show')) {
             bootstrap.Modal.getOrCreateInstance(reqModal).show();
         }
-    } catch (error) { console.error(error); alert('Failed to fetch applicant data'); }
+    } catch (error) { console.error(error); window.showToast('Failed to fetch applicant data', 'danger'); }
 }
 

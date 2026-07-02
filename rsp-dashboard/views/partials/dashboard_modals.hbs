@@ -4,7 +4,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0 bg-primary bg-opacity-10 text-primary">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-person-lines-fill me-2"></i>Applicant Details: <span id="unifiedModalName" class="text-dark"></span></h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-card-list me-2"></i>Applicant Details: <span id="unifiedModalName" class="text-dark"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center p-4">
@@ -99,8 +99,8 @@
                                 <input type="text" class="form-control" name="address">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Age</label>
-                                <input type="number" class="form-control" name="age">
+                                <label class="form-label">Birthdate</label>
+                                <input type="date" class="form-control" name="birthdate">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Sex</label>
@@ -431,7 +431,46 @@
                             <i class="bi bi-x-circle me-1"></i> Disqualify
                         </button>
                     </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div class="modal fade glass-modal" id="updateStatusModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0 bg-warning bg-opacity-10 text-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2"></i>Update Applicant Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="updateStatusForm">
+                        <input type="hidden" id="updateStatusId">
+                        <p>Applicant: <strong id="updateStatusName" class="text-primary"></strong></p>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-muted">Select New Status</label>
+                            <select class="form-select bg-white bg-opacity-75" id="updateStatusSelect" required>
+                                <option value="PENDING">Step 1: Pending</option>
+                                <option value="WAITING_FOR_ASSESSMENT">Step 2: Qualified for Deliberation</option>
+                                <option value="ASSESSED">Step 3: Assessed</option>
+                                <option value="WAITING">Step 4: Requirements</option>
+                                <option value="ASSIGNED">Step 5: Assigned</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="DISQUALIFIED">Disqualified</option>
+                            </select>
+                            <div class="form-text mt-2">
+                                Changing status will manually move the applicant to the selected step. For example, if they were disqualified, set them back to "Step 1: Pending" or "Step 2: Qualified".
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm text-dark">
+                            <i class="bi bi-save me-2"></i> Save Changes
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
+    </div>
+
+    {{> modal_delete_confirm}}
+</div>

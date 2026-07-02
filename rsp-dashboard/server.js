@@ -615,6 +615,13 @@ async function ensureRequirementColumns() {
     for (const column of missingColumns) {
         await db.query(`ALTER TABLE applicants ADD COLUMN ${column} BOOLEAN DEFAULT FALSE AFTER contactNo`);
     }
+
+    if (!existingColumns.has('cc')) {
+        await db.query(`ALTER TABLE applicants ADD COLUMN cc VARCHAR(255) DEFAULT NULL`);
+    }
+    if (!existingColumns.has('ccDesignation')) {
+        await db.query(`ALTER TABLE applicants ADD COLUMN ccDesignation VARCHAR(255) DEFAULT NULL`);
+    }
 }
 
 async function syncAssignmentRequirementStatus(id) {
@@ -637,7 +644,7 @@ async function syncAssignmentRequirementStatus(id) {
 app.post('/api/applicants', async (req, res) => {
     try {
         const { 
-            firstName, lastName, middleName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position,
+            firstName, lastName, middleName, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position,
             education, training, experience, eligibility
         } = req.body;
         
@@ -645,8 +652,8 @@ app.post('/api/applicants', async (req, res) => {
         const currentYear = new Date().getFullYear();
 
         const [result] = await db.query(
-            'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-            [firstName, lastName, middleName || '', 'Walk-in', null, category || null, position || null, 'TEMP', address || null, age || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
+            'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            [firstName, lastName, middleName || '', 'Walk-in', null, category || null, position || null, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
         );
         
         const applicantId = result.insertId;
@@ -728,6 +735,19 @@ app.post('/api/applicants/:id/qualify', async (req, res) => {
         const { id } = req.params;
         await db.query(`UPDATE applicants SET status = 'WAITING_FOR_ASSESSMENT' WHERE id = ?`, [id]);
         console.log(`[STATUS] Applicant ID ${id} qualified to Step 2.`);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update Applicant Status
+app.put('/api/applicants/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        await db.query(`UPDATE applicants SET status = ? WHERE id = ?`, [status, id]);
+        console.log(`[STATUS] Applicant ID ${id} status manually updated to ${status}`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -861,8 +881,8 @@ app.post('/api/applicants/:id/toggle-assignment-req', async (req, res) => {
 app.post('/api/applicants/:id/assign', async (req, res) => {
     try {
         const { id } = req.params;
-        const { office } = req.body;
-        await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ? WHERE id = ?`, [office, id]);
+        const { office, cc, ccDesignation } = req.body;
+        await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ?, cc = ?, ccDesignation = ? WHERE id = ?`, [office, cc || null, ccDesignation || null, id]);
         console.log(`[ASSIGNMENT] Applicant ID ${id} assigned to office: ${office} (Step 5)`);
         res.json({ success: true });
     } catch (error) {
@@ -886,10 +906,10 @@ app.post('/api/applicants/:id/complete', async (req, res) => {
 app.put('/api/applicants/:id/info', async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, middleName, lastName, address, age, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink } = req.body;
+        const { firstName, middleName, lastName, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink } = req.body;
         await db.query(
-            `UPDATE applicants SET firstName=?, middleName=?, lastName=?, address=?, age=?, sex=?, civilStatus=?, religion=?, disability=?, ethnicGroup=?, emailAddress=?, contactNo=?, pdsLink=? WHERE id=?`, 
-            [firstName, middleName || '', lastName, address, age || null, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink || null, id]
+            `UPDATE applicants SET firstName=?, middleName=?, lastName=?, address=?, birthdate=?, sex=?, civilStatus=?, religion=?, disability=?, ethnicGroup=?, emailAddress=?, contactNo=?, pdsLink=? WHERE id=?`, 
+            [firstName, middleName || '', lastName, address, birthdate || null, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink || null, id]
         );
         res.json({ success: true });
     } catch (error) {

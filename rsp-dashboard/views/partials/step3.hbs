@@ -8,7 +8,7 @@
                 <form method="GET" action="/step3/1" class="row g-2">
                     <div class="col-md-6">
                         <div class="input-group glass-panel h-100">
-                            <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                            <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
                             <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
                         </div>
                     </div>
@@ -30,30 +30,32 @@
                 </form>
             </div>
 
-            <div class="rounded-3 overflow-hidden shadow-sm">
+            <div class="rounded-3 shadow-sm table-responsive-wrapper bg-white">
                 <table class="table table-hover align-middle mb-0 custom-table leaderboard" id="table-step3">
                     <thead class="table-light">
                         <tr>
-                            <th class="text-center" style="width: 80px;">Rank</th>
-                            <th>Application Code</th>
+                            <th class="ps-4">Application Code</th>
                             <th>Applicant Name</th>
+                            <th>Position</th>
                             <th class="text-center">Score Summary</th>
+                            <th class="text-center" style="width: 80px;">Rank</th>
                             <th class="text-center">Total</th>
                             <th class="text-center">Status</th>
-                            <th class="text-end">Action</th>
+                            <th class="text-end pe-4">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {{#each step3}}
                         <tr>
-                            <td class="fw-bold text-primary text-center">#{{incOffset @index ../offset}}</td>
-                            <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                            <td class="ps-4"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                            <td>{{this.position}}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{this.name}}', true)">
-                                    <i class="bi bi-eye"></i> View Summary
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{this.name}}', true)" title="View Summary">
+                                    <i class="bi bi-eye"></i> View
                                 </button>
                             </td>
+                            <td class="fw-bold text-primary text-center">#{{incOffset @index ../offset}}</td>
                             <td class="text-center fw-bold text-success fs-5">
                                 {{#unless (eq this.scores.total null)}}
                                     {{this.scores.total}}
@@ -62,15 +64,14 @@
                                 {{/unless}}
                             </td>
                             <td class="text-center"><span class="badge bg-success">Assessed</span></td>
-                            <td class="text-end">
+                            <td class="text-end pe-4">
                                 {{#if (eq this.status 'ASSESSED')}}
-                                <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move to Step 4</button>
+                                <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{this.name}}')" title="Move to Step 4"><i class="bi bi-arrow-right-circle"></i> Move</button>
                                 {{/if}}
-                                <button class="btn btn-sm btn-danger action-btn ms-1" onclick="deleteApplicant({{this.id}})"><i class="bi bi-trash"></i> Delete</button>
                             </td>
                         </tr>
                         {{else}}
-                        <tr><td colspan="6" class="text-center text-muted py-4">No comparative data available yet.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">No comparative data available yet.</td></tr>
                         {{/each}}
                     </tbody>
                 </table>

@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.error(err);
-                alert('Error adding applicant');
+                window.showToast('Error adding applicant', 'danger');
             }
         });
     }

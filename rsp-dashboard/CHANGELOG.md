@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-02 13:22 (v0.8.2-Alpha+202607021322)
+### ADDED
+- Displayed the `Position` column in the Step 4 (Requirements) and Step 5 (Assignment Orders) workflow tables for better visibility.
+- Expanded the Assignment Order PDF generator in Step 5 to support `CC` and `CC Designation` parameters.
+
+### CHANGED
+- Enhanced the Step 4 and Step 5 search bar to automatically trigger a form submission upon clicking the search icon.
+- Re-arranged the Step 4 action buttons, renaming "View Requirements" to "View" and placing it alongside the Score column.
+- Simplified the Step 5 PDF generation button label from "Generate PDF" to "PDF".
+
+### FIXED
+- Removed unnecessary temporary files, python scratch scripts, and outdated database setup scripts (`alter_db.js`, `migrate.js`) to clean up the repository.
+
+
 ## 2026-07-01 01:59 (v0.8.1-Alpha+202607010159)
 ### ADDED
 - Implemented "Generate PDF (Eval)" capability for applicants in Step 1, producing formatted Initial Evaluation documents based on the official ANNEX E-3 template. The button is correctly locked until an applicant's remarks are updated to 'Assessed'.
