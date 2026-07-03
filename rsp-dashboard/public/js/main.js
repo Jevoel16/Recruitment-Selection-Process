@@ -12,6 +12,62 @@ document.addEventListener('DOMContentLoaded', () => {
 const qualifyForm = document.getElementById('qualifyForm');
 const scoreForm = document.getElementById('scoreForm');
 
+if (!sessionStorage.getItem('deviceId')) {
+    sessionStorage.setItem('deviceId', 'device-' + Math.random().toString(36).substr(2, 9));
+}
+window.deviceId = sessionStorage.getItem('deviceId');
+
+window.acquireLock = async function(id) {
+    if (!id) return true;
+    try {
+        const res = await fetch(`/api/applicants/${id}/lock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deviceId: window.deviceId })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            window.showToast(data.error || 'Failed to acquire lock', 'danger');
+            return false;
+        }
+        window.currentLockedApplicantId = id;
+        return true;
+    } catch (e) {
+        window.showToast('Network error while acquiring lock', 'danger');
+        return false;
+    }
+};
+
+window.releaseLock = async function() {
+    if (!window.currentLockedApplicantId) return;
+    try {
+        await fetch(`/api/applicants/${window.currentLockedApplicantId}/unlock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deviceId: window.deviceId })
+        });
+        window.currentLockedApplicantId = null;
+    } catch (e) {
+        console.error('Failed to release lock', e);
+    }
+};
+
+// Global listener to release lock when a modal closes
+document.addEventListener('hidden.bs.modal', function (event) {
+    // Only release lock if there are no other modals open
+    if (!document.querySelector('.modal.show')) {
+        window.releaseLock();
+    }
+});
+
+window.addEventListener('beforeunload', () => {
+    if (window.currentLockedApplicantId) {
+        // Use sendBeacon for reliable delivery during unload
+        const blob = new Blob([JSON.stringify({ deviceId: window.deviceId })], { type: 'application/json' });
+        navigator.sendBeacon(`/api/applicants/${window.currentLockedApplicantId}/unlock`, blob);
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     const sumQualifyBtn = document.getElementById('summaryQualifyBtn');
     if (sumQualifyBtn) {

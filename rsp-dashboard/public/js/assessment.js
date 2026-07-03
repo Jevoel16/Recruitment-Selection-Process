@@ -6,6 +6,7 @@ let currentAssessmentId = null;
 let currentPositionStandards = null;
 
 async function openAssessmentModal(id, name) {
+    if (!(await window.acquireLock(id))) return;
     currentAssessmentId = id;
     document.getElementById('assessmentApplicantId').value = id;
     document.getElementById('assessmentApplicantName').innerText = name;
@@ -608,6 +609,7 @@ function applyPotentialPoints() {
 }
 
 async function openStep2SummaryModal(id, name, isReadOnly = false) {
+    if (!(await window.acquireLock(id))) return;
     document.getElementById('step2SummaryApplicantId').value = id;
     document.getElementById('step2SummaryApplicantName').innerText = name;
     

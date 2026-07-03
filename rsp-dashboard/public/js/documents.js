@@ -80,6 +80,7 @@ async function setHighestDegree(applicantId, eduId) {
 window.currentDocApplicantId = null;
 
 async function openEduModal(id, isWizard = false) {
+    if (!isWizard && !(await window.acquireLock(id))) return;
     try {
         window.currentDocApplicantId = id;
         document.getElementById('eduModalTitle').innerText = isWizard ? 'New Applicant Wizard - Education Records' : 'Education Records';
@@ -159,6 +160,7 @@ async function openEduModal(id, isWizard = false) {
 }
 
 async function openTrainModal(id, isWizard = false) {
+    if (!isWizard && !(await window.acquireLock(id))) return;
     try {
         window.currentDocApplicantId = id;
         document.getElementById('trainModalTitle').innerText = isWizard ? 'New Applicant Wizard - Training Seminars' : 'Training Seminars';
@@ -230,6 +232,7 @@ async function openTrainModal(id, isWizard = false) {
 }
 
 async function openExpModal(id, isWizard = false) {
+    if (!isWizard && !(await window.acquireLock(id))) return;
     try {
         document.getElementById('expModalTitle').innerText = isWizard ? 'New Applicant Wizard - Work Experience' : 'Work Experience';
         const data = await fetchDetails(id);
@@ -300,6 +303,7 @@ async function openExpModal(id, isWizard = false) {
 }
 
 async function openEligModal(id, isWizard = false) {
+    if (!isWizard && !(await window.acquireLock(id))) return;
     try {
         document.getElementById('eligModalTitle').innerText = isWizard ? 'New Applicant Wizard - Eligibility' : 'Eligibility';
         const data = await fetchDetails(id);

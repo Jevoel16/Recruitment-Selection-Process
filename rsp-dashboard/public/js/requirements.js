@@ -82,6 +82,7 @@ async function setAllRequirements(id, value) {
 }
 
 async function openRequirementsModal(id, skipFetch = false) {
+    if (!(await window.acquireLock(id))) return;
     try {
         const data = await fetchDetails(id);
         const app = data.applicant;

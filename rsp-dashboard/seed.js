@@ -95,6 +95,9 @@ async function seed() {
                     firstName: fName,
                     lastName: lName,
                     middleName: 'Seed',
+                    nameExtension: Math.random() > 0.85 ? 'Jr.' : '',
+                    applicationType: Math.random() > 0.5 ? 'Walk-in' : 'Online',
+                    district: 'District ' + (Math.floor(Math.random() * 6) + 1),
                     address: '123 Seed Street',
                     age: Math.floor(Math.random() * 20) + 22,
                     sex: Math.random() > 0.5 ? 'Male' : 'Female',
@@ -222,7 +225,11 @@ async function seed() {
                 await fetch(`${API_BASE}/applicants/${id}/assign`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ office: offices[Math.floor(Math.random() * offices.length)] })
+                    body: JSON.stringify({ 
+                        office: offices[Math.floor(Math.random() * offices.length)],
+                        cc: 'Juan Dela Cruz',
+                        ccDesignation: 'Division Head'
+                    })
                 });
             });
             await Promise.all(batchPromises);

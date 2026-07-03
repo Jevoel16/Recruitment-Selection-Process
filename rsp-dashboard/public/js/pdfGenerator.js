@@ -241,7 +241,6 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
         console.error('Failed to update status', e);
     }
 }
-
 window.printInitialEvalPdf = async function(id) {
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
@@ -259,6 +258,9 @@ window.printInitialEvalPdf = async function(id) {
     }
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const MARGIN = 25.4;
+    const PAGE_WIDTH = 210;
+    const CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2);
 
     let hasCustomFont = false;
     try {
@@ -270,32 +272,52 @@ window.printInitialEvalPdf = async function(id) {
             for (let i = 0; i < bytes.byteLength; i++) {
                 binary += String.fromCharCode(bytes[i]);
             }
-            const base64Font = btoa(binary);
-            doc.addFileToVFS('Canterbury.ttf', base64Font);
+            doc.addFileToVFS('Canterbury.ttf', btoa(binary));
             doc.addFont('Canterbury.ttf', 'Canterbury', 'normal');
             hasCustomFont = true;
         }
-    } catch (err) {
-        console.error('Failed to load Canterbury font', err);
+    } catch (err) {}
+
+    function printMixedText(doc, textArr, startX, startY, maxWidth) {
+        let currentX = startX;
+        let currentY = startY;
+        const lineHeight = 5;
+
+        textArr.forEach(part => {
+            doc.setFont('Times', part.bold ? 'bold' : 'normal');
+            const tokens = part.text.match(/(\S+|\s+)/g) || [];
+            tokens.forEach(token => {
+                if (token === '\n') {
+                    currentX = startX;
+                    currentY += lineHeight;
+                    return;
+                }
+                const tokenWidth = doc.getTextWidth(token);
+                if (token.trim() !== '' && currentX + tokenWidth > startX + maxWidth) {
+                    currentX = startX;
+                    currentY += lineHeight;
+                }
+                doc.text(token, currentX, currentY);
+                currentX += tokenWidth;
+            });
+        });
+        return currentY;
     }
 
+    // Header Logos
     const seal1 = await loadImageForPDF('/images/logos/DepEd Seal.png');
-    if (seal1) doc.addImage(seal1, 'PNG', 92.5, 2.5, 25, 15);
+    if (seal1) doc.addImage(seal1, 'PNG', PAGE_WIDTH/2 - 12.5, 8, 25, 15);
 
-    doc.setFont('Times', 'bold');
-    doc.setFontSize(10);
-    doc.rect(160, 10, 30, 8);
-    doc.text('ANNEX E-3', 175, 15.5, { align: 'center' });
-
+    // Header Text
     if (hasCustomFont) {
         doc.setFont("Canterbury", "normal");
         doc.setFontSize(11);
     } else {
-        doc.setFont("Times", "normal");
+        doc.setFont("Times", "bold");
         doc.setFontSize(11);
     }
     doc.setTextColor(0);
-    doc.text("Republic of the Philippines", 105, 23, { align: "center" });
+    doc.text("Republic of the Philippines", PAGE_WIDTH/2, 28, { align: "center" });
     
     if (hasCustomFont) {
         doc.setFont("Canterbury", "normal");
@@ -304,53 +326,80 @@ window.printInitialEvalPdf = async function(id) {
         doc.setFont("Times", "bold");
         doc.setFontSize(16);
     }
-    doc.text("Department of Education", 105, 28, { align: "center" });
+    doc.text("Department of Education", PAGE_WIDTH/2, 33, { align: "center" });
     
     doc.setFont("Times", "bold");
     doc.setFontSize(10);
-    doc.text("REGION X-NORTHERN MINDANAO", 105, 33, { align: "center" });
-    doc.text("PERSONNEL DIVISION", 105, 37, { align: "center" });
+    doc.text("REGION X- NORTHERN MINDANAO", PAGE_WIDTH/2, 38, { align: "center" });
+    doc.text("SCHOOLS DIVISION OF ILIGAN CITY", PAGE_WIDTH/2, 42, { align: "center" });
 
+    // Title
+    doc.setLineWidth(1.5);
+    doc.line(MARGIN, 46, PAGE_WIDTH - MARGIN, 46);
+    
+    doc.setFontSize(14);
+    const isDisqualified = data.applicant?.status === 'DISQUALIFIED' || data.status === 'DISQUALIFIED';
+    const titleText = isDisqualified ? "NOTICE OF DISQUALIFICATION" : "NOTICE OF QUALIFICATION";
+    doc.text(titleText, PAGE_WIDTH/2, 53, { align: "center" });
+    
+    doc.line(MARGIN, 57, PAGE_WIDTH - MARGIN, 57);
+
+    // Date
     const d = new Date();
     const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
     doc.setFont('Times', 'normal');
     doc.setFontSize(11);
-    doc.text(dateStr, 20, 50);
+    doc.text(dateStr, MARGIN, 68);
 
-    const appName = data.name || 'Unknown Applicant';
+    // Applicant Name & Address
+    const appName = data.name || data.applicant?.firstName + ' ' + data.applicant?.lastName || 'Unknown Applicant';
     doc.setFont('Times', 'bold');
-    doc.text(appName.toUpperCase(), 20, 60);
-    
+    doc.text(appName.toUpperCase(), MARGIN, 78);
     doc.setFont('Times', 'normal');
-    const address = data.address || 'Iligan City';
-    doc.text(address, 20, 65);
+    const address = data.address || data.applicant?.address || 'Iligan City';
+    doc.text(address, MARGIN, 83);
 
-    doc.text(`Dear ${appName.split(' ')[0]},`, 20, 80);
+    // Salutation
+    const sex = data.sex || data.applicant?.sex;
+    const title = sex === 'Female' ? 'Madam' : 'Sir';
     doc.setFont('Times', 'bold');
-    doc.text('Congratulations!', 20, 90);
+    doc.text(`Dear ${title}:`, MARGIN, 93);
 
+    // P1
     doc.setFont('Times', 'normal');
-    const pos = data.position || 'Applicant';
-    const office = data.assignedOffice || 'Schools Division of Iligan City';
+    const pos = data.position || data.applicant?.position || 'Position';
     
-    const p1 = `We are pleased to inform you that based on the initial evaluation, we have found your qualifications to be substantial vis-a-vis the Civil Service Commission (CSC) approved Qualification Standards (QS) of ${pos} position under ${office}. Below are the results of the initial evaluation conducted by the undersigned dated ${dateStr}:`;
+    const p1Arr = [
+        { text: 'We are pleased to inform you that based on the initial evaluation, we have found your qualifications to be substantial vis-à-vis the Civil Service Commission (CSC) approved Qualification Standards (QS) of ', bold: false },
+        { text: pos, bold: true },
+        { text: ' position under ', bold: false },
+        { text: 'Department of Education, Division of Iligan City', bold: true },
+        { text: '. Below are the results of the initial evaluation conducted by the undersigned dated ', bold: false },
+        { text: dateStr + ':', bold: true }
+    ];
     
-    const lines = doc.splitTextToSize(p1, 170);
-    doc.text(lines, 20, 100);
+    let currentY = printMixedText(doc, p1Arr, MARGIN, 103, CONTENT_WIDTH);
 
-    let startY = 125;
+    // Table
+    let startY = currentY + 8;
+    doc.setLineWidth(0.5);
     doc.setDrawColor(0);
-    doc.setFillColor(230, 230, 230);
-    doc.rect(20, startY, 170, 8, 'F');
-    doc.rect(20, startY, 170, 8);
     
     doc.setFont('Times', 'bold');
-    doc.setFontSize(9);
-    doc.text('Position Applied for', 22, startY + 5);
-    doc.text('CSC-approved QS', 57, startY + 5);
-    doc.text('Your Qualifications', 107, startY + 5);
-    doc.text('Remarks', 162, startY + 5);
+    doc.setFontSize(10);
+    
+    doc.rect(MARGIN, startY, CONTENT_WIDTH, 10);
+    const col1 = MARGIN + 40;
+    const col2 = MARGIN + 95;
+    const col3 = MARGIN + 140;
+    doc.line(col1, startY, col1, startY + 10);
+    doc.line(col2, startY, col2, startY + 10);
+    doc.line(col3, startY, col3, startY + 10);
+
+    doc.text('POSITION\nAPPLIED FOR', MARGIN + 20, startY + 4, { align: 'center' });
+    doc.text('CSC-approved QS of the\nPOSITION', col1 + 27.5, startY + 4, { align: 'center' });
+    doc.text('YOUR QUALIFICATIONS', col2 + 22.5, startY + 6, { align: 'center' });
+    doc.text('REMARKS', col3 + ((CONTENT_WIDTH - 140)/2), startY + 6, { align: 'center' });
 
     const getRemark = (items) => {
         if(!items || items.length === 0) return 'Disqualified';
@@ -360,35 +409,47 @@ window.printInitialEvalPdf = async function(id) {
     };
 
     const rows = [
-        { qs: 'Education: \n' + (data.positionStandards?.qsEducation || 'N/A'), app: (data.education || []).map(e => e.degree || e.title).join(', ') || 'None', rm: getRemark(data.education) },
-        { qs: 'Experience: \n' + (data.positionStandards?.qsExperience || 'N/A'), app: (data.experience || []).map(e => e.details).join(', ') || 'None', rm: getRemark(data.experience) },
-        { qs: 'Training: \n' + (data.positionStandards?.qsTraining || 'N/A'), app: (data.training || []).map(e => e.title).join(', ') || 'None', rm: getRemark(data.training) },
-        { qs: 'Eligibility: \n' + (data.positionStandards?.qsEligibility || 'N/A'), app: (data.eligibility || []).map(e => e.title || e.details).join(', ') || 'None', rm: getRemark(data.eligibility) === 'Qualified' ? 'Eligible' : getRemark(data.eligibility) }
+        { qs: 'Education: ' + (data.positionStandards?.qsEducation || 'N/A'), app: (data.education || []).map(e => e.degree || e.title).join(', ') || 'None', rm: getRemark(data.education) },
+        { qs: 'Training: ' + (data.positionStandards?.qsTraining || 'N/A'), app: (data.training || []).map(e => e.title).join(', ') || 'None', rm: getRemark(data.training) },
+        { qs: 'Experience: ' + (data.positionStandards?.qsExperience || 'N/A'), app: (data.experience || []).map(e => e.details).join(', ') || 'None', rm: getRemark(data.experience) },
+        { qs: 'Eligibility: ' + (data.positionStandards?.qsEligibility || 'N/A'), app: (data.eligibility || []).map(e => e.title || e.details).join(', ') || 'None', rm: getRemark(data.eligibility) === 'Qualified' ? 'Eligible' : getRemark(data.eligibility) }
     ];
 
-    let currentY = startY + 8;
+    currentY = startY + 10;
+    
+    const tableHeight = rows.reduce((acc, row) => {
+        const qsLines = doc.splitTextToSize(row.qs, 50);
+        const appLines = doc.splitTextToSize(row.app, 40);
+        const maxLines = Math.max(qsLines.length, appLines.length);
+        return acc + Math.max(12, maxLines * 5);
+    }, 0);
+
+    doc.rect(MARGIN, currentY, CONTENT_WIDTH, tableHeight);
+    doc.line(col1, currentY, col1, currentY + tableHeight);
+    doc.line(col2, currentY, col2, currentY + tableHeight);
+    doc.line(col3, currentY, col3, currentY + tableHeight);
+
+    // Print Position Name in the first column, vertically centered in the overall table
+    const posLines = doc.splitTextToSize(pos, 35);
     doc.setFont('Times', 'normal');
+    doc.text(posLines, MARGIN + 20, currentY + (tableHeight/2) - ((posLines.length * 5)/2), { align: 'center' });
 
     rows.forEach((row, i) => {
-        const qsLines = doc.splitTextToSize(row.qs, 46);
-        const appLines = doc.splitTextToSize(row.app, 51);
+        doc.setFont('Times', 'normal');
+        const qsLines = doc.splitTextToSize(row.qs, 50);
+        const appLines = doc.splitTextToSize(row.app, 40);
         const maxLines = Math.max(qsLines.length, appLines.length);
-        const rowHeight = Math.max(10, maxLines * 5);
+        const rowHeight = Math.max(12, maxLines * 5);
 
-        doc.rect(20, currentY, 170, rowHeight);
-        if (i === 0) {
-            const titleLines = doc.splitTextToSize(pos, 31);
-            doc.setFont('Times', 'bold');
-            doc.text(titleLines, 22, currentY + 5);
-            doc.setFont('Times', 'normal');
-        }
-        doc.text(qsLines, 57, currentY + 5);
-        doc.text(appLines, 107, currentY + 5);
-        doc.text(row.rm, 162, currentY + 5);
+        if(i > 0) doc.line(col1, currentY, PAGE_WIDTH - MARGIN, currentY); // inner horizontal lines
 
-        doc.line(55, currentY, 55, currentY + rowHeight);
-        doc.line(105, currentY, 105, currentY + rowHeight);
-        doc.line(160, currentY, 160, currentY + rowHeight);
+        doc.setFont('Times', 'bold');
+        doc.text(qsLines[0].split(':')[0] + ':', col1 + 2, currentY + 5);
+        doc.setFont('Times', 'normal');
+        doc.text(doc.splitTextToSize(row.qs.substring(row.qs.indexOf(':') + 2), 50), col1 + 2, currentY + 10);
+        
+        doc.text(appLines, col2 + 2, currentY + 5);
+        doc.text(row.rm, col3 + ((CONTENT_WIDTH - 140)/2), currentY + (rowHeight/2), { align: 'center' });
 
         currentY += rowHeight;
     });
@@ -396,29 +457,77 @@ window.printInitialEvalPdf = async function(id) {
     currentY += 10;
     doc.setFont('Times', 'normal');
     doc.setFontSize(11);
-    const appCode = data.applicationCode || '[Application Code]';
-    const p2 = `Please be advised of your assigned application code ${appCode} which shall be used as you proceed with the next stage of the selection process. You may refer to the official issuances of SDO Iligan City for the additional announcements in this regard.`;
-    doc.text(doc.splitTextToSize(p2, 170), 20, currentY);
+    
+    if (isDisqualified) {
+        const p2Arr = [
+            { text: 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications. Thus, we regret that you cannot proceed for the next stage of the selection process for ', bold: false },
+            { text: pos, bold: true },
+            { text: ' position. You may, however, continue to submit job applications in response to other vacancy announcements that we publish at www.csc.gov.ph/careers, DepEd bulletin Boards, and official website www.depediligan.com/index.php/category/careers/.', bold: false }
+        ];
+        currentY = printMixedText(doc, p2Arr, MARGIN, currentY, CONTENT_WIDTH) + 10;
+    }
 
-    currentY += 15;
-    doc.text('For inquiries, you may contact personnel000@deped.gov.ph.', 20, currentY);
+    const appCode = data.applicationCode || data.applicant?.applicationCode || '[Application Code]';
+    const p3Arr = [
+        { text: 'The results of the initial evaluation shall be released and posted for transparency purposes. You may refer to your assigned application code ', bold: false },
+        { text: appCode, bold: true },
+        { text: ' in the official postings of the results.', bold: false }
+    ];
+    currentY = printMixedText(doc, p3Arr, MARGIN, currentY, CONTENT_WIDTH) + 10;
 
+    doc.text('Thank you and we wish you the best of luck in your future success.', MARGIN, currentY);
+    
     currentY += 10;
-    doc.text('Thank you.', 20, currentY);
-
-    currentY += 15;
-    doc.text('Very truly yours,', 20, currentY);
-
-    currentY += 25;
+    doc.text('Very truly yours,', MARGIN, currentY);
+    
+    currentY += 20;
     doc.setFont('Times', 'bold');
-    doc.text('HRMO DESIGNATE', 20, currentY);
+    doc.text('AZOR B. QUIJANO', MARGIN, currentY);
     doc.setFont('Times', 'normal');
-    doc.text('Human Resource Management Officer', 20, currentY + 5);
+    doc.text('Administrative Officer IV (Personnel)', MARGIN, currentY + 5);
 
-    doc.setFontSize(8);
+    // Footer
+    const seal2_foot = await loadImageForPDF('/images/logos/DepEd Logo.png');
+    const seal3_foot = await loadImageForPDF('/images/logos/bagong-pilipinas-seeklogo.png');
+    const seal4_foot = await loadImageForPDF('/images/logos/Deped Division of Iligan City.png');
+    
+    if (seal2_foot) doc.addImage(seal2_foot, "PNG", MARGIN + 2.5, 275.5, 22.5, 12.5);
+    if (seal3_foot) doc.addImage(seal3_foot, "PNG", MARGIN + 36.5, 272.5, 17.5, 17.5);
+    if (seal4_foot) doc.addImage(seal4_foot, "PNG", MARGIN + 65, 272.5, 17.5, 17.5);
+
+    doc.setFontSize(7.5);
     doc.setTextColor(100);
-    doc.text('(Insert Office Address)', 20, 275);
-    doc.text('(Insert Telephone Nos.): (02) 0000-0000 Insert Email Address: personnel000@deped.gov.ph', 20, 280);
+    doc.setFont("Times", "bold");
+    doc.text("Address:", MARGIN + 90, 275, { align: "left" });
+    doc.setFont("Times", "normal");
+    doc.text("Gen. Aguinaldo St., Iligan City", MARGIN + 101, 275, { align: "left" });
+    doc.setFont("Times", "bold");
+    doc.text("Email Address:", MARGIN + 90, 279, { align: "left" });
+    doc.setFont("Times", "normal");
+    doc.text("iligan.city@deped.gov.ph", MARGIN + 108, 279, { align: "left" });
+    doc.setFont("Times", "bold");
+    doc.text("Website:", MARGIN + 90, 283, { align: "left" });
+    doc.setFont("Times", "normal");
+    doc.text("www.depediligan.com", MARGIN + 101, 283, { align: "left" });
 
-    doc.save(`Initial_Eval_${appName.replace(/\\s+/g, '_')}.pdf`);
+    // Document Control Table in Footer
+    doc.setLineWidth(0.2);
+    doc.rect(MARGIN + 100, 286, 59.2, 8); // x, y, w, h
+    doc.line(MARGIN + 100, 290, PAGE_WIDTH - MARGIN, 290); // middle horizontal
+    doc.line(MARGIN + 130, 286, MARGIN + 130, 294); // vert 1
+    doc.line(MARGIN + 145, 286, MARGIN + 145, 294); // vert 2
+
+    doc.setFontSize(6);
+    doc.setFont("Times", "bold");
+    doc.text("Doc. Ref. Code", MARGIN + 102, 289);
+    doc.text("Effectivity", MARGIN + 102, 293);
+    
+    doc.text("Rev", MARGIN + 132, 289);
+    doc.text("Page", MARGIN + 132, 293);
+    
+    doc.setFont("Times", "normal");
+    doc.text("00", MARGIN + 147, 289);
+    doc.text("1 of 1", MARGIN + 147, 293);
+
+    doc.save(`Initial_Eval_${appName.replace(/\s+/g, '_')}.pdf`);
 }

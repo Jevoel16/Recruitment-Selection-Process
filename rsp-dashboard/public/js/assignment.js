@@ -50,7 +50,8 @@ if (assignForm) {
     });
 }
 
-function openAssignModal(id, name) {
+async function openAssignModal(id, name) {
+    if (!(await window.acquireLock(id))) return;
     document.getElementById('assignId').value = id;
     document.getElementById('assignName').innerText = name;
     document.getElementById('assignedOffice').value = '';

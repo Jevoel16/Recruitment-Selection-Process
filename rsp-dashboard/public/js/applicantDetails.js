@@ -36,6 +36,7 @@ window.executeDeleteRecord = async function() {
 }
 
 async function openInfoModal(id) {
+    if (!(await window.acquireLock(id))) return;
     try {
         const data = await fetchDetails(id);
         const app = data.applicant;
@@ -169,6 +170,7 @@ async function openInfoModal(id) {
 }
 
 async function openSummaryModal(id, name, hideActions = false) {
+    if (!(await window.acquireLock(id))) return;
     try {
         document.getElementById('summaryApplicantId').value = id;
         document.getElementById('summaryApplicantName').innerText = name;
@@ -256,7 +258,8 @@ window.confirmSummaryDisqualify = () => {
 }
 
 
-window.openApplicantDetailsModal = function(id, name, assignedOffice, category, appCode, status) {
+window.openApplicantDetailsModal = async function(id, name, assignedOffice, category, appCode, status) {
+    if (!(await window.acquireLock(id))) return;
     document.getElementById('unifiedModalId').value = id;
     document.getElementById('unifiedModalName').innerText = name;
     document.getElementById('unifiedModalAssignedOffice').value = assignedOffice || '';
@@ -271,11 +274,13 @@ window.openApplicantDetailsModal = function(id, name, assignedOffice, category, 
     const btnAssessSum = document.getElementById('unifiedBtnAssessSum');
     const btnReq = document.getElementById('unifiedBtnReq');
     const btnPdf = document.getElementById('unifiedBtnPdf');
+    const btnStep1Pdf = document.getElementById('unifiedBtnStep1Pdf');
 
     if (btnEval) btnEval.disabled = !hasStep2;
     if (btnAssessSum) btnAssessSum.disabled = !hasStep2;
     if (btnReq) btnReq.disabled = !hasStep4;
     if (btnPdf) btnPdf.disabled = !hasStep5;
+    if (btnStep1Pdf) btnStep1Pdf.disabled = (status === 'PENDING');
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById('unifiedDetailsModal')).show();
 }
@@ -308,7 +313,8 @@ window.launchFromUnified = function(type) {
 
 
 
-window.openUpdateStatusModal = function(id, name, currentStatus) {
+window.openUpdateStatusModal = async function(id, name, currentStatus) {
+    if (!(await window.acquireLock(id))) return;
     document.getElementById('updateStatusId').value = id;
     document.getElementById('updateStatusName').innerText = name;
     

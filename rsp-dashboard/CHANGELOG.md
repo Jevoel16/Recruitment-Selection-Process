@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-03 08:20 (v0.8.3-Alpha+202607030820)
+### ADDED
+- Enhanced "Add Applicant" form validation with active keystroke prevention restricting `Year Graduated`, `Number of Hours`, and `Number of Years` to non-negative numbers, constraining `Rating` to 0-100, and enforcing a strict 11-digit `Contact No.` starting with "09".
+- Added a robust form validation system using Bootstrap toast notifications to accurately highlight specific missing or invalid fields across all tabs upon submission.
+- Added success and error toast notifications upon saving applicants, replacing standard browser alert popups.
+
+### CHANGED
+- Overhauled the Step 1 Initial Evaluation PDF generator to strictly match standard Word Document templates (ANNEX E-3), incorporating dynamic bold placeholders, precise 1.5mm thick header lines, 1-inch (25.4mm) page margins, and a meticulously aligned 3-column Document Control footer table.
+- Standardized the visual style of the Step 1 "Generate PDF" buttons (changed to outlined styles) across both the data table and Unified Applicant modal to match Step 5.
+
+### FIXED
+- Fixed the "Civil Status" dropdown going blank upon selection by removing conflicting uppercase auto-formatting scripts.
+- Fixed an issue where the "Add Applicant" form immediately flagged itself as having unsaved changes upon page load or simple tab navigation, preventing false positive warnings.
+
 ## 2026-07-02 13:22 (v0.8.2-Alpha+202607021322)
 ### ADDED
 - Displayed the `Position` column in the Step 4 (Requirements) and Step 5 (Assignment Orders) workflow tables for better visibility.

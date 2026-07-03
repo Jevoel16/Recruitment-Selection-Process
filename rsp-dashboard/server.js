@@ -644,7 +644,7 @@ async function syncAssignmentRequirementStatus(id) {
 app.post('/api/applicants', async (req, res) => {
     try {
         const { 
-            firstName, lastName, middleName, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position,
+            firstName, lastName, middleName, nameExtension, applicationType, district, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position,
             education, training, experience, eligibility
         } = req.body;
         
@@ -652,8 +652,8 @@ app.post('/api/applicants', async (req, res) => {
         const currentYear = new Date().getFullYear();
 
         const [result] = await db.query(
-            'INSERT INTO applicants (firstName, lastName, middleName, applicationType, district, category, position, applicationCode, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-            [firstName, lastName, middleName || '', 'Walk-in', null, category || null, position || null, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
+            'INSERT INTO applicants (firstName, lastName, middleName, nameExtension, applicationType, district, category, position, applicationCode, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            [firstName, lastName, middleName || '', nameExtension || '', applicationType || 'Walk-in', district || null, category || null, position || null, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
         );
         
         const applicantId = result.insertId;
@@ -1501,6 +1501,46 @@ app.put('/api/applicants/:id/:type/:docId/status', async (req, res) => {
         
         res.json({ success: true });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Lock applicant
+app.post('/api/applicants/:id/lock', express.json(), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { deviceId } = req.body;
+        if (!deviceId) return res.status(400).json({ error: 'deviceId is required' });
+        
+        const [rows] = await db.query('SELECT lockedBy, lockedAt FROM applicants WHERE id = ?', [id]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Applicant not found' });
+        
+        const applicant = rows[0];
+        const now = new Date();
+        const lockedAt = applicant.lockedAt ? new Date(applicant.lockedAt) : null;
+        
+        if (applicant.lockedBy && applicant.lockedBy !== deviceId && lockedAt && (now - lockedAt) < 600000) {
+            return res.status(409).json({ error: 'It is being assessed at the moment, please move to the next applicant.' });
+        }
+        
+        await db.query('UPDATE applicants SET lockedBy = ?, lockedAt = NOW() WHERE id = ?', [deviceId, id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Unlock applicant
+app.post('/api/applicants/:id/unlock', express.json(), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { deviceId } = req.body;
+        
+        await db.query('UPDATE applicants SET lockedBy = NULL, lockedAt = NULL WHERE id = ? AND lockedBy = ?', [id, deviceId]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 });

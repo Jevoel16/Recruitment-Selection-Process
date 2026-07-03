@@ -1,5 +1,6 @@
 // Open Score Modal
-function openScoreModal(id, name) {
+async function openScoreModal(id, name) {
+    if (!(await window.acquireLock(id))) return;
     document.getElementById('scoreId').value = id;
     document.getElementById('scoreName').innerText = name;
     new bootstrap.Modal(document.getElementById('scoreModal')).show();

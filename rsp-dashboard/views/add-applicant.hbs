@@ -5,7 +5,7 @@
         <h2 class="fw-semibold text-primary mb-0" id="addApplicantTitle"><i class="bi bi-person-plus-fill me-2"></i>New Applicant Wizard</h2>
     </div>
     
-    <form id="addApplicantForm">
+    <form id="addApplicantForm" novalidate>
         <input type="hidden" id="wizardCategory" name="category">
         <input type="hidden" id="wizardPosition" name="position">
                 <!-- Step 0: Category & Position -->
@@ -65,7 +65,7 @@
 
                     <div class="tab-content" id="applicantTabsContent">
                         <!-- Personal Info Pane -->
-                        <div class="tab-pane fade show active" id="pane-personal" role="tabpanel">
+                        <div class="tab-pane show active" id="pane-personal" role="tabpanel">
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
@@ -113,7 +113,6 @@
                                         </div>
                                     </div>
 
-                                    </div>
                                 </div>
                                 
                                 <div class="col-md-4">
@@ -130,7 +129,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Civil Status <span class="text-danger">*</span></label>
-                                    <select class="form-select" name="civilStatus" required oninput="this.value = this.value.toUpperCase();">
+                                    <select class="form-select" name="civilStatus" required>
                                         <option value="">Select...</option>
                                         <option value="Single">Single</option>
                                         <option value="Married">Married</option>
@@ -156,7 +155,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Contact No. <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="contactNo" placeholder="09XX XXX XXXX" required>
+                                    <input type="text" class="form-control" name="contactNo" placeholder="09XX XXX XXXX" pattern="^09\d{9}$" title="Must start with 09 and be exactly 11 digits long (e.g. 09123456789)" oninput="this.value = this.value.replace(/[^0-9]/g, '');" maxlength="11" required>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end mt-4 pt-3 border-top">
@@ -165,7 +164,7 @@
                         </div>
 
                         <!-- Eligibility Pane -->
-                        <div class="tab-pane fade" id="pane-eligibility" role="tabpanel">
+                        <div class="tab-pane" id="pane-eligibility" role="tabpanel">
                             <div class="mb-4 pb-3 border-bottom">
                                 <h5 class="mb-0 fw-bold text-primary">Eligibility Background</h5>
                                 <small class="text-muted">Enter relevant eligibility/licenses</small>
@@ -177,7 +176,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Rating</label>
-                                    <input type="number" class="form-control" id="elig_rating" step="0.01" placeholder="e.g. 85.5">
+                                    <input type="number" class="form-control" id="elig_rating" min="0" max="100" step="0.01" placeholder="e.g. 85.5" oninput="this.value = this.value.replace(/[^0-9.]/g, ''); if(parseFloat(this.value) > 100) this.value = 100;">
                                 </div>
                                 <div class="col-md-1">
                                     <button type="button" class="btn btn-success w-100" id="btn-add-elig"><i class="bi bi-plus-lg"></i></button>
@@ -191,7 +190,7 @@
                         </div>
 
                         <!-- Education Pane -->
-                        <div class="tab-pane fade" id="pane-education" role="tabpanel">
+                        <div class="tab-pane" id="pane-education" role="tabpanel">
                             <div class="mb-4 pb-3 border-bottom">
                                 <h5 class="mb-0 fw-bold text-primary">Educational Background</h5>
                                 <small class="text-muted">Enter highest or most relevant education</small>
@@ -203,7 +202,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Year Graduated</label>
-                                    <input type="number" class="form-control" id="edu_year" placeholder="e.g. 2020">
+                                    <input type="number" class="form-control" id="edu_year" min="0" placeholder="e.g. 2020" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                                 </div>
                                 <div class="col-md-1">
                                     <button type="button" class="btn btn-success w-100" id="btn-add-edu"><i class="bi bi-plus-lg"></i></button>
@@ -217,7 +216,7 @@
                         </div>
 
                         <!-- Training Pane -->
-                        <div class="tab-pane fade" id="pane-training" role="tabpanel">
+                        <div class="tab-pane" id="pane-training" role="tabpanel">
                             <div class="mb-4 pb-3 border-bottom">
                                 <h5 class="mb-0 fw-bold text-primary">Training Background</h5>
                                 <small class="text-muted">Enter most relevant training</small>
@@ -229,7 +228,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Number of Hours</label>
-                                    <input type="number" class="form-control" id="train_hours" placeholder="e.g. 40">
+                                    <input type="number" class="form-control" id="train_hours" min="0" placeholder="e.g. 40" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                                 </div>
                                 <div class="col-md-1">
                                     <button type="button" class="btn btn-success w-100" id="btn-add-train"><i class="bi bi-plus-lg"></i></button>
@@ -243,7 +242,7 @@
                         </div>
 
                         <!-- Experience Pane -->
-                        <div class="tab-pane fade" id="pane-experience" role="tabpanel">
+                        <div class="tab-pane" id="pane-experience" role="tabpanel">
                             <div class="mb-4 pb-3 border-bottom">
                                 <h5 class="mb-0 fw-bold text-primary">Experience Background</h5>
                                 <small class="text-muted">Enter most relevant experience</small>
@@ -255,7 +254,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Number of Years</label>
-                                    <input type="number" class="form-control" id="exp_years" step="0.1" placeholder="e.g. 2.5">
+                                    <input type="number" class="form-control" id="exp_years" min="0" step="0.1" placeholder="e.g. 2.5" oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
                                 </div>
                                 <div class="col-md-1">
                                     <button type="button" class="btn btn-success w-100" id="btn-add-exp"><i class="bi bi-plus-lg"></i></button>
@@ -466,7 +465,7 @@
         }
         html += '</ul>';
         listDiv.innerHTML = html;
-        saveDraft();
+        saveDraft(false);
     }
 
     window.removeWizardItem = function(type, index) {
@@ -531,15 +530,15 @@
         } else alert("Please provide details and rating.");
     });
 
+    let isFormDirty = false;
+    
     // Initial render
     ['education', 'training', 'experience', 'eligibility'].forEach(renderWizardList);
 
-    let isFormDirty = false;
-
-    function saveDraft() {
+    function saveDraft(setDirty = true) {
         const form = document.getElementById('addApplicantForm');
         if (!form) return;
-        isFormDirty = true;
+        if (setDirty) isFormDirty = true;
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
         
@@ -560,7 +559,7 @@
     // Also trigger saveDraft when tabs are changed
     document.addEventListener('shown.bs.tab', function (event) {
         if (event.target.closest('#applicantTabs')) {
-            saveDraft();
+            saveDraft(false);
         }
     });
 
@@ -613,6 +612,14 @@
             } catch(err) {
                 console.error("Failed to restore draft", err);
             }
+            // If draft has actual data, mark form as dirty
+            if (Object.keys(draft.formData).length > 2 || 
+                draft.wizardData.education.length > 0 || 
+                draft.wizardData.training.length > 0 || 
+                draft.wizardData.experience.length > 0 || 
+                draft.wizardData.eligibility.length > 0) {
+                isFormDirty = true;
+            }
         } else {
             // No draft found, form is not dirty
             isFormDirty = false;
@@ -626,6 +633,43 @@
         
         addAppForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            if (!addAppForm.checkValidity()) {
+                const firstInvalid = addAppForm.querySelector(':invalid');
+                if (firstInvalid) {
+                    let labelText = 'a required field';
+                    let label = null;
+                    if (firstInvalid.id) {
+                        label = document.querySelector(`label[for="${firstInvalid.id}"]`);
+                    }
+                    if (!label && firstInvalid.closest('div')) {
+                        label = firstInvalid.closest('div').querySelector('label');
+                    }
+                    if (label) {
+                        labelText = label.innerText.replace('*', '').trim();
+                    }
+                    
+                    let errorMsg = `Please fix the input for: ${labelText}`;
+                    if (firstInvalid.name === 'contactNo' && firstInvalid.validity.patternMismatch) {
+                        errorMsg = 'Contact No. must start with 09 and be exactly 11 digits.';
+                    }
+                    
+                    if (window.showToast) {
+                        window.showToast(errorMsg, 'danger');
+                    } else {
+                        alert(errorMsg);
+                    }
+                    
+                    const tabPane = firstInvalid.closest('.tab-pane');
+                    if (tabPane && !tabPane.classList.contains('active')) {
+                        const tabId = tabPane.id.replace('pane-', 'tab-');
+                        nextTab(tabId);
+                    }
+                    setTimeout(() => firstInvalid.focus(), 100);
+                }
+                return;
+            }
+
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
@@ -656,6 +700,7 @@
                 isFormDirty = false; // Prevent beforeunload warning
                 localStorage.removeItem('addApplicantDraft');
                 document.getElementById('successApplicationCode').innerText = responseData.applicationCode;
+                if (window.showToast) window.showToast('Applicant successfully saved!', 'success');
                 const modal = new bootstrap.Modal(document.getElementById('successModal'));
                 document.getElementById('successModalProceedBtn').onclick = () => {
                     modal.hide();
@@ -670,13 +715,19 @@
                 }
                 modal.show();
             } else {
-                alert('Failed to save applicant');
+                const errorData = await res.json().catch(() => ({}));
+                const errMsg = errorData.error || 'Failed to save applicant';
+                if (window.showToast) window.showToast(errMsg, 'danger');
+                else alert(errMsg);
+                
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         } catch (err) {
             console.error(err);
-            alert('An error occurred');
+            if (window.showToast) window.showToast('An error occurred while saving', 'danger');
+            else alert('An error occurred');
+            
             btn.innerHTML = originalText;
             btn.disabled = false;
         }

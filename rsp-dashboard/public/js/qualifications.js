@@ -1,4 +1,5 @@
-function deleteApplicant(id) {
+async function deleteApplicant(id) {
+    if (!(await window.acquireLock(id))) return;
     document.getElementById('deleteConfirmType').value = 'applicants';
     document.getElementById('deleteConfirmRecordId').value = id;
     document.getElementById('deleteConfirmApplicantId').value = id;
@@ -7,7 +8,8 @@ function deleteApplicant(id) {
 }
 
 // Open Qualify Modal
-function openQualifyModal(id, name) {
+async function openQualifyModal(id, name) {
+    if (!(await window.acquireLock(id))) return;
     document.getElementById('qualifyId').value = id;
     document.getElementById('qualifyName').innerText = name;
     new bootstrap.Modal(document.getElementById('qualifyModal')).show();
