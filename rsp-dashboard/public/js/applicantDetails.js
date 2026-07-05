@@ -24,11 +24,16 @@ window.executeDeleteRecord = async function() {
     try {
         const res = await fetch(`/api/${type}/${recordId}`, { method: 'DELETE' });
         if(res.ok) {
-            if (modalType === 'edu') openEduModal(applicantId);
-            else if (modalType === 'train') openTrainModal(applicantId);
-            else if (modalType === 'exp') openExpModal(applicantId);
-            else if (modalType === 'elig') openEligModal(applicantId);
-            else window.showToast('Successfully deleted!', 'success', true);
+            if (modalType === 'edu') { window.showToast('Successfully deleted!', 'success'); openEduModal(applicantId); }
+            else if (modalType === 'train') { window.showToast('Successfully deleted!', 'success'); openTrainModal(applicantId); }
+            else if (modalType === 'exp') { window.showToast('Successfully deleted!', 'success'); openExpModal(applicantId); }
+            else if (modalType === 'elig') { window.showToast('Successfully deleted!', 'success'); openEligModal(applicantId); }
+            else {
+                window.showToast('Successfully deleted!', 'success');
+                const row = document.querySelector(`.applicant-name-display-${recordId}`)?.closest('tr');
+                if (row) row.remove();
+                else window.location.reload();
+            }
         } else {
             window.showToast('Error deleting record.', 'danger');
         }
@@ -39,7 +44,7 @@ async function openInfoModal(id) {
     if (!(await window.acquireLock(id))) return;
     try {
         const data = await fetchDetails(id);
-        const app = data.applicant;
+        const app = data;
         let addr = {};
         try { addr = JSON.parse(app.address || '{}'); } catch(e) { addr = { res_house: app.address }; }
 
@@ -157,9 +162,12 @@ async function openInfoModal(id) {
                     if (nameCells.length) {
                         nameCells.forEach(cell => cell.innerText = `${body.firstName} ${body.lastName}`);
                     }
+                    window.showToast('Successfully saved personal information!', 'success');
                     openInfoModal(id);
+                } else {
+                    window.showToast('Failed to save personal information.', 'danger');
                 }
-            } catch(err) { console.error(err); }
+            } catch(err) { console.error(err); window.showToast('Error saving personal information.', 'danger'); }
         });
         
         const iModal = document.getElementById('infoModal');
@@ -331,7 +339,7 @@ window.launchFromUnified = function(type) {
         case 'eval_assessment': openAssessmentModal(id, name); break;
         case 'step2_summary': openStep2SummaryModal(id, name, true); break;
         case 'requirements': openRequirementsModal(id, name); break;
-        case 'generate_pdf': printLetter(id, name, assignedOffice, '', category, appCode); break;
+        case 'generate_pdf': printLetter(id, name, assignedOffice, '', category, appCode, '', '', false); break;
     }
 }
 
@@ -369,7 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if(res.ok) {
                     bootstrap.Modal.getInstance(document.getElementById('updateStatusModal')).hide();
-                    window.showToast('Status successfully updated!', 'success', true);
+                    window.showToast('Status successfully updated!', 'success');
+                    // Give a true single-page feel by removing the row (if they are in a filtered view, it should disappear)
+                    // But since we can't easily know if they are filtered, we'll let the smart reload handle it gracefully.
+                    setTimeout(() => window.location.reload(), 800);
                 } else {
                     window.showToast('Error updating status', 'danger');
                 }

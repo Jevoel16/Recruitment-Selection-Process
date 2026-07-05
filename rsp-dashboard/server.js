@@ -94,6 +94,26 @@ app.get('/api/export/ier', async (req, res) => {
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
 <head>
 <meta charset="utf-8">
+<!--[if gte mso 9]>
+<xml>
+ <x:ExcelWorkbook>
+  <x:ExcelWorksheets>
+   <x:ExcelWorksheet>
+    <x:Name>IER</x:Name>
+    <x:WorksheetOptions>
+     <x:FitToPage/>
+     <x:Print>
+      <x:ValidPrinterInfo/>
+      <x:PaperSizeIndex>9</x:PaperSizeIndex>
+      <x:FitWidth>1</x:FitWidth>
+      <x:FitHeight>99</x:FitHeight>
+     </x:Print>
+    </x:WorksheetOptions>
+   </x:ExcelWorksheet>
+  </x:ExcelWorksheets>
+ </x:ExcelWorkbook>
+</xml>
+<![endif]-->
 <style>
   @page { mso-page-orientation: landscape; size: 297mm 210mm; margin: 0.5in; }
   body, table { font-family: 'Times New Roman', serif; font-size: 9pt; }
@@ -143,16 +163,31 @@ app.get('/api/export/ier', async (req, res) => {
             const expYearsStr = exp.length ? exp.map(e => escapeHtml(e.years)).join('<br>') : '0';
             const eligStr = elig.length ? elig.map(e => escapeHtml(e.details) + (e.rating ? ' (' + escapeHtml(e.rating) + ')' : '')).join('<br>') : 'NONE';
             
+            const eduHasDisq = edu.some(e => e.status === 'DISQUALIFIED');
+            const trainHasDisq = train.some(t => t.status === 'DISQUALIFIED');
+            const expHasDisq = exp.some(e => e.status === 'DISQUALIFIED');
+            const eligHasDisq = elig.some(e => e.status === 'DISQUALIFIED');
+
             let remarks = app.status === 'QUALIFIED' ? 'QUALIFIED' : (app.status === 'DISQUALIFIED' ? 'DISQUALIFIED' : '');
-            let textColor = remarks === 'DISQUALIFIED' ? 'color: red;' : '';
+            let remarksStyle = remarks === 'DISQUALIFIED' ? 'color: red;' : '';
 
             html += `
     <tr class="bordered">
-        <td>${count}</td><td>${escapeHtml(app.applicationCode)}</td><td>${eduStr}</td><td>${trainTitleStr}</td><td>${trainHoursStr}</td>
-        <td>${expDetailsStr}</td><td>${expYearsStr}</td><td>${eligStr}</td><td style="${textColor}">${escapeHtml(remarks)}</td>
+        <td>${count}</td>
+        <td>${escapeHtml(app.applicationCode)}</td>
+        <td style="${eduHasDisq ? 'color: red;' : ''}">${eduStr}</td>
+        <td style="${trainHasDisq ? 'color: red;' : ''}">${trainTitleStr}</td>
+        <td style="${trainHasDisq ? 'color: red;' : ''}">${trainHoursStr}</td>
+        <td style="${expHasDisq ? 'color: red;' : ''}">${expDetailsStr}</td>
+        <td style="${expHasDisq ? 'color: red;' : ''}">${expYearsStr}</td>
+        <td style="${eligHasDisq ? 'color: red;' : ''}">${eligStr}</td>
+        <td style="${remarksStyle}">${escapeHtml(remarks)}</td>
     </tr>`;
             count++;
         }
+
+        const d = new Date();
+        const currentDateStr = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
         html += `
     <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
@@ -160,7 +195,7 @@ app.get('/api/export/ier', async (req, res) => {
     <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
     <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: center; font-weight: bold; text-decoration: underline;">AZOR B. QUIJANO</td></tr>
     <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: center;">Administrative Officer IV (Personnel)</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: left;">Date: 05/19/2026</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: center;">Date: ${currentDateStr}</td></tr>
     <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
     <tr class="no-border"><td colspan="9" style="font-weight: bold;">Notes and Instructions for the HRMO:</td></tr>
     <tr class="no-border"><td colspan="9">a) For the purpose of posting the IER...</td></tr>
@@ -168,7 +203,6 @@ app.get('/api/export/ier', async (req, res) => {
 </table>
 </body>
 </html>`;
-        const d = new Date();
         const dateStr = `${String(d.getMonth() + 1).padStart(2, '0')}${d.getFullYear()}`;
         const filename = positionFilter ? `${positionFilter.replace(/[^a-zA-Z0-9-]/g, '-')}-IER-${dateStr}.xls` : `IER-${dateStr}.xls`;
         res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
@@ -197,12 +231,35 @@ app.get('/api/export/car', async (req, res) => {
         const plantillaItem = posData?.plantillaItem || '';
         const [applicants] = await db.query(`SELECT * ${baseQuery} ORDER BY assessmentTotal DESC`, queryParams);
         const escapeHtml = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const d = new Date();
+        const currentDateStr = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
         let html = `
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
 <head>
 <meta charset="utf-8">
+<!--[if gte mso 9]>
+<xml>
+ <x:ExcelWorkbook>
+  <x:ExcelWorksheets>
+   <x:ExcelWorksheet>
+    <x:Name>CAR</x:Name>
+    <x:WorksheetOptions>
+     <x:FitToPage/>
+     <x:Print>
+      <x:ValidPrinterInfo/>
+      <x:PaperSizeIndex>9</x:PaperSizeIndex>
+      <x:FitWidth>1</x:FitWidth>
+      <x:FitHeight>99</x:FitHeight>
+     </x:Print>
+    </x:WorksheetOptions>
+   </x:ExcelWorksheet>
+  </x:ExcelWorksheets>
+ </x:ExcelWorkbook>
+</xml>
+<![endif]-->
 <style>
+  .heading-score { mso-number-format:"\\@"; }
   @page { mso-page-orientation: landscape; size: 297mm 210mm; margin: 0.5in; }
   body, table { font-family: 'Times New Roman', serif; font-size: 9pt; }
   table { border-collapse: collapse; width: 100%; page-break-inside: auto; }
@@ -216,13 +273,13 @@ app.get('/api/export/car', async (req, res) => {
     <tr class="no-border"><td colspan="12"></td><td colspan="4" style="text-align: right; font-weight: bold; font-size: 14pt;">Annex H</td></tr>
     <tr class="no-border"><td colspan="16" style="text-align: center; font-size: 16pt; font-weight: bold;">COMPARATIVE ASSESSMENT RESULT (CAR)</td></tr>
     <tr class="no-border" style="font-size: 12pt;">
-        <td colspan="10">Position: <span style="font-weight: bold;">${escapeHtml(positionFilter)}</span></td><td colspan="6" style="text-align: right;">Date: ________________________</td>
+        <td colspan="10">Position: <span style="font-weight: bold;">${escapeHtml(positionFilter)}</span></td><td colspan="6" style="text-align: right;">Date: ${currentDateStr}</td>
     </tr>
     <tr class="no-border" style="font-size: 12pt;">
         <td colspan="10">Office/Bureau/Service/Unit where the vacancy exists: Public Elementary and Secondary Schools in Iligan City</td>
         <td colspan="6" style="text-align: right;">Plantilla Item Number: ${escapeHtml(plantillaItem)}</td>
     </tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="10"></td><td colspan="6" style="text-align: right;">Date of Final Deliberation: ________________________</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="10"></td><td colspan="6" style="text-align: right;">Date of Final Deliberation: ${currentDateStr}</td></tr>
     <tr class="no-border"><td colspan="16">&nbsp;</td></tr>
     <tr class="bordered" style="font-size: 11pt;">
         <th rowspan="3" style="width: 3%;">No.</th><th rowspan="3" style="width: 15%;">Application Code</th><th colspan="9">COMPARATIVE ASSESSMENT RESULTS</th>
@@ -233,7 +290,7 @@ app.get('/api/export/car', async (req, res) => {
         <th>Education</th><th>Training</th><th>Experience</th><th>Performance</th><th>Outstanding Accomplishments</th><th>Application of Education</th><th>Application of L&D</th><th>Potential</th><th>Total</th>
     </tr>
     <tr class="bordered" style="font-size: 9pt;">
-        <th>(5)</th><th>(10)</th><th>(15)</th><th>(20)</th><th>(10)</th><th>(10)</th><th>(10)</th><th>(20)</th><th>(100)</th><th>Yes</th><th>No</th>
+        <th class="heading-score">(5)</th><th class="heading-score">(10)</th><th class="heading-score">(15)</th><th class="heading-score">(20)</th><th class="heading-score">(10)</th><th class="heading-score">(10)</th><th class="heading-score">(10)</th><th class="heading-score">(20)</th><th class="heading-score">(100)</th><th>Yes</th><th>No</th>
     </tr>`;
 
         let count = 1;
@@ -253,7 +310,6 @@ app.get('/api/export/car', async (req, res) => {
 </table>
 </body>
 </html>`;
-        const d = new Date();
         const dateStr = `${String(d.getMonth() + 1).padStart(2, '0')}${d.getFullYear()}`;
         const filename = positionFilter ? `${positionFilter.replace(/[^a-zA-Z0-9-]/g, '-')}-CAR-${dateStr}.xls` : `CAR-${dateStr}.xls`;
         res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');

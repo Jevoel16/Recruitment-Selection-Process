@@ -3,20 +3,20 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="fw-semibold">Initial Evaluation</h2>
             </div>
-            <p class="text-muted">Review incoming applicants and verify personal data sheet, birth certificate, and transcript of records.</p>
+            <p class="text-muted">Conduct initial evaluation of incoming applicants by verifying the completeness of their mandatory documentary requirements.</p>
             
             <div class="mb-3">
                 <form method="GET" action="/step1/1" class="row g-2">
                     <div class="col-md-6">
                         <div class="input-group glass-panel h-100">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
-                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or application code..." value="{{searchQuery}}">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="glass-panel h-100 px-2 py-1">
                             <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
-                                <option value="">All Positions (Filter by Salary Grade/Position)</option>
+                                <option value="">All Positions (Filter by Position)</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
                                 {{/each}}

@@ -34,22 +34,22 @@ router.post('/applicants/:id/unlock', applicantController.unlockApplicant);
 router.post('/applicants/:id/education', applicantController.addEducation);
 router.post('/applicants/:id/education/:eduId/highest', applicantController.setHighestEducation);
 router.delete('/education/:id', applicantController.deleteEducation);
-router.put('/education/:id', applicantController.updateDocumentLink);
+router.put('/education/:id/link', applicantController.updateDocumentLink);
 
 // Endpoints for managing applicant training and seminar records
 router.post('/applicants/:id/training', applicantController.addTraining);
 router.delete('/training/:id', applicantController.deleteTraining);
-router.put('/training/:id', applicantController.updateDocumentLink);
+router.put('/training/:id/link', applicantController.updateDocumentLink);
 
 // Endpoints for managing applicant work experience records
 router.post('/applicants/:id/experience', applicantController.addExperience);
 router.delete('/experience/:id', applicantController.deleteExperience);
-router.put('/experience/:id', applicantController.updateDocumentLink);
+router.put('/experience/:id/link', applicantController.updateDocumentLink);
 
 // Endpoints for managing applicant civil service eligibility records
 router.post('/applicants/:id/eligibility', applicantController.addEligibility);
 router.delete('/eligibility/:id', applicantController.deleteEligibility);
-router.put('/eligibility/:id', applicantController.updateDocumentLink);
+router.put('/eligibility/:id/link', applicantController.updateDocumentLink);
 
 // Endpoints for applying dynamic inline edits to specific document sections
 router.put('/education/:id', applicantController.updateEducation);

@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await fetchDetails(id);
             
             const cell = document.getElementById(`remarks-cell-${id}`);
-            if (cell && data.applicant.status === 'PENDING') {
+            if (cell && data.status === 'PENDING') {
                 const allDocs = [...(data.education || []), ...(data.training || []), ...(data.experience || []), ...(data.eligibility || [])];
                 
                 if (allDocs.length === 0) {
@@ -117,7 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
 window.showToast = function(message, type = 'success', reloadAfter = false) {
     if (reloadAfter) {
         sessionStorage.setItem('pendingToast', JSON.stringify({ message, type }));
-        window.location.reload();
+        
+        const activeTab = sessionStorage.getItem('activeDashboardTab');
+        if (activeTab === 'masterlist-tab' && window.location.pathname === '/dashboard') {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('tab', 'masterlist');
+            window.location.href = window.location.pathname + '?' + urlParams.toString();
+        } else {
+            window.location.reload();
+        }
         return;
     }
 

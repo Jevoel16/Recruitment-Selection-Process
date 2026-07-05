@@ -1,7 +1,7 @@
         <!-- STEP 3 -->
         {{#if step3Active}}
             <h2 class="fw-semibold mb-3">Comparative Assessments</h2>
-            <p class="text-muted">Leaderboard of assessed applicants ranked by their interview scores.</p>
+            <p class="text-muted">Official leaderboard of assessed applicants ranked by their total evaluation scores.</p>
             
             <div class="mb-3">
                 
@@ -9,13 +9,13 @@
                     <div class="col-md-6">
                         <div class="input-group glass-panel h-100">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
-                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or application code..." value="{{searchQuery}}">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="glass-panel h-100 px-2 py-1">
                             <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
-                                <option value="">All Positions (Filter by Salary Grade/Position)</option>
+                                <option value="">All Positions (Filter by Position)</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
                                 {{/each}}

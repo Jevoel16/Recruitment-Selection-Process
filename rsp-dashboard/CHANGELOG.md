@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-07-05 23:35 (v1.0.1-Release+202607052335)
+### ADDED
+- Implemented stateful tab persistence on the Dashboard using `history.replaceState` and `sessionStorage`, ensuring the UI cleanly stays on the Masterlist or Vacancy Setup tab across page reloads without flickering.
+- Added success toast notifications for successful PDF generation across Step 1 and Step 5.
+- Added success toast notifications when saving Position Standards in the Vacancy Setup tab and performing CRUD operations in applicant document modals.
+
+### CHANGED
+- Replaced the full page-reload behavior when deleting an applicant with instant DOM updates (row removal), significantly improving UI responsiveness.
+- Improved the aesthetic of the glass-panel search bars in the Masterlist and other tabs by removing the default form control borders for a seamless pill shape.
+- Updated the header text in the Step 1 Initial Evaluation PDF to use the "Canterbury" font, matching the visual style of Step 5.
+- Adjusted the address field in the Step 1 PDF to strictly display only the city.
+- Changed the "Search by name or tracking number..." placeholder in the dashboard to "Search by name, applicant code, or position...".
+
+### FIXED
+- Addressed a database ENUM truncation error (`WARN_DATA_TRUNCATED` errno 1265) that prevented applicant statuses from updating to 'COMPLETED' by altering the `applicants` table `status` ENUM to include 'COMPLETED'.
+- Fixed an issue where generating PDFs from the unified Masterlist modal would forcefully kick the user out of the modal; PDF generation now successfully suppresses the page reload.
+
 ## 2026-07-05 16:47 (v1.0.0-Release+202607051647)
 ### ADDED
 - Implemented MVC Architecture by separating route logic into `routes/apiRoutes.js` and `routes/viewRoutes.js`.

@@ -6,7 +6,7 @@ const loadImageForPDF = (src) => new Promise((resolve) => {
     img.src = src;
 });
 
-window.printLetter = async function(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation) {
+window.printLetter = async function(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, reloadOnComplete = true) {
     const startTimeMs = Date.now();
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
@@ -62,8 +62,30 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
     const d = new Date();
     const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    // Maps the internal applicant category to their respective professional rank titles for the document.
     let rankTitle = 'Teacher I';
+    try {
+        const res = await fetch(`/api/applicants/${id}/details`);
+        if (res.ok) {
+            const data = await res.json();
+            const applicant = data.applicant || data;
+            
+            if (applicant.position) {
+                rankTitle = applicant.position;
+            }
+            
+            const fName = applicant.firstName || '';
+            const mName = applicant.middleName || '';
+            const lName = applicant.lastName || '';
+            
+            if (mName && mName.trim() !== '') {
+                name = `${fName} ${mName.trim().charAt(0).toUpperCase()}. ${lName}`.trim();
+            } else if (fName || lName) {
+                name = `${fName} ${lName}`.trim();
+            }
+        }
+    } catch (err) {
+        console.error('Could not fetch applicant details', err);
+    }
 
     // Extracts the sequence order number from the application code suffix to populate the tracking number.
     let orderNum = "007";
@@ -245,7 +267,11 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
-        window.location.reload();
+        if (reloadOnComplete) {
+            window.showToast('Assignment Letter generated successfully.', 'success', true);
+        } else {
+            window.showToast('Assignment Letter generated successfully.', 'success');
+        }
     } catch (e) {
         console.error('Failed to update status', e);
     }
@@ -412,8 +438,8 @@ window.printInitialEvalPdf = async function(id) {
 
     // Header Text
     if (hasCustomFont) {
-        doc.setFont("Canterbury", "bold");
-        doc.setFontSize(11);
+        doc.setFont("Canterbury", "normal");
+        doc.setFontSize(12);
     } else {
         doc.setFont("Times", "bold");
         doc.setFontSize(11);
@@ -422,8 +448,8 @@ window.printInitialEvalPdf = async function(id) {
     doc.text("Republic of the Philippines", PAGE_WIDTH/2, 27, { align: "center" });
     
     if (hasCustomFont) {
-        doc.setFont("Canterbury", "bold");
-        doc.setFontSize(18);
+        doc.setFont("Canterbury", "normal");
+        doc.setFontSize(16);
     } else {
         doc.setFont("Times", "bold");
         doc.setFontSize(18);
@@ -456,12 +482,28 @@ window.printInitialEvalPdf = async function(id) {
     doc.text(dateStr, MARGIN, 64);
 
     // Applicant Name & Address
-    const appName = data.name || data.applicant?.firstName + ' ' + data.applicant?.lastName || 'Unknown Applicant';
+    let appName = 'Unknown Applicant';
+    const applicantObj = data.applicant || data;
+    const fName = applicantObj.firstName || '';
+    const mName = applicantObj.middleName || '';
+    const lName = applicantObj.lastName || '';
+    
+    if (mName && mName.trim() !== '') {
+        appName = `${fName} ${mName.trim().charAt(0).toUpperCase()}. ${lName}`.trim();
+    } else if (fName || lName) {
+        appName = `${fName} ${lName}`.trim();
+    } else if (data.name) {
+        appName = data.name;
+    }
     doc.setFont('Times', 'bold');
     doc.text(appName.toUpperCase(), MARGIN, 74);
     doc.setFont('Times', 'normal');
-    const address = data.address || data.applicant?.address || 'Iligan City';
-    doc.text(address, MARGIN, 79);
+    let addressStr = data.address || data.applicant?.address || 'Iligan City';
+    try {
+        const parsed = JSON.parse(addressStr);
+        if (parsed.res_city) addressStr = parsed.res_city;
+    } catch(e) { }
+    doc.text(addressStr, MARGIN, 79);
 
     // Salutation
     const sex = data.sex || data.applicant?.sex;
@@ -680,4 +722,5 @@ window.printInitialEvalPdf = async function(id) {
             body: JSON.stringify({ applicantCode: appCode, pdfName: 'Initial_Eval', timeMs })
         });
     } catch(e) {}
+    window.showToast('Initial Evaluation PDF generated successfully.', 'success');
 }

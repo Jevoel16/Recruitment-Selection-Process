@@ -43,6 +43,25 @@ body {
     box-shadow: 0 8px 32px color-mix(in srgb, var(--black) 5%, transparent);
 }
 
+/* Round edges for search bars and filters */
+.input-group.glass-panel,
+.glass-panel:has(> select.form-select) {
+    border-radius: 50rem !important;
+    overflow: hidden !important;
+}
+
+/* Seamless inner search icon */
+.input-group.glass-panel .input-group-text {
+    border: none !important;
+    background: transparent !important;
+}
+
+.input-group.glass-panel input.form-control {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
 .glass-card {
     background: color-mix(in srgb, var(--white) 60%, transparent);
     backdrop-filter: blur(8px);
@@ -382,8 +401,34 @@ body {
 }
 /* Floating Standard Box */
 .standard-floating-box { display: none; }
-@media (min-width: 992px) { .modal-dialog-with-standard { display: flex; flex-direction: row; align-items: flex-start; max-width: 80vw !important; margin: 1.75rem auto; justify-content: space-between; gap: 1rem; }
-.modal-dialog-with-standard .modal-content { flex: 0 0 78%; width: 78%; }
-.standard-floating-box { position: sticky; top: 1.75rem; flex: 0 0 20%; width: 20%; align-self: flex-start; z-index: 1050; } }
-@media (max-width: 991px) { .standard-floating-box { position: static; margin-top: 1rem; width: 100%; }
-.modal-dialog-with-standard { display: flex; flex-direction: column; } }
+@media (min-width: 992px) { 
+  .modal-dialog-with-standard { 
+      position: relative;
+      max-width: 500px !important; /* Keep the modal strictly medium size */
+      margin: 1.75rem auto; 
+  }
+  .modal-dialog-with-standard .modal-content { 
+      width: 100%; 
+  }
+  .standard-floating-box { 
+      position: absolute; 
+      top: 0;
+      left: calc(100% + 1rem); /* Stick it immediately to the right of the centered modal */
+      width: 250px; 
+      max-height: 100%;
+      overflow-y: auto; /* Allow scrolling if the standard text is very long */
+      z-index: 1050; 
+  } 
+}
+@media (max-width: 991px) { 
+  .standard-floating-box { position: static; margin-top: 1rem; width: 100%; }
+  .modal-dialog-with-standard { max-width: 500px !important; margin: 1.75rem auto; } 
+}
+
+/* Global Fade Animation Override (0.10s except toast) */
+.fade:not(.toast) {
+    transition: opacity 0.10s linear !important;
+}
+.modal.fade .modal-dialog {
+    transition: transform 0.10s ease-out !important;
+}

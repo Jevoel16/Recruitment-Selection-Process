@@ -1,5 +1,29 @@
     <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Tab retention
+    const tabs = document.querySelectorAll('button[data-bs-toggle="pill"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            sessionStorage.setItem('activeDashboardTab', e.target.id);
+            const url = new URL(window.location);
+            if (e.target.id === 'masterlist-tab') url.searchParams.set('tab', 'masterlist');
+            else if (e.target.id === 'categories-tab') url.searchParams.set('tab', 'categories');
+            else url.searchParams.delete('tab');
+            window.history.replaceState({}, '', url);
+        });
+    });
+
+    const activeTabId = sessionStorage.getItem('activeDashboardTab');
+    if (activeTabId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('tab') && !urlParams.has('positionId')) {
+            const tabToSelect = document.getElementById(activeTabId);
+            if (tabToSelect) {
+                bootstrap.Tab.getOrCreateInstance(tabToSelect).show();
+            }
+        }
+    }
+
     const form = document.getElementById('positionForm');
     if (form) {
         form.addEventListener('submit', async function(e) {
@@ -22,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 const result = await response.json();
                 if(result.success) {
+                    window.showToast('Position standards saved successfully!', 'success');
                     btn.classList.remove('btn-primary');
                     btn.classList.add('btn-success');
                     btn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Saved Successfully';

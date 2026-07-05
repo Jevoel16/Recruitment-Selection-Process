@@ -8,10 +8,10 @@
     <!-- Dashboard Tabs -->
     <ul class="nav nav-pills mb-2 gap-2" id="dashboardTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link {{#unless selectedPosition}}{{#unless showMasterlist}}active{{/unless}}{{/unless}} fw-bold px-4 py-2 rounded-pill shadow-sm" id="metrics-tab" data-bs-toggle="pill" data-bs-target="#metrics" type="button" role="tab"><i class="bi bi-graph-up me-2"></i> Metrics</button>
+            <button class="nav-link {{#unless selectedPosition}}{{#unless showMasterlist}}{{#unless showCategories}}active{{/unless}}{{/unless}}{{/unless}} fw-bold px-4 py-2 rounded-pill shadow-sm" id="metrics-tab" data-bs-toggle="pill" data-bs-target="#metrics" type="button" role="tab"><i class="bi bi-graph-up me-2"></i> Metrics</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold px-4 py-2 rounded-pill shadow-sm {{#if selectedPosition}}active{{/if}}" id="categories-tab" data-bs-toggle="pill" data-bs-target="#categories" type="button" role="tab"><i class="bi bi-diagram-3 me-2"></i> Vacancy Setup</button>
+            <button class="nav-link fw-bold px-4 py-2 rounded-pill shadow-sm {{#if selectedPosition}}active{{/if}} {{#if showCategories}}active{{/if}}" id="categories-tab" data-bs-toggle="pill" data-bs-target="#categories" type="button" role="tab"><i class="bi bi-diagram-3 me-2"></i> Vacancy Setup</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold px-4 py-2 rounded-pill shadow-sm {{#if showMasterlist}}active{{/if}}" id="masterlist-tab" data-bs-toggle="pill" data-bs-target="#masterlist" type="button" role="tab"><i class="bi bi-people-fill me-2"></i> Masterlist</button>

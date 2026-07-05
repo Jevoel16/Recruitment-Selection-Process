@@ -1,7 +1,7 @@
         <!-- STEP 5 -->
         {{#if step5Active}}
             <h2 class="fw-semibold mb-3">Assignment Orders</h2>
-            <p class="text-muted">Finalized applicants ready for assignment. Generate assignment letters here.</p>
+            <p class="text-muted">Finalized pool of applicants with complete requirements. Issue and generate their official Assignment Orders here.</p>
             
             <div class="mb-3">
                 
@@ -9,7 +9,7 @@
                     <div class="col-md-4">
                         <div class="input-group glass-panel h-100">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
-                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or tracking number..." value="{{searchQuery}}">
+                            <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or application code..." value="{{searchQuery}}">
                         </div>
                     </div>
                     <div class="col-md-4">

@@ -85,6 +85,7 @@ exports.getDashboard = async (req, res) => {
         const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
         const showMasterlist = req.query.tab === 'masterlist';
+        const showCategories = req.query.tab === 'categories';
 
         const pagination = [];
         for (let i = 1; i <= totalPages; i++) {
@@ -115,7 +116,8 @@ exports.getDashboard = async (req, res) => {
             categoryFilter,
             stepFilter,
             pagination: cleanPagination,
-            showMasterlist
+            showMasterlist,
+            showCategories
         });
     } catch (err) {
         console.error(err);

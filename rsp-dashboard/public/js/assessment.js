@@ -445,19 +445,7 @@ function calculateOutAccPoints() {
     const maxPoints = isGeneral ? 5 : 10;
     document.getElementById('outAccMax').innerText = maxPoints;
 
-    const isNational = document.getElementById('outAccNational').checked;
     const compDiv = document.getElementById('outAccComponentsDiv');
-    
-    if (isNational) {
-        compDiv.style.opacity = '0.5';
-        compDiv.style.pointerEvents = 'none';
-        document.getElementById('outAccSum').innerText = 'N/A';
-        document.getElementById('calculatedOutAccPoints').innerText = maxPoints;
-        return;
-    } else {
-        compDiv.style.opacity = '1';
-        compDiv.style.pointerEvents = 'auto';
-    }
 
     const awardPts = parseFloat(document.getElementById('outAccAward').value) || 0;
     const researchPts = parseFloat(document.getElementById('outAccResearch').value) || 0;

@@ -346,16 +346,39 @@ exports.deleteEligibility = async (req, res) => {
 exports.getApplicantDetails = async (req, res) => {
     try {
         const { id } = req.params;
-        const [applicant] = await db.query('SELECT * FROM applicants WHERE id = ?', [id]);
-        if (applicant.length === 0) return res.status(404).json({ error: 'Applicant not found' });
+        const [applicantRows] = await db.query('SELECT * FROM applicants WHERE id = ?', [id]);
+        if (applicantRows.length === 0) return res.status(404).json({ error: 'Applicant not found' });
         
+        const app = applicantRows[0];
+        app.name = `${app.firstName} ${app.lastName}`.trim();
+        // Ensure scores object exists for legacy frontend scripts
+        app.scores = {
+            education: app.scoreEducation,
+            training: app.scoreTraining,
+            experience: app.scoreExperience,
+            performance: app.scorePerformance,
+            outstandingAccomplishments: app.scoreOutstandingAccomplishments,
+            applicationOfEducation: app.scoreApplicationOfEducation,
+            applicationOfLD: app.scoreApplicationOfLD,
+            potential: app.scorePotential,
+            total: app.assessmentTotal
+        };
+
         const [education] = await db.query('SELECT * FROM applicant_education WHERE applicant_id = ?', [id]);
         const [training] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [id]);
         const [experience] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [id]);
         const [eligibility] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [id]);
 
+        let positionStandards = null;
+        if (app.position) {
+            const [posRows] = await db.query('SELECT * FROM positions WHERE title = ? LIMIT 1', [app.position]);
+            if (posRows.length > 0) positionStandards = posRows[0];
+        }
+
         res.json({
-            ...applicant[0],
+            ...app, // Top-level for newly patched scripts
+            applicant: app, // Wrapped for legacy scripts
+            positionStandards, // Included for QS and SG
             education,
             training,
             experience,
@@ -393,9 +416,9 @@ exports.updateDocumentLink = async (req, res) => {
     try {
         const { id } = req.params;
         const { digitalCopyLink } = req.body;
-        const table = 'applicant_' + req.route.path.split('/')[2];
+        const table = 'applicant_' + req.route.path.split('/')[1];
         
-        await db.query(`UPDATE ${table} SET digitalCopyLink = ? WHERE id = ?`, [digitalCopyLink, id]);
+        await db.query(`UPDATE ${table} SET digitalCopyLink = ? WHERE id = ?`, [digitalCopyLink || '', id]);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -405,15 +428,33 @@ exports.updateDocumentLink = async (req, res) => {
 
 exports.lockApplicant = async (req, res) => {
     try {
-        const { lockedBy } = req.body;
-        await db.query('UPDATE applicants SET lockedBy = ?, lockedAt = NOW() WHERE id = ?', [lockedBy, req.params.id]);
+        const lockedBy = req.body.deviceId || req.body.lockedBy;
+        const id = req.params.id;
+
+        const [result] = await db.query(
+            'UPDATE applicants SET lockedBy = ?, lockedAt = NOW() WHERE id = ? AND (lockedBy IS NULL OR lockedBy = ?)', 
+            [lockedBy, id, lockedBy]
+        );
+
+        if (result.affectedRows > 0) {
+            return res.json({ success: true });
+        }
+
+        const [rows] = await db.query('SELECT lockedBy FROM applicants WHERE id = ?', [id]);
+        if (rows.length > 0 && rows[0].lockedBy && rows[0].lockedBy !== lockedBy) {
+            return res.status(403).json({ error: "Applicant is currently locked by another user." });
+        }
+
         res.json({ success: true });
-    } catch (e) { console.error(e); res.status(500).json({ error: "Internal server error" }); }
+    } catch (e) { 
+        console.error(e); 
+        res.status(500).json({ error: "Internal server error" }); 
+    }
 };
 
 exports.unlockApplicant = async (req, res) => {
     try {
-        const { lockedBy } = req.body;
+        const lockedBy = req.body.deviceId || req.body.lockedBy;
         const [rows] = await db.query('SELECT lockedBy FROM applicants WHERE id = ?', [req.params.id]);
         if (rows.length > 0) {
             if (rows[0].lockedBy === lockedBy || !rows[0].lockedBy) {
@@ -424,7 +465,10 @@ exports.unlockApplicant = async (req, res) => {
             }
         }
         res.json({ success: true });
-    } catch (e) { console.error(e); res.status(500).json({ error: "Internal server error" }); }
+    } catch (e) { 
+        console.error(e); 
+        res.status(500).json({ error: "Internal server error" }); 
+    }
 };
 
 exports.updateEducation = async (req, res) => {

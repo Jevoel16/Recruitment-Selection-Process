@@ -51,17 +51,19 @@ function setFloatingStandard(modalId, text) {
     const modalEl = document.getElementById(modalId);
     if (!modalEl) return;
     const dialog = modalEl.querySelector('.modal-dialog');
+    const content = modalEl.querySelector('.modal-content');
+    if (!content) return;
     
-    let floatBox = dialog.querySelector('.standard-floating-box');
+    let floatBox = content.querySelector('.standard-floating-box');
     if (!floatBox) {
         floatBox = document.createElement('div');
         floatBox.className = 'standard-floating-box bg-white p-3 rounded-4 shadow border border-info';
-        dialog.appendChild(floatBox);
+        content.appendChild(floatBox);
     }
     
     if (text) {
         dialog.classList.add('modal-dialog-with-standard');
-        floatBox.innerHTML = `<h6 class="text-info fw-bold mb-2"><i class="bi bi-info-circle-fill me-2"></i> Standard Required</h6><p class="mb-0 small text-dark">${text}</p>`;
+        floatBox.innerHTML = `<h6 class="text-info fw-bold mb-2"><i class="bi bi-info-circle-fill me-2"></i> Standard Requirement</h6><p class="mb-0 small text-dark">${text}</p>`;
         floatBox.style.display = 'block';
     } else {
         dialog.classList.remove('modal-dialog-with-standard');
@@ -149,8 +151,13 @@ async function openEduModal(id, isWizard = false) {
                         body: JSON.stringify({ title: form.title.value, year_graduated: form.year_graduated.value })
                     });
                 }
-                if(res.ok) openEduModal(id, isWizard);
-            } catch(err) { console.error(err); }
+                if(res.ok) {
+                    window.showToast('Successfully saved!', 'success');
+                    openEduModal(id, isWizard);
+                } else {
+                    window.showToast('Failed to save record.', 'danger');
+                }
+            } catch(err) { console.error(err); window.showToast('Error saving record.', 'danger'); }
         });
         const eModal = document.getElementById('eduModal');
         if (!eModal.classList.contains('show')) {
@@ -221,8 +228,13 @@ async function openTrainModal(id, isWizard = false) {
                         body: JSON.stringify({ title: form.title.value, hours: form.hours.value })
                     });
                 }
-                if(res.ok) openTrainModal(id, isWizard);
-            } catch(err) { console.error(err); }
+                if(res.ok) {
+                    window.showToast('Successfully saved!', 'success');
+                    openTrainModal(id, isWizard);
+                } else {
+                    window.showToast('Failed to save record.', 'danger');
+                }
+            } catch(err) { console.error(err); window.showToast('Error saving record.', 'danger'); }
         });
         const tModal = document.getElementById('trainModal');
         if (!tModal.classList.contains('show')) {
@@ -292,8 +304,13 @@ async function openExpModal(id, isWizard = false) {
                         body: JSON.stringify({ details: form.details.value, years: form.years.value })
                     });
                 }
-                if(res.ok) openExpModal(id, isWizard);
-            } catch(err) { console.error(err); }
+                if(res.ok) {
+                    window.showToast('Successfully saved!', 'success');
+                    openExpModal(id, isWizard);
+                } else {
+                    window.showToast('Failed to save record.', 'danger');
+                }
+            } catch(err) { console.error(err); window.showToast('Error saving record.', 'danger'); }
         });
         const expModalEl = document.getElementById('expModal');
         if (!expModalEl.classList.contains('show')) {
@@ -364,8 +381,13 @@ async function openEligModal(id, isWizard = false) {
                         body: JSON.stringify({ title: form.title.value, rating: form.rating.value })
                     });
                 }
-                if(res.ok) openEligModal(id, isWizard);
-            } catch(err) { console.error(err); }
+                if(res.ok) {
+                    window.showToast('Successfully saved!', 'success');
+                    openEligModal(id, isWizard);
+                } else {
+                    window.showToast('Failed to save record.', 'danger');
+                }
+            } catch(err) { console.error(err); window.showToast('Error saving record.', 'danger'); }
         });
         const eligModalEl = document.getElementById('eligModal');
         if (!eligModalEl.classList.contains('show')) {

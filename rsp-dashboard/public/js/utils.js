@@ -26,9 +26,16 @@ window.showToast = function(message, type = 'info', reload = false) {
 
     toastMsg.textContent = message;
     
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    const toast = new bootstrap.Toast(toastEl, { delay: 1500 });
     
     if (reload) {
+        window.isReloading = true;
+        // Hide any open modals immediately so they don't linger while the toast waits to reload
+        document.querySelectorAll('.modal.show').forEach(m => {
+            const instance = bootstrap.Modal.getInstance(m);
+            if (instance) instance.hide();
+        });
+
         toastEl.addEventListener('hidden.bs.toast', () => {
             window.location.reload();
         }, { once: true });
