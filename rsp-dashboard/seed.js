@@ -166,6 +166,7 @@ async function seed() {
                 await qualifyDoc('eligibility', details.eligibility);
 
                 await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST' });
+                await fetch(`${API_BASE}/applicants/${id}/proceed-step2`, { method: 'POST' });
             });
             await Promise.all(batchPromises);
             await delay(100);

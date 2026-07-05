@@ -228,13 +228,23 @@ async function openSummaryModal(id, name, hideActions = false) {
                 sumQualifyBtn.disabled = hasPending;
                 if (hasPending) {
                     sumQualifyBtn.title = "All documents must be evaluated first";
-                    sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Assess all docs to Qualify';
+                    sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Qualify';
                 } else {
                     sumQualifyBtn.title = "";
-                    sumQualifyBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Qualify & Move to Step 2';
+                    sumQualifyBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Qualify';
                 }
             }
-            if (sumDisqualifyBtn) sumDisqualifyBtn.style.display = 'inline-block';
+            if (sumDisqualifyBtn) {
+                sumDisqualifyBtn.style.display = 'inline-block';
+                sumDisqualifyBtn.disabled = hasPending;
+                if (hasPending) {
+                    sumDisqualifyBtn.title = "All documents must be evaluated first";
+                    sumDisqualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Disqualify';
+                } else {
+                    sumDisqualifyBtn.title = "";
+                    sumDisqualifyBtn.innerHTML = 'Disqualify';
+                }
+            }
         }
 
         bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).show();
@@ -247,12 +257,27 @@ window.disqualifyFromSummary = () => {
     
     document.getElementById('summaryDisqualifyId').value = id;
     document.getElementById('summaryDisqualifyName').innerText = name;
+    
+    const reasonMainInput = document.getElementById('summaryDisqualifyReasonMain');
+    
+    if (reasonMainInput) {
+        reasonMainInput.value = 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+    }
+    
     bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryDisqualifyModal')).show();
 }
 
 window.confirmSummaryDisqualify = () => {
     const id = document.getElementById('summaryDisqualifyId').value;
-    fetch(`/api/applicants/${id}/disqualify`, { method: 'POST' })
+    const reasonMainInput = document.getElementById('summaryDisqualifyReasonMain');
+    
+    const reason = reasonMainInput ? reasonMainInput.value.trim() : '';
+    
+    fetch(`/api/applicants/${id}/disqualify`, { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason })
+    })
         .then(res => res.ok ? window.showToast('Successfully disqualified', 'success', true) : window.showToast('Error disqualifying', 'danger'))
         .catch(err => console.error(err));
 }

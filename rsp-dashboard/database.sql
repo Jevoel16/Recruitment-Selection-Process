@@ -56,9 +56,15 @@ CREATE TABLE IF NOT EXISTS applicants (
     req_orderSeparation BOOLEAN DEFAULT FALSE,
     req_saln BOOLEAN DEFAULT FALSE,
     assignmentReqStatus ENUM('INCOMPLETE', 'COMPLETE') DEFAULT 'INCOMPLETE',
+    disqualificationReason TEXT DEFAULT NULL,
     lockedBy VARCHAR(255) DEFAULT NULL,
     lockedAt DATETIME DEFAULT NULL,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_status (status),
+    INDEX idx_category (category),
+    INDEX idx_position (position),
+    INDEX idx_assignedOffice (assignedOffice),
+    INDEX idx_createdAt (createdAt)
 );
 
 CREATE TABLE IF NOT EXISTS applicant_education (

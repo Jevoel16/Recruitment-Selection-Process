@@ -278,42 +278,122 @@ window.printInitialEvalPdf = async function(id) {
         }
     } catch (err) {}
 
-    function printMixedText(doc, textArr, startX, startY, maxWidth) {
-        let currentX = startX;
+    function printMixedText(doc, textArr, startX, startY, maxWidth, justify = true) {
         let currentY = startY;
         const lineHeight = 5;
 
+        // Flatten into tokens
+        const allTokens = [];
         textArr.forEach(part => {
-            doc.setFont('Times', part.bold ? 'bold' : 'normal');
-            if (part.url) doc.setTextColor(0, 0, 255);
-            else doc.setTextColor(0, 0, 0);
-
-            const tokens = part.text.match(/(\S+|\s+)/g) || [];
-            tokens.forEach(token => {
-                if (token === '\n') {
-                    currentX = startX;
-                    currentY += lineHeight;
-                    return;
-                }
-                const tokenWidth = doc.getTextWidth(token);
-                if (token.trim() !== '' && currentX + tokenWidth > startX + maxWidth) {
-                    currentX = startX;
-                    currentY += lineHeight;
-                }
-                if (part.url && token.trim() !== '') {
-                    doc.textWithLink(token, currentX, currentY, { url: part.url });
-                    // Optional underline
-                    doc.setDrawColor(0, 0, 255);
-                    doc.setLineWidth(0.2);
-                    doc.line(currentX, currentY + 0.5, currentX + tokenWidth, currentY + 0.5);
-                } else {
-                    doc.text(token, currentX, currentY);
-                }
-                currentX += tokenWidth;
+            const tokens = part.text.match(/(\S+|\s+|\n)/g) || [];
+            tokens.forEach(t => {
+                allTokens.push({ text: t, bold: part.bold, url: part.url });
             });
         });
+
+        // Group into lines
+        const lines = [];
+        let currentLine = [];
+        let currentLineWidth = 0;
+
+        const measureToken = (t) => {
+            if (t.text === '\n') return 0;
+            doc.setFont('Times', t.bold ? 'bold' : 'normal');
+            return doc.getTextWidth(t.text);
+        };
+
+        for (let i = 0; i < allTokens.length; i++) {
+            const t = allTokens[i];
+            
+            if (t.text === '\n') {
+                // Remove trailing spaces before pushing line
+                while(currentLine.length > 0 && currentLine[currentLine.length - 1].text.trim() === '') {
+                    const popped = currentLine.pop();
+                    currentLineWidth -= measureToken(popped);
+                }
+                lines.push({ tokens: currentLine, isLast: true, width: currentLineWidth });
+                currentLine = [];
+                currentLineWidth = 0;
+                continue;
+            }
+
+            const tWidth = measureToken(t);
+            
+            // If it's a space and it's the first token on a new line, skip it
+            if (currentLine.length === 0 && t.text.trim() === '') {
+                continue;
+            }
+
+            if (currentLineWidth + tWidth > maxWidth && currentLine.length > 0) {
+                // Remove trailing spaces
+                while(currentLine.length > 0 && currentLine[currentLine.length - 1].text.trim() === '') {
+                    const popped = currentLine.pop();
+                    currentLineWidth -= measureToken(popped);
+                }
+                lines.push({ tokens: currentLine, isLast: false, width: currentLineWidth });
+                
+                currentLine = [];
+                currentLineWidth = 0;
+                
+                if (t.text.trim() === '') {
+                    continue; // Skip the space that caused the wrap
+                }
+            }
+            
+            currentLine.push(t);
+            currentLineWidth += tWidth;
+        }
+        
+        if (currentLine.length > 0) {
+            while(currentLine.length > 0 && currentLine[currentLine.length - 1].text.trim() === '') {
+                const popped = currentLine.pop();
+                currentLineWidth -= measureToken(popped);
+            }
+            lines.push({ tokens: currentLine, isLast: true, width: currentLineWidth });
+        }
+
+        // Render lines
+        lines.forEach(line => {
+            let currentX = startX;
+            const isJustified = justify && !line.isLast;
+            
+            let spaceCount = 0;
+            if (isJustified) {
+                spaceCount = line.tokens.filter(t => t.text.trim() === '').length;
+            }
+            
+            const extraSpacePerGap = (isJustified && spaceCount > 0) ? ((maxWidth - line.width) / spaceCount) : 0;
+
+            line.tokens.forEach(t => {
+                doc.setFont('Times', t.bold ? 'bold' : 'normal');
+                if (t.url) doc.setTextColor(0, 0, 255);
+                else doc.setTextColor(0, 0, 0);
+
+                const tWidth = doc.getTextWidth(t.text);
+                const isSpace = t.text.trim() === '';
+
+                if (!isSpace) {
+                    if (t.url) {
+                        doc.textWithLink(t.text, currentX, currentY, { url: t.url });
+                        doc.setDrawColor(0, 0, 255);
+                        doc.setLineWidth(0.2);
+                        doc.line(currentX, currentY + 0.5, currentX + tWidth, currentY + 0.5);
+                    } else {
+                        doc.text(t.text, currentX, currentY);
+                    }
+                }
+
+                currentX += tWidth;
+                if (isSpace) {
+                    currentX += extraSpacePerGap;
+                }
+            });
+            currentY += lineHeight;
+        });
+
         doc.setTextColor(0, 0, 0); // reset color
-        return currentY;
+        doc.setDrawColor(0); // reset draw color for future lines/rects
+        return currentY - lineHeight;
     }
 
     // Header Logos
@@ -347,16 +427,16 @@ window.printInitialEvalPdf = async function(id) {
     doc.text("SCHOOLS DIVISION OF ILIGAN CITY", PAGE_WIDTH/2, 42, { align: "center" });
 
     // Title
-    doc.setLineWidth(1.5);
-    doc.line(MARGIN, 46, PAGE_WIDTH - MARGIN, 46);
+    doc.setLineWidth(.5);
+    doc.line(MARGIN, 44, PAGE_WIDTH - MARGIN, 44);
     
     doc.setFont("Times", "bold");
     doc.setFontSize(18);
     const isDisqualified = data.applicant?.status === 'DISQUALIFIED' || data.status === 'DISQUALIFIED';
     const titleText = isDisqualified ? "NOTICE OF DISQUALIFICATION" : "NOTICE OF QUALIFICATION";
-    doc.text(titleText, PAGE_WIDTH/2, 53, { align: "center" });
+    doc.text(titleText, PAGE_WIDTH/2, 51, { align: "center" });
     
-    doc.line(MARGIN, 56, PAGE_WIDTH - MARGIN, 56);
+    doc.line(MARGIN, 54, PAGE_WIDTH - MARGIN, 54);
 
     // Date
     const d = new Date();
@@ -402,10 +482,10 @@ window.printInitialEvalPdf = async function(id) {
     doc.setFont('Times', 'bold');
     doc.setFontSize(10);
     
-    const col1Width = CONTENT_WIDTH * 0.175;
+    const col1Width = CONTENT_WIDTH * 0.15;
     const col2Width = CONTENT_WIDTH * 0.35;
     const col3Width = CONTENT_WIDTH * 0.35;
-    const col4Width = CONTENT_WIDTH * 0.125;
+    const col4Width = CONTENT_WIDTH * 0.15;
 
     const col1 = MARGIN + col1Width;
     const col2 = col1 + col2Width;
@@ -428,11 +508,16 @@ window.printInitialEvalPdf = async function(id) {
         return 'Qualified';
     };
 
+    const cleanText = (txt) => {
+        if (!txt) return '';
+        return String(txt).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    };
+
     const rows = [
-        { qs: 'Education: ' + (data.positionStandards?.qsEducation || 'N/A'), app: (data.education || []).map(e => e.degree || e.title).join(', ') || 'None', rm: getRemark(data.education) },
-        { qs: 'Training: ' + (data.positionStandards?.qsTraining || 'N/A'), app: (data.training || []).map(e => e.title).join(', ') || 'None', rm: getRemark(data.training) },
-        { qs: 'Experience: ' + (data.positionStandards?.qsExperience || 'N/A'), app: (data.experience || []).map(e => e.details).join(', ') || 'None', rm: getRemark(data.experience) },
-        { qs: 'Eligibility: ' + (data.positionStandards?.qsEligibility || 'N/A'), app: (data.eligibility || []).map(e => e.title || e.details).join(', ') || 'None', rm: getRemark(data.eligibility) === 'Qualified' ? 'Eligible' : getRemark(data.eligibility) }
+        { qs: 'Education: ' + cleanText(data.positionStandards?.qsEducation || 'N/A'), app: cleanText((data.education || []).map(e => e.degree || e.title).join(', ')) || 'None', rm: getRemark(data.education) },
+        { qs: 'Training: ' + cleanText(data.positionStandards?.qsTraining || 'N/A'), app: cleanText((data.training || []).map(e => e.title).join(', ')) || 'None', rm: getRemark(data.training) },
+        { qs: 'Experience: ' + cleanText(data.positionStandards?.qsExperience || 'N/A'), app: cleanText((data.experience || []).map(e => e.details).join(', ')) || 'None', rm: getRemark(data.experience) },
+        { qs: 'Eligibility: ' + cleanText(data.positionStandards?.qsEligibility || 'N/A'), app: cleanText((data.eligibility || []).map(e => e.title || e.details).join(', ')) || 'None', rm: getRemark(data.eligibility) }
     ];
 
     currentY = startY + 15;
@@ -440,12 +525,13 @@ window.printInitialEvalPdf = async function(id) {
     const qsColWrap = col2Width - 3;
     const appColWrap = col3Width - 3;
 
+    doc.setFont('Times', 'normal'); // Critical: splitTextToSize depends on font!
     const tableHeight = rows.reduce((acc, row) => {
         const qsContent = row.qs.substring(row.qs.indexOf(':') + 2);
-        const qsContentLines = doc.splitTextToSize(qsContent, qsColWrap);
+        const qsContentLines = doc.splitTextToSize(qsContent, qsColWrap).filter(l => l.trim() !== '');
         const qsTotalLines = 1 + qsContentLines.length;
         
-        const appLines = doc.splitTextToSize(row.app, appColWrap);
+        const appLines = doc.splitTextToSize(row.app, appColWrap).filter(l => l.trim() !== '');
         const maxLines = Math.max(qsTotalLines, appLines.length);
         return acc + Math.max(6, maxLines * 4.2 + 1.3);
     }, 0);
@@ -456,17 +542,17 @@ window.printInitialEvalPdf = async function(id) {
     doc.line(col3, currentY, col3, currentY + tableHeight);
 
     // Print Position Name in the first column, vertically centered in the overall table
-    const posLines = doc.splitTextToSize(pos, col1Width - 2);
+    const posLines = doc.splitTextToSize(pos, col1Width - 2).filter(l => l.trim() !== '');
     doc.setFont('Times', 'normal');
     doc.text(posLines, MARGIN + (col1Width / 2), currentY + (tableHeight/2) - ((posLines.length * 4.2)/2) + 1.5, { align: 'center' });
 
     rows.forEach((row, i) => {
         doc.setFont('Times', 'normal');
         const qsContent = row.qs.substring(row.qs.indexOf(':') + 2);
-        const qsContentLines = doc.splitTextToSize(qsContent, qsColWrap);
+        const qsContentLines = doc.splitTextToSize(qsContent, qsColWrap).filter(l => l.trim() !== '');
         const qsTotalLines = 1 + qsContentLines.length;
         
-        const appLines = doc.splitTextToSize(row.app, appColWrap);
+        const appLines = doc.splitTextToSize(row.app, appColWrap).filter(l => l.trim() !== '');
         const maxLines = Math.max(qsTotalLines, appLines.length);
         const rowHeight = Math.max(6, maxLines * 4.2 + 1.3);
 
@@ -483,13 +569,16 @@ window.printInitialEvalPdf = async function(id) {
         currentY += rowHeight;
     });
 
-    currentY += 10;
+    currentY += 5;
     doc.setFont('Times', 'normal');
     doc.setFontSize(11);
     
     if (isDisqualified) {
+        const customReason = data.disqualificationReason || data.applicant?.disqualificationReason;
+        const reasonText = customReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+        
         const p2Arr = [
-            { text: 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications. Thus, we regret that you cannot proceed for the next stage of the selection process for ', bold: false },
+            { text: reasonText.trim() + ' Thus, we regret that you cannot proceed for the next stage of the selection process for ', bold: false },
             { text: pos, bold: true },
             { text: ' position. You may, however, continue to submit job applications in response to other vacancy announcements that we publish at ', bold: false },
             { text: 'www.csc.gov.ph/careers', bold: false, url: 'https://www.csc.gov.ph/careers' },
@@ -519,15 +608,15 @@ window.printInitialEvalPdf = async function(id) {
     doc.setFont('Times', 'normal');
     doc.text('Administrative Officer IV (Personnel)', MARGIN, currentY + 5);
 
-    doc.setLineWidth(.5);
-    doc.line(MARGIN, currentY + 6, PAGE_WIDTH - MARGIN, currentY + 7);
-
     // Footer
+    doc.setLineWidth(.5);
+    doc.line(MARGIN, 274, PAGE_WIDTH - MARGIN, 274);
+
     const seal2_foot = await loadImageForPDF('/images/logos/DepEd Logo.png');
     const seal3_foot = await loadImageForPDF('/images/logos/bagong-pilipinas-seeklogo.png');
     const seal4_foot = await loadImageForPDF('/images/logos/Deped Division of Iligan City.png');
     
-    if (seal2_foot) doc.addImage(seal2_foot, "PNG", MARGIN + 2.5, 276.5, 22.5, 12.5);
+    if (seal2_foot) doc.addImage(seal2_foot, "PNG", MARGIN + 2.5, 278.5, 22.5, 12.5);
     if (seal3_foot) doc.addImage(seal3_foot, "PNG", MARGIN + 36.5, 276.5, 17.5, 17.5);
     if (seal4_foot) doc.addImage(seal4_foot, "PNG", MARGIN + 65, 276.5, 17.5, 17.5);
 

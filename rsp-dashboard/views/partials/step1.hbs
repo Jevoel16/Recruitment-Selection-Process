@@ -71,7 +71,10 @@
                             </td>
                             <td class="text-end">
                                 {{#if (eq this.status 'PENDING')}}
-                                <button class="btn btn-sm btn-primary action-btn" data-name="{{this.name}}" onclick="openSummaryModal({{this.id}}, this.getAttribute('data-name'))" title="Move to Step 2"><i class="bi bi-arrow-right-circle"></i> Move</button>
+                                <button class="btn btn-sm btn-primary action-btn" data-name="{{this.name}}" onclick="openSummaryModal({{this.id}}, this.getAttribute('data-name'))" title="Evaluate Applicant"><i class="bi bi-card-checklist"></i> Evaluate</button>
+                                {{/if}}
+                                {{#if (eq this.status 'QUALIFIED')}}
+                                <button class="btn btn-sm btn-success action-btn" onclick="openProceedModal({{this.id}}, '{{this.name}}')" title="Proceed to Step 2"><i class="bi bi-arrow-right-circle"></i> Proceed</button>
                                 {{/if}}
                                 {{#if (eq this.docRemark 'Pending')}}
                                 <button class="btn btn-sm btn-secondary action-btn ms-1" disabled title="Requires Assessed remarks"><i class="bi bi-file-earmark-pdf"></i> PDF</button>

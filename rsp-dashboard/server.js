@@ -721,7 +721,14 @@ app.delete('/api/applicants/:id', async (req, res) => {
 app.post('/api/applicants/:id/disqualify', async (req, res) => {
     try {
         const { id } = req.params;
-        await db.query(`UPDATE applicants SET status = 'DISQUALIFIED' WHERE id = ?`, [id]);
+        const { reason } = req.body || {};
+        
+        if (reason) {
+            await db.query(`UPDATE applicants SET status = 'DISQUALIFIED', disqualificationReason = ? WHERE id = ?`, [reason, id]);
+        } else {
+            await db.query(`UPDATE applicants SET status = 'DISQUALIFIED' WHERE id = ?`, [id]);
+        }
+        
         console.log(`[STATUS] Applicant ID ${id} disqualified (Step 1)`);
         res.json({ success: true });
     } catch (error) {
@@ -733,8 +740,20 @@ app.post('/api/applicants/:id/disqualify', async (req, res) => {
 app.post('/api/applicants/:id/qualify', async (req, res) => {
     try {
         const { id } = req.params;
+        await db.query(`UPDATE applicants SET status = 'QUALIFIED' WHERE id = ?`, [id]);
+        console.log(`[STATUS] Applicant ID ${id} qualified in Step 1.`);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Proceed to Step 2
+app.post('/api/applicants/:id/proceed-step2', async (req, res) => {
+    try {
+        const { id } = req.params;
         await db.query(`UPDATE applicants SET status = 'WAITING_FOR_ASSESSMENT' WHERE id = ?`, [id]);
-        console.log(`[STATUS] Applicant ID ${id} qualified to Step 2.`);
+        console.log(`[STATUS] Applicant ID ${id} proceeded to Step 2.`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

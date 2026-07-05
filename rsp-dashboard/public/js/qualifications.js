@@ -26,10 +26,37 @@ if (qualifyForm) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
-            if (res.ok) window.showToast('Moved to Step 2 successfully!', 'success', true);
+            if (res.ok) window.showToast('Applicant qualified successfully!', 'success', true);
         } catch (err) {
             console.error(err);
             window.showToast('Error qualifying applicant', 'danger');
+        }
+    });
+}
+
+// Open Proceed Modal
+async function openProceedModal(id, name) {
+    if (!(await window.acquireLock(id))) return;
+    document.getElementById('proceedId').value = id;
+    document.getElementById('proceedName').innerText = name;
+    new bootstrap.Modal(document.getElementById('proceedModal')).show();
+}
+
+// Submit Proceed
+const proceedForm = document.getElementById('proceedForm');
+if (proceedForm) {
+    proceedForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('proceedId').value;
+        try {
+            const res = await fetch(`/api/applicants/${id}/proceed-step2`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.ok) window.showToast('Moved to Step 2 successfully!', 'success', true);
+        } catch (err) {
+            console.error(err);
+            window.showToast('Error proceeding to Step 2', 'danger');
         }
     });
 }
