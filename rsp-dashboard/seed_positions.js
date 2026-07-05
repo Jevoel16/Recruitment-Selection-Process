@@ -1,5 +1,3 @@
-
-
 const positionsData = [
     {
         "category": "Teaching",

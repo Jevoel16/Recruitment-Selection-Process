@@ -1,9 +1,0 @@
-for step 1 add more requirements base on the actual requirements list
-for step 2 move assign office to step 3
-for step 2 input score should show complete deliberation sheet
-implement proper archiving - when pdf is generated the applicant is removed from the list and moved to archive list
-
-future notice:
-make google forms for public portal for applicants to see status
-
-813889-f2af29
