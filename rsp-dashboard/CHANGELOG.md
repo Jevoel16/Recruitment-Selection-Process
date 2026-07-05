@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-07-05 16:47 (v1.0.0-Release+202607051647)
+### ADDED
+- Implemented MVC Architecture by separating route logic into `routes/apiRoutes.js` and `routes/viewRoutes.js`.
+- Extracted backend controllers (`applicantController.js`, `positionController.js`, `viewController.js`) for modularity.
+- Extracted frontend utilities into `public/js/utils.js` and common toast UI into `views/partials/global_toasts.hbs`.
+- Added `morgan` middleware configured to log state changes (`POST`, `PUT`, `DELETE`) as a professional audit trail.
+- Implemented server-side console logging for tracking IER and CAR export execution times.
+- Implemented a dedicated tracking endpoint (`POST /api/logs/pdf-export`) to log client-side PDF rendering times.
+- Created `db_reset+seed.js` for explicit database structure initialization and mock applicant generation.
+
+### FIXED
+- Removed dangerous auto-recreating `db_setup.js` from `npm run dev` script to prevent accidental data loss.
+- Fixed an N+1 query performance bottleneck in `IER` export route that caused the server to hang on large applicant lists.
+- Fixed `masterlist` page 500 error by correctly routing `GET /masterlist` to `GET /dashboard?tab=masterlist`.
+- Fixed `/api/export/ier` route hanging bug caused by an empty route definition intercepting the request.
+- Cleaned up `package.json` scripts to only have necessary distinct commands (`start`, `dev`, `db:reset`, `seed`).
 ## 2026-07-03 08:20 (v0.8.3-Alpha+202607030820)
 ### ADDED
 - Enhanced "Add Applicant" form validation with active keystroke prevention restricting `Year Graduated`, `Number of Hours`, and `Number of Years` to non-negative numbers, constraining `Rating` to 0-100, and enforcing a strict 11-digit `Contact No.` starting with "09".

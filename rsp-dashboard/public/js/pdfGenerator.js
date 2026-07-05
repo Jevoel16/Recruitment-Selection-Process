@@ -7,6 +7,7 @@ const loadImageForPDF = (src) => new Promise((resolve) => {
 });
 
 window.printLetter = async function(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation) {
+    const startTimeMs = Date.now();
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
         window.showToast('jsPDF library failed to load. Please try again.', 'danger');
@@ -230,6 +231,14 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
     const yyyy = currentDate.getFullYear();
     const formattedDateStr = `${mm}${yyyy}`;
     doc.save(`AO-${name.replace(/\s+/g, '_')}-${formattedDateStr}.pdf`);
+    const timeMs = Date.now() - startTimeMs;
+    try {
+        fetch('/api/logs/pdf-export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ applicantCode: applicationCode, pdfName: 'Letter', timeMs })
+        });
+    } catch(e) {}
     
     try {
         await fetch(`/api/applicants/${id}/complete`, {
@@ -242,6 +251,7 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
     }
 }
 window.printInitialEvalPdf = async function(id) {
+    const startTimeMs = Date.now();
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
         window.showToast('jsPDF library failed to load.', 'danger');
@@ -662,4 +672,12 @@ window.printInitialEvalPdf = async function(id) {
     doc.text("1 of 1", MARGIN + 137, 292);
 
     doc.save(`Initial_Eval_${appName.replace(/\s+/g, '_')}.pdf`);
+    const timeMs = Date.now() - startTimeMs;
+    try {
+        fetch('/api/logs/pdf-export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ applicantCode: appCode, pdfName: 'Initial_Eval', timeMs })
+        });
+    } catch(e) {}
 }
