@@ -25,6 +25,8 @@ exports.getMetrics = async (req, res) => {
     }
 };
 
+// Renders the main Unified Dashboard containing both the Vacancy Setup and Masterlist tabs.
+// This function aggregates data from the positions table and limits masterlist queries to 25 items for pagination performance.
 exports.getDashboard = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM positions ORDER BY category ASC, title ASC');
@@ -211,6 +213,8 @@ exports.getDashboardPosition = async (req, res, next) => {
     }
 };
 
+// Provides the initial context for the multi-step Add Applicant wizard.
+// Pre-loads all active 'in_vacancy' positions so the user can bind the new applicant to an official plantilla item immediately.
 exports.getAddApplicant = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM positions WHERE in_vacancy = true ORDER BY category ASC, title ASC');
@@ -275,6 +279,8 @@ exports.getMasterlist = async (req, res) => {
     }
 };
 
+// Dynamic multi-step rendering router. Evaluates the requested `:step` parameter to determine which subset of applicants to query.
+// Applies specific WHERE clauses depending on the step (e.g. Step 1 shows all 'PENDING' applicants, Step 2 shows 'QUALIFIED' ones).
 exports.getStepPage = async (req, res, next) => {
     const { step } = req.params;
     

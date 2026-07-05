@@ -4,12 +4,12 @@ const positionController = require('../controllers/positionController');
 const applicantController = require('../controllers/applicantController');
 const db = require('../db');
 
-// Position API Routes
+// Endpoints for managing positions and fetching dynamic plantilla assignments
 router.post('/positions/update', positionController.updatePosition);
 router.post('/positions/:id/vacancy', positionController.togglePositionVacancy);
 router.post('/positions/:id/plantilla', positionController.updatePlantilla);
 
-// Applicant API Routes
+// Core endpoints for applicant creation, assessment, scoring, and workflow progression
 router.post('/applicants', applicantController.createApplicant);
 router.delete('/applicants/:id', applicantController.deleteApplicant);
 router.post('/applicants/:id/disqualify', applicantController.disqualifyApplicant);
@@ -30,34 +30,34 @@ router.put('/applicants/:id/:type/:docId/status', applicantController.updateDocu
 router.post('/applicants/:id/lock', applicantController.lockApplicant);
 router.post('/applicants/:id/unlock', applicantController.unlockApplicant);
 
-// Education Routes
+// Endpoints for managing applicant educational background records
 router.post('/applicants/:id/education', applicantController.addEducation);
 router.post('/applicants/:id/education/:eduId/highest', applicantController.setHighestEducation);
 router.delete('/education/:id', applicantController.deleteEducation);
 router.put('/education/:id', applicantController.updateDocumentLink);
 
-// Training Routes
+// Endpoints for managing applicant training and seminar records
 router.post('/applicants/:id/training', applicantController.addTraining);
 router.delete('/training/:id', applicantController.deleteTraining);
 router.put('/training/:id', applicantController.updateDocumentLink);
 
-// Experience Routes
+// Endpoints for managing applicant work experience records
 router.post('/applicants/:id/experience', applicantController.addExperience);
 router.delete('/experience/:id', applicantController.deleteExperience);
 router.put('/experience/:id', applicantController.updateDocumentLink);
 
-// Eligibility Routes
+// Endpoints for managing applicant civil service eligibility records
 router.post('/applicants/:id/eligibility', applicantController.addEligibility);
 router.delete('/eligibility/:id', applicantController.deleteEligibility);
 router.put('/eligibility/:id', applicantController.updateDocumentLink);
 
-// Update Document Content (Added)
+// Endpoints for applying dynamic inline edits to specific document sections
 router.put('/education/:id', applicantController.updateEducation);
 router.put('/training/:id', applicantController.updateTraining);
 router.put('/experience/:id', applicantController.updateExperience);
 router.put('/eligibility/:id', applicantController.updateEligibility);
 
-// Client-Side PDF Export Logging
+// Receives client-side pings to log performance metrics for browser-generated PDFs
 router.post('/logs/pdf-export', (req, res) => {
     const { applicantCode, pdfName, timeMs } = req.body;
     if (applicantCode && pdfName && timeMs) {

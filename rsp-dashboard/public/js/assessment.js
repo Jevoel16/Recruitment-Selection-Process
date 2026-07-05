@@ -157,6 +157,8 @@ function openEduCalcModal() {
     calculateEduPoints();
 }
 
+// Calculates the Education score based on the applicant's highest degree and the position's Salary Grade.
+// Implements DepEd Order No. 007 s. 2023 rubric logic to scale points proportionally against required education thresholds.
 function calculateEduPoints() {
     const appLevel = parseInt(document.getElementById('applicantEduLevel').value);
     const stdLevel = parseInt(document.getElementById('standardEduLevel').value);
@@ -228,6 +230,8 @@ function openTrainCalcModal() {
     calculateTrainPoints();
 }
 
+// Calculates the Training & Seminars score by evaluating hours of relevant L&D interventions.
+// Dynamically adjusts maximum allowable points based on whether the position is SG 1-9, SG 10-22, or SG 24+.
 function calculateTrainPoints() {
     const appLevel = parseInt(document.getElementById('applicantTrainLevel').value);
     const stdLevel = parseInt(document.getElementById('standardTrainLevel').value);
@@ -285,6 +289,8 @@ function openExpCalcModal() {
     calculateExpPoints();
 }
 
+// Calculates the Work Experience score by analyzing months of relevant service.
+// Uses an incremental formula multiplying the baseline requirement gap by a specific factor depending on Salary Grade brackets.
 function calculateExpPoints() {
     const appLevel = parseInt(document.getElementById('applicantExpLevel').value);
     const stdLevel = parseInt(document.getElementById('standardExpLevel').value);
@@ -379,6 +385,8 @@ function applyMidpoint() {
     }
 }
 
+// Calculates the Performance Rating score based on numerical evaluations.
+// Ensures that scores map precisely to civil service adjectival ratings (e.g. Outstanding, Very Satisfactory) for objective ranking.
 function calculatePerfPoints() {
     const method = document.getElementById('perfEvalMethod').value;
     const categoryText = document.getElementById('assessmentCategory').innerText;
@@ -426,6 +434,8 @@ function openOutAccCalcModal() {
     calculateOutAccPoints();
 }
 
+// Calculates Outstanding Accomplishments points by aggregating specific achievements (Awards, Innovation, Research).
+// Enforces a strict 10-point maximum cap globally across all applicant categories to prevent criteria overflow.
 function calculateOutAccPoints() {
     const categoryText = document.getElementById('assessmentCategory').innerText;
     const sgText = document.getElementById('assessmentSG').innerText.replace('SG', '').trim();
@@ -490,6 +500,8 @@ function toggleAppEduInputs() {
     }
 }
 
+// Calculates the Application of Education points through qualitative interview rubric inputs.
+// Evaluates relevance and direct translation of academic background to the functional duties of the target position.
 function calculateAppEduPoints() {
     const method = document.getElementById('appEduEvalMethod').value;
     let points = 0;

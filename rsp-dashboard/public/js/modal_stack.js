@@ -4,15 +4,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('show.bs.modal', function (event) {
         const currentModalElement = event.target;
         
-        // If there's an open modal and it's not this one
+        // Check if there is an active modal open that is not the one currently being requested.
         if (modalStack.length > 0) {
             const previousModalElement = modalStack[modalStack.length - 1];
             if (previousModalElement !== currentModalElement) {
-                // Temporarily disable animation for instant transition
+                // Temporarily disables the CSS fade animation to allow for an instant transition.
                 previousModalElement.classList.remove('fade');
                 currentModalElement.classList.remove('fade');
                 
-                // Hide the previous one
+                // Hides the previously active modal instance from the DOM.
                 previousModalElement.dataset.hiddenByStack = 'true';
                 const prevInstance = bootstrap.Modal.getInstance(previousModalElement);
                 if (prevInstance) {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Push to stack if not already top
+        // Pushes the requested modal onto the tracking stack to maintain navigational history.
         if (modalStack[modalStack.length - 1] !== currentModalElement) {
             modalStack.push(currentModalElement);
         }
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return; // It was hidden to make way for a new modal, do not pop
         }
         
-        // Pop the modal from the stack if it was the top one
+        // Removes the active modal from the top of the history stack.
         if (modalStack.length > 0 && modalStack[modalStack.length - 1] === closedModalElement) {
             modalStack.pop();
         } else {
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Show the previous modal if there is one
+        // Re-opens the previous modal stored in the history stack, if one exists.
         if (modalStack.length > 0) {
             const previousModalElement = modalStack[modalStack.length - 1];
             
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.target.classList.add('fade');
     });
 
-    // Explicitly handle Escape key to perfectly mimic the X button
+    // Explicitly overrides the Escape key behavior to perfectly mimic the native close button functionality.
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape' || event.keyCode === 27) {
             if (modalStack.length > 0) {

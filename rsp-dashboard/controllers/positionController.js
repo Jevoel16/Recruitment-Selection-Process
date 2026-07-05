@@ -1,5 +1,7 @@
 const db = require('../db');
 
+// Commits modifications to a position's core qualification standards and salary metrics.
+// This ensures that the dynamic vacancy dashboard accurately reflects real-time Civil Service criteria.
 exports.updatePosition = async (req, res) => {
     try {
         const { id, vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
@@ -16,6 +18,8 @@ exports.updatePosition = async (req, res) => {
     }
 };
 
+// Toggles a position's active recruitment status on the dashboard.
+// Only positions marked as 'in_vacancy' (1) will accept new applicants and appear in the Masterlist dropdowns.
 exports.togglePositionVacancy = async (req, res) => {
     try {
         const { in_vacancy } = req.body;
@@ -29,6 +33,8 @@ exports.togglePositionVacancy = async (req, res) => {
     }
 };
 
+// Updates the precise capacity limits and identifying codes for a specific job title.
+// The vacancyCount directly limits how many applicants can ultimately be advanced to the 'ASSIGNED' state for this position.
 exports.updatePlantilla = async (req, res) => {
     try {
         const { vacancyCount, plantillaItem } = req.body;

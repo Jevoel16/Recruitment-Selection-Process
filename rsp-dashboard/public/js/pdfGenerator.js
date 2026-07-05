@@ -1,4 +1,4 @@
-// Generate PDF Letter using jsPDF directly (vector rendering matching scan template)
+// Generates the official PDF Assignment Letter using jsPDF vector rendering to match the physical template perfectly.
 const loadImageForPDF = (src) => new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(img);
@@ -20,7 +20,7 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
         format: 'a4'
     });
 
-    // Helper function for inline rich text rendering (handles <b> tags for key values)
+    // Renders inline rich text, specifically handling <b> tags for bolding dynamic key values.
     function drawRichText(doc, text, startX, startY, maxWidth, lineHeight, firstLineIndent = 0) {
         const parts = text.split(/(<\/b>|<b>)/);
         let currentX = startX + firstLineIndent;
@@ -58,14 +58,14 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
         return currentY + lineHeight;
     }
 
-    // Format Date using the current date
+    // Formats the current date natively to construct the dynamic filename.
     const d = new Date();
     const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    // Map applicant category to professional rank titles
+    // Maps the internal applicant category to their respective professional rank titles for the document.
     let rankTitle = 'Teacher I';
 
-    // Parse order number from application code sequence suffix
+    // Extracts the sequence order number from the application code suffix to populate the tracking number.
     let orderNum = "007";
     if (applicationCode) {
         const parts = applicationCode.split('-');
@@ -77,7 +77,7 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
         }
     }
 
-    // Fetch and register Canterbury custom font from server `/fonts/Canterbury.ttf`
+    // Fetches and registers the Canterbury custom font required for the Gothic header styling.
     let hasCustomFont = false;
     try {
         const fontRes = await fetch('/fonts/Canterbury.ttf');
@@ -97,13 +97,13 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
         console.error('Failed to load Canterbury font, using standard font as fallback:', err);
     }
 
-    // Draw Seals Placement Outlines
+    // Draws the placement outlines and background colors for the official document seals.
     doc.setDrawColor(220, 220, 220);
     doc.setLineWidth(0.2);
     const seal1 = await loadImageForPDF('/images/logos/DepEd Seal.png');
     if (seal1) doc.addImage(seal1, "PNG", 92.5, 2.5, 25, 15);
 
-    // Top Header Text using Canterbury custom font
+    // Renders the top header text utilizing the fetched Canterbury custom font for stylized branding.
     if (hasCustomFont) {
         doc.setFont("Canterbury", "normal");
         doc.setFontSize(11); // adjust scale slightly for gothic type
@@ -148,7 +148,7 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
     doc.setFontSize(12);
     doc.text(`No. ${orderNum}, s. 2026`, 105, 54, { align: "center" });
 
-    // Date (Right-aligned)
+    // Aligns the document date to the right margin to adhere to the official template standard.
     doc.setFont("Times", "normal");
     doc.text(formattedDate, 190, 69, { align: "right" });
 
@@ -225,7 +225,7 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
     doc.setFontSize(6.5);
     doc.text("Doc. Ref. Code: DEPED-ILIGAN-AO-2026   |   Rev: 00   |   Page 1 of 1", 110, 290, { align: "left" });
 
-    // Save and download PDF
+    // Saves the generated PDF to the client's local filesystem and triggers the native download prompt.
     const currentDate = new Date();
     const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
     const yyyy = currentDate.getFullYear();

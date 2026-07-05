@@ -1,5 +1,7 @@
 const db = require('../db');
 
+// Maps complex position strings into concise prefix codes (e.g. 'Teacher III' -> 'T3'). 
+// This normalization is strictly required for generating compact, recognizable Application Codes for the tracking system.
 function getShortenedPosition(position) {
     if (!position) return 'APP';
     let cleanPos = position.replace(/[^a-zA-Z0-9 ]/g, '').trim();
@@ -34,6 +36,8 @@ const requirementFields = [
     'req_orderSeparation', 'req_saln'
 ];
 
+// Evaluates if all 14 mandatory pre-assignment requirements are fulfilled for a specific applicant.
+// Automatically advances the applicant to 'ASSIGNMENT_PENDING' state if criteria are met, removing the need for manual status toggles.
 async function syncAssignmentRequirementStatus(applicantId) {
     const [rows] = await db.query(`SELECT * FROM applicants WHERE id = ?`, [applicantId]);
     if (!rows.length) return;
@@ -41,6 +45,8 @@ async function syncAssignmentRequirementStatus(applicantId) {
     await db.query(`UPDATE applicants SET assignmentReqStatus = ? WHERE id = ?`, [isComplete ? 'COMPLETE' : 'INCOMPLETE', applicantId]);
 }
 
+// Initializes a new applicant record, processes their baseline information, and inserts it into the database.
+// Automatically prefixes the application code with the district abbreviation and shortened position title for easy tracking.
 exports.createApplicant = async (req, res) => {
     try {
         const { 
@@ -103,6 +109,8 @@ exports.deleteApplicant = async (req, res) => {
     }
 };
 
+// Immediately halts an applicant's progression by forcing them into the DISQUALIFIED status.
+// This is typically invoked from Step 1 or Step 4 when mandatory documents fail verification.
 exports.disqualifyApplicant = async (req, res) => {
     try {
         const { reason } = req.body || {};
@@ -181,6 +189,8 @@ exports.scoreApplicant = async (req, res) => {
     }
 };
 
+// Commits the complex evaluative assessment rubric scores into the database for Step 2 workflows.
+// This calculates and stores points across multiple criteria (Education, Training, Experience, etc.) critical for the Step 3 comparative leaderboard.
 exports.assessApplicant = async (req, res) => {
     try {
         const { education, training, experience, performance, outstandingAccomplishments, applicationOfEducation, applicationOfLD, potential, isComplete } = req.body;
@@ -232,6 +242,8 @@ exports.toggleAssignmentReq = async (req, res) => {
     }
 };
 
+// Transitions the applicant into the final ASSIGNED status when their official Assignment Order is confirmed.
+// Also deducts the corresponding vacancy count from the specific position/plantilla to enforce capacity limits natively in the database.
 exports.assignApplicant = async (req, res) => {
     try {
         const { office, cc, ccDesignation } = req.body;
@@ -355,6 +367,8 @@ exports.getApplicantDetails = async (req, res) => {
     }
 };
 
+// Updates the individual approval status (Qualified/Disqualified) of a single attached document (e.g. Diploma, Training Cert).
+// Evaluates overall document readiness afterwards to automatically unlock or lock workflow progression buttons.
 exports.updateDocumentStatus = async (req, res) => {
     try {
         const { id, type, docId } = req.params;

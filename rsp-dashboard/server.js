@@ -14,25 +14,25 @@ const requirementFields = [
     'req_orderSeparation', 'req_saln'
 ];
 
-// Middleware
+// Configure global middleware for JSON parsing, urlencoded bodies, and request logging
 app.use(morgan('dev', {
     skip: function (req, res) { return req.method === 'GET' }
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static Files
+// Serve static assets for application public directory and third-party dependencies
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
 app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
 app.use('/jspdf', express.static(path.join(__dirname, 'node_modules/jspdf')));
 
-// View Engine
+// Initialize Handlebars view engine and register partial components
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 
-// Helpers
+// Handlebars template helper functions
 hbs.registerHelper('inc', function(value) { return parseInt(value) + 1; });
 hbs.registerHelper('incOffset', function(value, offset) { return parseInt(value) + parseInt(offset) + 1; });
 hbs.registerHelper('eq', function (a, b) { return a === b; });
@@ -43,15 +43,15 @@ hbs.registerHelper('formatDate', function(date) {
     return d.toISOString().split('T')[0];
 });
 
-// Import Routes
+// Import route definitions
 const apiRoutes = require('./routes/apiRoutes');
 const viewRoutes = require('./routes/viewRoutes');
 
-// Mount Routes
+// Mount route middleware for API and web interfaces
 app.use('/api', apiRoutes);
 app.use('/', viewRoutes);
 
-// Export Routes (Pending move to exportController)
+// Export functionality for Initial Evaluation Results (IER)
 app.get('/api/export/ier', async (req, res) => {
     try {
         const startTime = Date.now();
