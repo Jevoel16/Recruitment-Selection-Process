@@ -378,8 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(res.ok) {
                     bootstrap.Modal.getInstance(document.getElementById('updateStatusModal')).hide();
                     window.showToast('Status successfully updated!', 'success');
-                    // Give a true single-page feel by removing the row (if they are in a filtered view, it should disappear)
-                    // But since we can't easily know if they are filtered, we'll let the smart reload handle it gracefully.
                     setTimeout(() => window.location.reload(), 800);
                 } else {
                     window.showToast('Error updating status', 'danger');

@@ -117,15 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.showToast = function(message, type = 'success', reloadAfter = false) {
     if (reloadAfter) {
         sessionStorage.setItem('pendingToast', JSON.stringify({ message, type }));
-        
-        const activeTab = sessionStorage.getItem('activeDashboardTab');
-        if (activeTab === 'masterlist-tab' && window.location.pathname === '/dashboard') {
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('tab', 'masterlist');
-            window.location.href = window.location.pathname + '?' + urlParams.toString();
-        } else {
-            window.location.reload();
-        }
+        window.location.reload();
         return;
     }
 
