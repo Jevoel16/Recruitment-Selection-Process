@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "nodemon -e js,hbs,json,css server.js",
     "start": "node server.js",
-    "seed": "node seed.js",
-    "db:reset": "node db_reset+seed.js"
+    "seed": "node seed.js"
   },
   "keywords": [],
   "author": "",
@@ -16,12 +15,15 @@
   "dependencies": {
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "hbs": "^4.2.1",
+    "jsonwebtoken": "^9.0.3",
     "jspdf": "^4.2.1",
     "morgan": "^1.11.0",
     "mysql2": "^3.22.5",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "uuid": "^14.0.1"
   }
 }

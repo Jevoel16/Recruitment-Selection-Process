@@ -20,6 +20,7 @@ router.post('/applicants/:id/requirements/all', applicantController.toggleAllReq
 router.post('/applicants/:id/requirement', applicantController.updateRequirement);
 router.post('/applicants/:id/score', applicantController.scoreApplicant);
 router.post('/applicants/:id/assess', applicantController.assessApplicant);
+router.post('/applicants/:id/no-appearance', applicantController.noAppearanceApplicant);
 router.post('/applicants/:id/proceed-requirements', applicantController.proceedRequirements);
 router.post('/applicants/:id/toggle-assignment-req', applicantController.toggleAssignmentReq);
 router.post('/applicants/:id/assign', applicantController.assignApplicant);
@@ -29,6 +30,7 @@ router.get('/applicants/:id/details', applicantController.getApplicantDetails);
 router.put('/applicants/:id/:type/:docId/status', applicantController.updateDocumentStatus);
 router.post('/applicants/:id/lock', applicantController.lockApplicant);
 router.post('/applicants/:id/unlock', applicantController.unlockApplicant);
+router.get('/applicants/:id/lock-stream', applicantController.lockStream);
 
 // Endpoints for managing applicant educational background records
 router.post('/applicants/:id/education', applicantController.addEducation);
@@ -61,7 +63,7 @@ router.put('/eligibility/:id', applicantController.updateEligibility);
 router.post('/logs/pdf-export', (req, res) => {
     const { applicantCode, pdfName, timeMs } = req.body;
     if (applicantCode && pdfName && timeMs) {
-        console.log(`${applicantCode}_${pdfName} exported - took ${timeMs}ms - ${new Date().toLocaleString()}`);
+        console.log(`[${new Date().toLocaleString()}] ${applicantCode}_${pdfName} exported - took ${timeMs}ms`);
     }
     res.status(200).send('Logged');
 });

@@ -1,0 +1,22 @@
+    <!-- Step 3 Remove No Appearance Modal -->
+    <div class="modal fade glass-modal" id="step3RemoveModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom border-light border-opacity-25 bg-danger bg-opacity-10 text-danger">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle"></i> Remove Applicant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" id="step3RemoveApplicantId">
+                    <h5 class="mb-4">Are you sure you want to remove this applicant from step 2 table?</h5>
+                    <p class="text-muted mb-4">You can still find the applicant in the masterlist.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger px-4 fw-bold shadow-sm" onclick="executeRemoveNoAppearance()">
+                            <i class="bi bi-trash me-1"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -690,5 +690,23 @@ if (step2SummaryForm) {
     });
 }
 
+async function markNoAppearance() {
+    const id = document.getElementById('assessmentApplicantId').value;
+    try {
+        const res = await fetch(`/api/applicants/${id}/no-appearance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            window.showToast('Applicant marked as No Appearance!', 'success', true);
+            bootstrap.Modal.getInstance(document.getElementById('assessmentModal')).hide();
+        }
+    } catch (err) {
+        console.error(err);
+        window.showToast('Error updating status', 'danger');
+    }
+}
+window.markNoAppearance = markNoAppearance;
+
 // Move modals to body to fix stacking context issues
 document.addEventListener('DOMContentLoaded', function() { document.querySelectorAll('.modal').forEach(function(m) { document.body.appendChild(m); }); });

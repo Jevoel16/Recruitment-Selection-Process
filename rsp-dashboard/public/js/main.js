@@ -12,25 +12,23 @@ document.addEventListener('DOMContentLoaded', () => {
 const qualifyForm = document.getElementById('qualifyForm');
 const scoreForm = document.getElementById('scoreForm');
 
-if (!sessionStorage.getItem('deviceId')) {
-    sessionStorage.setItem('deviceId', 'device-' + Math.random().toString(36).substr(2, 9));
-}
-window.deviceId = sessionStorage.getItem('deviceId');
+window.lockStream = null;
 
 window.acquireLock = async function(id) {
     if (!id) return true;
     try {
-        const res = await fetch(`/api/applicants/${id}/lock`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ deviceId: window.deviceId })
-        });
+        const res = await fetch(`/api/applicants/${id}/lock`, { method: 'POST' });
         if (!res.ok) {
             const data = await res.json();
             window.showToast(data.error || 'Failed to acquire lock', 'danger');
             return false;
         }
         window.currentLockedApplicantId = id;
+        
+        // Start SSE stream to keep lock alive
+        if (window.lockStream) window.lockStream.close();
+        window.lockStream = new EventSource(`/api/applicants/${id}/lock-stream`);
+        
         return true;
     } catch (e) {
         window.showToast('Network error while acquiring lock', 'danger');
@@ -40,12 +38,15 @@ window.acquireLock = async function(id) {
 
 window.releaseLock = async function() {
     if (!window.currentLockedApplicantId) return;
+    
+    // Close the SSE stream to release lock instantly on server
+    if (window.lockStream) {
+        window.lockStream.close();
+        window.lockStream = null;
+    }
+
     try {
-        await fetch(`/api/applicants/${window.currentLockedApplicantId}/unlock`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ deviceId: window.deviceId })
-        });
+        await fetch(`/api/applicants/${window.currentLockedApplicantId}/unlock`, { method: 'POST' });
         window.currentLockedApplicantId = null;
     } catch (e) {
         console.error('Failed to release lock', e);
@@ -62,9 +63,8 @@ document.addEventListener('hidden.bs.modal', function (event) {
 
 window.addEventListener('beforeunload', () => {
     if (window.currentLockedApplicantId) {
-        // Use sendBeacon for reliable delivery during unload
-        const blob = new Blob([JSON.stringify({ deviceId: window.deviceId })], { type: 'application/json' });
-        navigator.sendBeacon(`/api/applicants/${window.currentLockedApplicantId}/unlock`, blob);
+        if (window.lockStream) window.lockStream.close();
+        navigator.sendBeacon(`/api/applicants/${window.currentLockedApplicantId}/unlock`);
     }
 });
 

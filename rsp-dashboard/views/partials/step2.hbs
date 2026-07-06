@@ -59,7 +59,7 @@
                             <td>
                                 {{#if (eq this.assessmentRemarks 'Assessed')}}<span class="badge bg-success">Assessed</span>
                                 {{else if (eq this.assessmentRemarks 'In-Prog')}}<span class="badge bg-warning text-dark">In-Prog</span>
-                                {{else}}<span class="badge bg-secondary">Pending</span>{{/if}}
+                                {{else}}<span class="badge bg-warning text-dark">Pending</span>{{/if}}
                             </td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{this.name}}')" {{#unless (eq this.assessmentRemarks 'Assessed')}}disabled title="Must be fully Assessed"{{/unless}}>

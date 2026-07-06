@@ -428,7 +428,7 @@ exports.updateDocumentLink = async (req, res) => {
 
 exports.lockApplicant = async (req, res) => {
     try {
-        const lockedBy = req.body.deviceId || req.body.lockedBy;
+        const lockedBy = req.userId;
         const id = req.params.id;
 
         const [result] = await db.query(
@@ -454,7 +454,7 @@ exports.lockApplicant = async (req, res) => {
 
 exports.unlockApplicant = async (req, res) => {
     try {
-        const lockedBy = req.body.deviceId || req.body.lockedBy;
+        const lockedBy = req.userId;
         const [rows] = await db.query('SELECT lockedBy FROM applicants WHERE id = ?', [req.params.id]);
         if (rows.length > 0) {
             if (rows[0].lockedBy === lockedBy || !rows[0].lockedBy) {
@@ -469,6 +469,29 @@ exports.unlockApplicant = async (req, res) => {
         console.error(e); 
         res.status(500).json({ error: "Internal server error" }); 
     }
+};
+
+exports.lockStream = async (req, res) => {
+    const id = req.params.id;
+    const lockedBy = req.userId;
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    // Send an initial connected message
+    res.write('data: connected\n\n');
+
+    req.on('close', async () => {
+        try {
+            // When connection drops, clear the lock if it still belongs to this user
+            await db.query('UPDATE applicants SET lockedBy = NULL, lockedAt = NULL WHERE id = ? AND lockedBy = ?', [id, lockedBy]);
+            console.log(`Lock stream closed for applicant ${id}. Lock released.`);
+        } catch (e) {
+            console.error('Error releasing lock on stream close:', e);
+        }
+    });
 };
 
 exports.updateEducation = async (req, res) => {
@@ -501,4 +524,14 @@ exports.updateEligibility = async (req, res) => {
         await db.query('UPDATE applicant_eligibility SET details = ?, rating = ? WHERE id = ?', [details, rating, req.params.id]);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: "Internal server error" }); }
+};
+
+exports.noAppearanceApplicant = async (req, res) => {
+    try {
+        await db.query(`UPDATE applicants SET status = 'NO_APPEARANCE', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
 };

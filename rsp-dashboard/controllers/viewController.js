@@ -71,11 +71,15 @@ exports.getDashboard = async (req, res) => {
         }
 
         if (stepFilter) {
-            if (stepFilter === 'step1') baseQuery += ` AND status IN ('PENDING', 'QUALIFIED', 'DISQUALIFIED')`;
+            if (stepFilter === 'step1_pending') baseQuery += ` AND status = 'PENDING'`;
+            else if (stepFilter === 'step1_qualified') baseQuery += ` AND status = 'QUALIFIED'`;
+            else if (stepFilter === 'step1_disqualified') baseQuery += ` AND status = 'DISQUALIFIED'`;
             else if (stepFilter === 'step2') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT'`;
-            else if (stepFilter === 'step3') baseQuery += ` AND status = 'ASSESSED'`;
+            else if (stepFilter === 'step3_assessed') baseQuery += ` AND status = 'ASSESSED'`;
+            else if (stepFilter === 'step3_no_appearance') baseQuery += ` AND status = 'NO_APPEARANCE'`;
             else if (stepFilter === 'step4') baseQuery += ` AND status = 'WAITING'`;
-            else if (stepFilter === 'step5') baseQuery += ` AND status = 'ASSIGNED'`;
+            else if (stepFilter === 'step5_assigned') baseQuery += ` AND status = 'ASSIGNED'`;
+            else if (stepFilter === 'step5_completed') baseQuery += ` AND status = 'COMPLETED'`;
         }
 
         const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
@@ -289,7 +293,7 @@ exports.getStepPage = async (req, res, next) => {
     const stepsConfig = {
         'step1': { conditions: "status IN ('PENDING', 'QUALIFIED', 'DISQUALIFIED')", orderBy: "createdAt ASC" },
         'step2': { conditions: "status = 'WAITING_FOR_ASSESSMENT'", orderBy: "createdAt ASC" },
-        'step3': { conditions: "status = 'ASSESSED'", orderBy: "assessmentTotal DESC" },
+        'step3': { conditions: "status IN ('ASSESSED', 'NO_APPEARANCE')", orderBy: "assessmentTotal DESC" },
         'step4': { conditions: "status = 'WAITING'", orderBy: "createdAt ASC" },
         'step5': { conditions: "status = 'ASSIGNED'", orderBy: "createdAt ASC" }
     };
@@ -302,6 +306,7 @@ exports.getStepPage = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const searchQuery = req.query.q || '';
     const officeFilter = req.query.office || '';
+    const statusFilter = req.query.status || '';
     const config = stepsConfig[step];
     
     let baseQuery = `FROM applicants WHERE ${config.conditions}`;
@@ -316,6 +321,11 @@ exports.getStepPage = async (req, res, next) => {
     if (positionFilter && (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5')) {
         baseQuery += ` AND position = ?`;
         queryParams.push(positionFilter);
+    }
+    
+    if (statusFilter && step === 'step3') {
+        baseQuery += ` AND status = ?`;
+        queryParams.push(statusFilter);
     }
     
     if (officeFilter && step === 'step5') {
@@ -381,6 +391,7 @@ exports.getStepPage = async (req, res, next) => {
                 let pUrl = `/${step}/${i}?`;
                 if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
                 if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
+                if (statusFilter) pUrl += `status=${encodeURIComponent(statusFilter)}&`;
                 pagination.push({ page: i, isCurrent: i === page, url: pUrl.replace(/&$/, '') });
             } else if (i === page - 3 || i === page + 3) {
                 pagination.push({ isEllipsis: true, page: '...' });
@@ -393,7 +404,7 @@ exports.getStepPage = async (req, res, next) => {
         });
 
         res.render('index', {
-            currentStep: step, [step]: mappedRows, searchQuery, positionFilter, positionList, officeFilter, officeList,
+            currentStep: step, [step]: mappedRows, searchQuery, positionFilter, positionList, officeFilter, officeList, statusFilter,
             pagination: cleanPagination, step1Active: step === 'step1', step2Active: step === 'step2', step3Active: step === 'step3',
             step4Active: step === 'step4', step5Active: step === 'step5', offset
         });

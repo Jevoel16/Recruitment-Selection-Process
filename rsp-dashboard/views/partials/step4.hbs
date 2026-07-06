@@ -57,13 +57,11 @@
                                 {{/unless}}
                             </td>
                             <td class="text-center">
-                                <div class="mt-2">
                                     {{#if (allRequirementsMet this)}}
                                         <span id="requirements-status-{{this.id}}" class="badge bg-success">Complete</span>
                                     {{else}}
                                         <span id="requirements-status-{{this.id}}" class="badge bg-warning text-dark">Incomplete</span>
                                     {{/if}}
-                                </div>
                             </td>
                             <td class="text-end pe-4">
                                 <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Requirements must be complete"{{else}}title="Move to Step 5"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move</button>

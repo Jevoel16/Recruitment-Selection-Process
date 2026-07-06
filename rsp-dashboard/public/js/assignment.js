@@ -8,6 +8,24 @@ function proceedToRequirements(id, name) {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('step3ConfirmModal')).show();
 }
 
+function confirmRemoveNoAppearance(id, name) {
+    document.getElementById('step3RemoveApplicantId').value = id;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('step3RemoveModal')).show();
+}
+
+async function executeRemoveNoAppearance() {
+    const id = document.getElementById('step3RemoveApplicantId').value;
+    try {
+        const res = await fetch(`/api/applicants/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'DISQUALIFIED' })
+        });
+        if(res.ok) window.showToast('Applicant removed successfully!', 'success', true);
+        else window.showToast('Error removing applicant', 'danger');
+    } catch(err) { console.error(err); window.showToast('Error removing applicant', 'danger'); }
+}
+
 async function confirmProceedToStep4() {
     const id = document.getElementById('step3ConfirmApplicantId').value;
     try {
@@ -60,3 +78,24 @@ async function openAssignModal(id, name) {
     new bootstrap.Modal(document.getElementById('assignModal')).show();
 }
 
+async function generateAndComplete(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation) {
+    // Generate the PDF
+    await window.printLetter(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, false);
+    
+    // Update the status to COMPLETED
+    try {
+        const res = await fetch(`/api/applicants/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'COMPLETED' })
+        });
+        if(res.ok) {
+            window.showToast('Assignment Order generated and applicant marked as Completed!', 'success', true);
+        } else {
+            window.showToast('Error updating status to Completed', 'danger');
+        }
+    } catch(err) { 
+        console.error(err); 
+        window.showToast('Error updating status to Completed', 'danger'); 
+    }
+}

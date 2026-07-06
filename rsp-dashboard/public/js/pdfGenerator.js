@@ -8,6 +8,7 @@ const loadImageForPDF = (src) => new Promise((resolve) => {
 
 window.printLetter = async function(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, reloadOnComplete = true) {
     const startTimeMs = Date.now();
+    const MARGIN = 25.4;
     const { jsPDF } = window.jspdf || window;
     if (!jsPDF) {
         window.showToast('jsPDF library failed to load. Please try again.', 'danger');
@@ -232,20 +233,43 @@ window.printLetter = async function(id, name, office, dateStr, category, applica
     doc.setFontSize(7.5);
     doc.setTextColor(100);
     doc.setFont("Times", "bold");
-    doc.text("Address:", 110, 277, { align: "left" });
+    doc.text("Address:", MARGIN + 90, 277, { align: "left" });
     doc.setFont("Times", "normal");
-    doc.text("Gen. Aguinaldo St., Iligan City", 121, 277, { align: "left" });
+    doc.text("Gen. Aguinaldo St., Iligan City", MARGIN + 101, 277, { align: "left" });
     doc.setFont("Times", "bold");
-    doc.text("Email Address:", 110, 281, { align: "left" });
+    doc.text("Email Address:", MARGIN + 90, 280, { align: "left" });
     doc.setFont("Times", "normal");
-    doc.text("iligan.city@deped.gov.ph", 128, 281, { align: "left" });
+    doc.text("iligan.city@deped.gov.ph", MARGIN + 108, 280, { align: "left" });
     doc.setFont("Times", "bold");
-    doc.text("Website:", 110, 285, { align: "left" });
+    doc.text("Website:", MARGIN + 90, 283, { align: "left" });
     doc.setFont("Times", "normal");
-    doc.text("www.iligan.deped10.com", 121, 285, { align: "left" });
+    doc.text("www.depediligan.com", MARGIN + 101, 283, { align: "left" });
 
-    doc.setFontSize(6.5);
-    doc.text("Doc. Ref. Code: DEPED-ILIGAN-AO-2026   |   Rev: 00   |   Page 1 of 1", 110, 290, { align: "left" });
+    // Document Control Table in Footer
+    doc.setLineWidth(0.2);
+    doc.rect(MARGIN + 90, 285, 59.2, 8); // x, y, w, h
+    doc.line(MARGIN + 90, 289, MARGIN + 149.2, 289); // middle horizontal
+    
+    // Vertical lines for 4 columns
+    doc.line(MARGIN + 110, 285, MARGIN + 110, 293); // vert 1 (between col 1 & 2)
+    doc.line(MARGIN + 126, 285, MARGIN + 126, 293); // vert 2 (between col 2 & 3)
+    doc.line(MARGIN + 135, 285, MARGIN + 135, 293); // vert 3 (between col 3 & 4)
+
+    doc.setFontSize(6);
+    doc.setFont("Times", "bold");
+    
+    // Column 1
+    doc.text("Doc. Ref. Code", MARGIN + 92, 288);
+    doc.text("Effectivity", MARGIN + 92, 292);
+    
+    // Column 3
+    doc.text("Rev", MARGIN + 128, 288);
+    doc.text("Page", MARGIN + 128, 292);
+    
+    // Column 4 (Fields for Col 3)
+    doc.setFont("Times", "normal");
+    doc.text("00", MARGIN + 137, 288);
+    doc.text("1 of 1", MARGIN + 137, 292);
 
     // Saves the generated PDF to the client's local filesystem and triggers the native download prompt.
     const currentDate = new Date();

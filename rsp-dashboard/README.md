@@ -3,7 +3,7 @@
 A web-based platform to digitize the recruitment selection process.
 
 ## Tech Stack
-- **Backend:** Node.js, Express, Morgan (Audit Logging)
+- **Backend:** Node.js, Express, Morgan (Audit Logging), JSONWebToken, cookie-parser
 - **Frontend:** Handlebars (hbs), Vanilla JS, Bootstrap 5, Custom CSS
 - **Database:** MySQL
 
@@ -12,6 +12,7 @@ A web-based platform to digitize the recruitment selection process.
 ### Core Architecture & Backend
 - **MVC Architecture:** Structured logically with decoupled routes, controllers, and database interfaces for long-term scalability.
 - **Audit Logging:** Implemented `morgan` middleware for filtered professional audit trailing and tracking metrics on document exports.
+- **Concurrency Locks (SSE & JWT):** Robust anti-deadlock mechanisms using JWT tracking cookies alongside continuous Server-Sent Events (SSE) background streams that drop locks instantly upon browser tab closure.
 - **Dynamic Seeding & Setup:** Dedicated scripts to safely initialize the database and dynamically map raw text-based qualification standards.
 
 ### Applicant & Vacancy Management

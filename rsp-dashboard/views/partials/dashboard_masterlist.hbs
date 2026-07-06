@@ -23,12 +23,16 @@
                         <div class="col-md-3">
                             <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
                                 <select name="step" class="form-select border-0 shadow-none bg-transparent" onchange="this.form.submit()">
-                                    <option value="">All Steps</option>
-                                    <option value="step1" {{#if (eq stepFilter 'step1')}}selected{{/if}}>Step 1 (Documents)</option>
-                                    <option value="step2" {{#if (eq stepFilter 'step2')}}selected{{/if}}>Step 2 (Deliberation)</option>
-                                    <option value="step3" {{#if (eq stepFilter 'step3')}}selected{{/if}}>Step 3 (Assessment)</option>
-                                    <option value="step4" {{#if (eq stepFilter 'step4')}}selected{{/if}}>Step 4 (Requirements)</option>
-                                    <option value="step5" {{#if (eq stepFilter 'step5')}}selected{{/if}}>Step 5 (Assignment)</option>
+                                    <option value="">All Steps & Statuses</option>
+                                    <option value="step1_pending" {{#if (eq stepFilter 'step1_pending')}}selected{{/if}}>Step 1: Pending</option>
+                                    <option value="step1_qualified" {{#if (eq stepFilter 'step1_qualified')}}selected{{/if}}>Step 1: Qualified</option>
+                                    <option value="step1_disqualified" {{#if (eq stepFilter 'step1_disqualified')}}selected{{/if}}>Step 1: Disqualified</option>
+                                    <option value="step2" {{#if (eq stepFilter 'step2')}}selected{{/if}}>Step 2: Deliberation</option>
+                                    <option value="step3_assessed" {{#if (eq stepFilter 'step3_assessed')}}selected{{/if}}>Step 3: Assessed</option>
+                                    <option value="step3_no_appearance" {{#if (eq stepFilter 'step3_no_appearance')}}selected{{/if}}>Step 3: No Appearance</option>
+                                    <option value="step4" {{#if (eq stepFilter 'step4')}}selected{{/if}}>Step 4: Requirements</option>
+                                    <option value="step5_assigned" {{#if (eq stepFilter 'step5_assigned')}}selected{{/if}}>Step 5: Assigned</option>
+                                    <option value="step5_completed" {{#if (eq stepFilter 'step5_completed')}}selected{{/if}}>Step 5: Completed</option>
                                 </select>
                             </div>
                         </div>
@@ -58,10 +62,11 @@
                                     {{#if (eq this.status 'QUALIFIED')}}<span class="badge bg-success">Step 1: Qualified</span>{{/if}}
                                     {{#if (eq this.status 'DISQUALIFIED')}}<span class="badge bg-danger">Step 1: Disqualified</span>{{/if}}
                                     {{#if (eq this.status 'WAITING_FOR_ASSESSMENT')}}<span class="badge bg-info text-dark">Step 2: Deliberation</span>{{/if}}
-                                    {{#if (eq this.status 'ASSESSED')}}<span class="badge bg-primary">Step 3: Assessment</span>{{/if}}
+                                    {{#if (eq this.status 'ASSESSED')}}<span class="badge bg-primary">Step 3: Assessed</span>{{/if}}
+                                    {{#if (eq this.status 'NO_APPEARANCE')}}<span class="badge bg-danger">Step 3: No Appearance</span>{{/if}}
                                     {{#if (eq this.status 'WAITING')}}<span class="badge bg-secondary">Step 4: Requirements</span>{{/if}}
                                     {{#if (eq this.status 'ASSIGNED')}}<span class="badge bg-success shadow-sm border border-light">Step 5: Assigned</span>{{/if}}
-                                    {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Completed</span>{{/if}}
+                                    {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Step 5: Completed</span>{{/if}}
                                 </td>
                                 <td class="text-center px-4 text-nowrap">
                                     <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="openApplicantDetailsModal({{this.id}}, '{{this.name}}', '{{this.assignedOffice}}', '{{this.category}}', '{{this.applicationCode}}', '{{this.status}}')" title="Applicant Details"><i class="bi bi-card-list"></i> Details</button>

@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-06 14:02 (v1.0.2-Release+202607061402)
+### ADDED
+- Integrated a Server-Sent Events (SSE) API lock mechanism combined with JWT-based session tracking to eliminate deadlocks.
+- Implemented robust signature alignment spacing inside the CAR XLS export using algorithmic string manipulation padding.
+
+### CHANGED
+- Pre-pended standard date-timestamps to export-specific logging channels ensuring uniform consistency with Morgan console audits.
+- Refined the table structures within the CAR XLS generator, utilizing a thick outer box border solely for the main matrix and separating the instructional notes into a dedicated borderless section.
+
+### FIXED
+- Fixed a major concurrency vulnerability where closed browser tabs held API locks indefinitely by implementing continuous backend stream monitoring and automatic clearance drops.
+- Fixed a UI formatting glitch in the Step 1 Initial Evaluation view where double margins were incorrectly stacking headers.
+- Fixed inconsistent table row heights in Step 4 requirements checklist caused by unnecessary CSS wrappers.
+- Removed unused and deprecated scratch scripts from the root directory to maintain repository cleanliness.
+
 ## 2026-07-05 23:35 (v1.0.1-Release+202607052335)
 ### ADDED
 - Implemented stateful tab persistence on the Dashboard using `history.replaceState` and `sessionStorage`, ensuring the UI cleanly stays on the Masterlist or Vacancy Setup tab across page reloads without flickering.
