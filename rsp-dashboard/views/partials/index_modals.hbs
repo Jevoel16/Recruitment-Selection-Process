@@ -53,10 +53,51 @@
     {{> modal_step3_confirm}}
     {{> modal_step3_remove_no_appearance}}
 
+    <!-- Document Type Modal -->
+    <div class="modal fade glass-modal" id="docTypeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary" id="docTypeModalTitle"><i class="bi bi-file-earmark-word"></i> Generate Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pb-4">
+                    <p class="text-muted small mb-3" id="docTypeModalDesc">Select the template to use for generating the document.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Template Options</label>
+                        <select class="form-select" id="docTypeSelect">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light shadow-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary shadow-sm" onclick="window.downloadSelectedDoc()">
+                        <i class="bi bi-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
     {{> modal_success}}
     <!-- Bootstrap Bundle with Popper -->
     <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/js/applicantWizard.js"></script>
-    <script src="/js/pdfGenerator.js?v=1.1"></script>
-    <script src="/jspdf/dist/jspdf.umd.min.js"></script>
+    <script src="/pizzip/pizzip.js"></script>
+    <script src="/docxtemplater/docxtemplater.js"></script>
+    <script src="/file-saver/FileSaver.js"></script>
+    <script src="/js/docHeaderFooter.js?v=1.0"></script>
+    <script src="/js/docMakerCore.js?v=1.3"></script>
+    <script src="/js/docMakerInitialEvalQualifiedHigherTeaching.js?v=1.4"></script>
+    <script src="/js/docMakerInitialEvalQualifiedWithoutDate.js?v=1.4"></script>
+    <script src="/js/docMakerInitialEvalDQHigherTeaching.js?v=1.4"></script>
+    <script src="/js/docMakerInitialEvalDQNoOmnibus.js?v=1.4"></script>
+    <script src="/js/docMakerInitialEvalDQNotNotarized.js?v=1.4"></script>
+    <script src="/js/docMakerInitialEvalDQ.js?v=1.4"></script>
+    <script src="/js/docMakerReqNewlyHired.js?v=1.4"></script>
+    <script src="/js/docMakerReqPromotion.js?v=1.4"></script>
+    <script src="/js/docMakerTransferAcceptance.js?v=1.4"></script>
+    <script src="/js/docMakerAssignmentSchool.js?v=1.4"></script>
+    <script src="/js/docMakerAssignmentDivision.js?v=1.4"></script>
+

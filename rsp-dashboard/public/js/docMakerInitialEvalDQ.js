@@ -1,0 +1,86 @@
+window.printInitialEvalDQ = async function(id) {
+    const startTimeMs = Date.now();
+    let data;
+    try {
+        const res = await fetch(`/api/applicants/${id}/details`);
+        data = await res.json();
+    } catch(err) {
+        window.showToast('Failed to fetch applicant data', 'danger');
+        return;
+    }
+
+    const d = new Date();
+    const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    let appName = 'Unknown Applicant';
+    const applicantObj = data.applicant || data;
+    const fName = applicantObj.firstName || '';
+    const mName = applicantObj.middleName || '';
+    const lName = applicantObj.lastName || '';
+    if (mName && mName.trim() !== '') appName = `${fName} ${mName.trim().charAt(0).toUpperCase()}. ${lName}`.trim();
+    else if (fName || lName) appName = `${fName} ${lName}`.trim();
+    else if (data.name) appName = data.name;
+
+    let addressStr = data.address || data.applicant?.address || 'Iligan City';
+    try {
+        const parsed = JSON.parse(addressStr);
+        if (parsed.res_city) addressStr = parsed.res_city;
+    } catch(e) { }
+
+    const sex = data.sex || data.applicant?.sex;
+    const title = sex === 'Female' ? 'Madam' : 'Sir';
+    const pos = data.position || data.applicant?.position || 'Position';
+    const appCode = data.applicationCode || data.applicant?.applicationCode || '[Application Code]';
+
+    const cleanText = (txt) => {
+        if (!txt) return '';
+        return String(txt).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    };
+
+    const getRemark = (items) => {
+        if(!items || items.length === 0) return 'Disqualified';
+        if(items.some(i => i.status === 'DISQUALIFIED')) return 'Disqualified';
+        if(items.some(i => i.status === 'PENDING' || !i.status)) return 'Pending';
+        return 'Qualified';
+    };
+
+    const reasonText = data.disqualificationReason || data.applicant?.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+
+    const remarksDate = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
+
+    const templateData = {
+        FormattedDate: dateStr,
+        ApplicantName: appName.toUpperCase(),
+        Address: addressStr,
+        Title: title,
+        Position: pos,
+        ApplicationCode: appCode,
+        ReasonText: reasonText,
+        
+        QSEducation: 'Education: ' + cleanText(data.positionStandards?.qsEducation || 'N/A'),
+        AppEducation: cleanText((data.education || []).map(e => e.degree || e.title).join(', ')) || 'None',
+        RmEducation: getRemark(data.education),
+
+        QSTraining: 'Training: ' + cleanText(data.positionStandards?.qsTraining || 'N/A'),
+        AppTraining: cleanText((data.training || []).map(e => e.title).join(', ')) || 'None',
+        RmTraining: getRemark(data.training),
+
+        QSExperience: 'Experience: ' + cleanText(data.positionStandards?.qsExperience || 'N/A'),
+        AppExperience: cleanText((data.experience || []).map(e => e.details).join(', ')) || 'None',
+        RmExperience: getRemark(data.experience),
+
+        QSEligibility: 'Eligibility: ' + cleanText(data.positionStandards?.qsEligibility || 'N/A'),
+        AppEligibility: cleanText((data.eligibility || []).map(e => e.title || e.details).join(', ')) || 'None',
+        RmEligibility: getRemark(data.eligibility),
+
+        Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`
+    };
+
+    const templateUrl = "/templates/Notice to DQ.docx";
+    const filename = `Initial_Eval_DQ_${appName.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+
+    await window.exportFromTemplate(templateUrl, templateData, filename);
+
+    const timeMs = Date.now() - startTimeMs;
+    if (window.showToast) window.showToast('Initial Evaluation DOC generated successfully.', 'success', false);
+};

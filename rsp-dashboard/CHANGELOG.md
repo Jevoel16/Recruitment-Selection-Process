@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-07-08 02:34 (v1.1.0-Release+202607080234)
+### ADDED
+- Implemented robust document generation using Word (`.docx`) templates via `docxtemplater`, `pizzip`, and `html-docx-js`, replacing the previous PDF-based solution.
+- Added comprehensive native Excel exports for the Comparative Assessment Result (CAR) and Initial Evaluation Register (IER) using `exceljs`.
+- Added new requirement `req_folders` and set default requirement values to TRUE in the database schema.
+- Introduced multiple backend helper scripts and docMaker handlers to generate accurate, template-based Word documents across all workflow steps.
+
+### CHANGED
+- Transitioned all document generation (Initial Evaluation, Assignment Orders, Requirements) from PDF to Word Documents (`.docx`).
+- Refactored `server.js` by extracting document export logic into respective template handler scripts (`docMaker*.js` and `excelExport*.js`) for modularity.
+- Updated frontend UI components and javascript files (`applicantDetails.js`, `assignment.js`, `requirements.js`) to support the new Word Document generation.
+- Updated the primary logos to general placeholder images (`image1.png`, `image2.png`, `image3.png`).
+
+### REMOVED
+- Removed `jspdf` dependency and deprecated `pdfGenerator.js` entirely.
+
 ## 2026-07-06 14:02 (v1.0.2-Release+202607061402)
 ### ADDED
 - Integrated a Server-Sent Events (SSE) API lock mechanism combined with JWT-based session tracking to eliminate deadlocks.

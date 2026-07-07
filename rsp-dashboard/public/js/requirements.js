@@ -3,16 +3,13 @@ const REQUIREMENT_FIELDS = [
     { field: 'req_prcLicense', label: 'PRC License Photocopy (3 copies)' },
     { field: 'req_reportRating', label: 'Report of Rating Photocopy (3 copies)' },
     { field: 'req_medCert', label: 'Medical Certificate 2 orig / 1 photocopy' },
-    { field: 'req_birthCert', label: 'Birth Certificate' },
-    { field: 'req_marriageCert', label: 'Marriage Certificate (if applicable)' },
+    { field: 'req_birthCert', label: 'Birth Cert & Marriage Cert (if applicable)' },
     { field: 'req_nbiClearance', label: 'NBI Clearance 1 orig / 1 photocopy' },
-    { field: 'req_tor', label: 'T.O.R' },
-    { field: 'req_diplomaBachelors', label: "Diploma of Bachelor's Degree" },
-    { field: 'req_masters', label: "Master's Degree" },
-    { field: 'req_doctorate', label: 'Doctorate Degree' },
+    { field: 'req_tor', label: 'T.O.R & Diplomas (Bachelor, Master, Doctorate)' },
     { field: 'req_soGraduation', label: 'SO of Graduation 2 orig / 1 photocopy' },
     { field: 'req_orderSeparation', label: 'Order of Separation 1 orig / 2 photocopy' },
-    { field: 'req_saln', label: 'SALN notarized (3 copies)' }
+    { field: 'req_saln', label: 'SALN notarized (3 copies)' },
+    { field: 'req_folders', label: 'Folders & Envelopes (Kraft, Pink, Expanded)' }
 ];
 
 function syncRequirementsSummary(applicant) {
@@ -29,15 +26,7 @@ function syncRequirementsSummary(applicant) {
         modalStatusBadge.className = `badge ${isComplete ? 'bg-success' : 'bg-warning text-dark'}`;
     }
 
-    const assignButton = document.getElementById(`assign-btn-${applicant.id}`);
-    if (assignButton) {
-        assignButton.disabled = !isComplete;
-        if (isComplete) {
-            assignButton.removeAttribute('title');
-        } else {
-            assignButton.setAttribute('title', 'Requirements must be complete');
-        }
-    }
+    // Move button mechanics are no longer based on requirements. They are unlocked when the doc is downloaded.
 }
 
 

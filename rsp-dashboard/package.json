@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon -e js,hbs,json,css server.js",
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "seed": "node seed.js"
   },
   "keywords": [],
@@ -16,14 +16,18 @@
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "cookie-parser": "^1.4.7",
+    "docxtemplater": "^3.69.0",
     "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
     "express": "^5.2.1",
+    "file-saver": "^2.0.5",
     "hbs": "^4.2.1",
+    "html-docx-js": "^0.3.1",
     "jsonwebtoken": "^9.0.3",
-    "jspdf": "^4.2.1",
     "morgan": "^1.11.0",
     "mysql2": "^3.22.5",
     "nodemon": "^3.1.14",
+    "pizzip": "^3.2.0",
     "uuid": "^14.0.1"
   }
 }

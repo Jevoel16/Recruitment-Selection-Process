@@ -576,54 +576,69 @@
         addAppForm.addEventListener('input', saveDraft);
         addAppForm.addEventListener('change', saveDraft);
         
-        // Auto-restore draft
-        const savedDraft = localStorage.getItem('addApplicantDraft');
-        if (savedDraft) {
-            try {
-                const draft = JSON.parse(savedDraft);
-                
-                // Restore form fields
-                for (const [key, value] of Object.entries(draft.formData)) {
-                    const inputs = addAppForm.querySelectorAll(`[name="${key}"]`);
-                    inputs.forEach(input => {
-                        if (input.type === 'checkbox' || input.type === 'radio') {
-                            if (input.value === value) input.checked = true;
-                        } else {
-                            input.value = value;
-                        }
-                    });
-                }
-                
-                // Restore wizardData
-                if (draft.wizardData) {
-                    Object.assign(wizardData, draft.wizardData);
-                    ['education', 'training', 'experience', 'eligibility'].forEach(renderWizardList);
-                }
-                
-                // Restore active tab
-                if (draft.activeTab) {
-                    nextTab(draft.activeTab);
-                }
+        // Auto-restore draft (wait for DOM and Bootstrap)
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedDraft = localStorage.getItem('addApplicantDraft');
+            if (savedDraft) {
+                let draft;
+                try {
+                    draft = JSON.parse(savedDraft);
+                    
+                    // Restore form fields
+                    for (const [key, value] of Object.entries(draft.formData)) {
+                        const inputs = addAppForm.querySelectorAll(`[name="${key}"]`);
+                        inputs.forEach(input => {
+                            if (input.type === 'checkbox' || input.type === 'radio') {
+                                if (input.value === value) input.checked = true;
+                            } else {
+                                input.value = value;
+                            }
+                        });
+                    }
+                    
+                    // Restore wizardData
+                    if (draft.wizardData) {
+                        Object.assign(wizardData, draft.wizardData);
+                        ['education', 'training', 'experience', 'eligibility'].forEach(renderWizardList);
+                    }
+                    
+                    // Restore active tab
+                    if (draft.activeTab) {
+                        nextTab(draft.activeTab);
+                    }
 
-                // If a category/position was already selected, move directly to step 1
-                if (draft.formData.category && draft.formData.position) {
-                    selectPosition(draft.formData.category, draft.formData.position);
+                    // If a category/position was already selected, move directly to step 1
+                    if (draft.formData.category && draft.formData.position) {
+                        selectPosition(draft.formData.category, draft.formData.position);
+                    }
+                } catch(err) {
+                    console.error("Failed to restore draft", err);
                 }
-            } catch(err) {
-                console.error("Failed to restore draft", err);
+                
+                // Check if the user has actually filled out some meaningful data
+                let hasRealData = false;
+                if (draft && draft.formData) {
+                    for (const [key, value] of Object.entries(draft.formData)) {
+                        if (key !== 'category' && key !== 'position' && value.trim() !== '') {
+                            hasRealData = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // If draft has actual data, mark form as dirty
+                if (hasRealData || 
+                    (draft && draft.wizardData && (draft.wizardData.education.length > 0 || 
+                    draft.wizardData.training.length > 0 || 
+                    draft.wizardData.experience.length > 0 || 
+                    draft.wizardData.eligibility.length > 0))) {
+                    isFormDirty = true;
+                }
+            } else {
+                // No draft found, form is not dirty
+                isFormDirty = false;
             }
-            // If draft has actual data, mark form as dirty
-            if (Object.keys(draft.formData).length > 2 || 
-                draft.wizardData.education.length > 0 || 
-                draft.wizardData.training.length > 0 || 
-                draft.wizardData.experience.length > 0 || 
-                draft.wizardData.eligibility.length > 0) {
-                isFormDirty = true;
-            }
-        } else {
-            // No draft found, form is not dirty
-            isFormDirty = false;
-        }
+        });
 
         addAppForm.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA') {

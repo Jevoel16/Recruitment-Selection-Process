@@ -64,7 +64,8 @@
                                     {{/if}}
                             </td>
                             <td class="text-end pe-4">
-                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Requirements must be complete"{{else}}title="Move to Step 5"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move</button>
+                                <button class="btn btn-sm btn-outline-primary action-btn me-1" onclick="window.openGenericDocModal(4, {{this.id}}, '', '', `{{this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC"><i class="bi bi-file-earmark-word"></i> DOC</button>
+                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Must generate Notice of Requirements first"{{else}}title="Move to Step 5"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move</button>
                             </td>
                         </tr>
                         {{else}}

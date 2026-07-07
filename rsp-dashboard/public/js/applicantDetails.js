@@ -298,6 +298,7 @@ window.openApplicantDetailsModal = async function(id, name, assignedOffice, cate
     document.getElementById('unifiedModalAssignedOffice').value = assignedOffice || '';
     document.getElementById('unifiedModalCategory').value = category || '';
     document.getElementById('unifiedModalAppCode').value = appCode || '';
+    document.getElementById('unifiedModalStatus').value = status || '';
 
     const hasStep2 = ['WAITING_FOR_ASSESSMENT', 'ASSESSED', 'WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
     const hasStep4 = ['WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
@@ -335,11 +336,16 @@ window.launchFromUnified = function(type) {
         case 'exp': openExpModal(id); break;
         case 'elig': openEligModal(id); break;
         case 'step1_summary': openSummaryModal(id, name, true); break;
-        case 'step1_pdf': printInitialEvalPdf(id); break;
+        case 'step1_pdf': 
+            const s1 = document.getElementById('unifiedModalStatus').value;
+            window.openGenericDocModal(1, id, s1, '', name, '', '', appCode, '', ''); 
+            break;
         case 'eval_assessment': openAssessmentModal(id, name); break;
         case 'step2_summary': openStep2SummaryModal(id, name, true); break;
         case 'requirements': openRequirementsModal(id, name); break;
-        case 'generate_pdf': printLetter(id, name, assignedOffice, '', category, appCode, '', '', false); break;
+        case 'generate_pdf': 
+            window.openGenericDocModal(5, id, '', '', name, assignedOffice, category, appCode, '', ''); 
+            break;
     }
 }
 

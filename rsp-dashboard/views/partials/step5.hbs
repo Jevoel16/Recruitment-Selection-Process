@@ -62,8 +62,8 @@
                                 {{/unless}}
                             </td>
                             <td class="text-end pe-4">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="generateAndComplete({{this.id}}, `{{this.name}}`, `{{this.assignedOffice}}`, ``, `{{this.category}}`, `{{this.applicationCode}}`, `{{this.cc}}`, `{{this.ccDesignation}}`)" title="Generate PDF">
-                                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(5, {{this.id}}, '', '', `{{this.name}}`, `{{this.assignedOffice}}`, `{{this.category}}`, `{{this.applicationCode}}`, `{{this.cc}}`, `{{this.ccDesignation}}`)" title="Generate DOC">
+                                    <i class="bi bi-file-earmark-word"></i> DOC
                                 </button>
                             </td>
                         </tr>

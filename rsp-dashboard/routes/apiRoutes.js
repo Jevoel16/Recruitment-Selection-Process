@@ -59,13 +59,6 @@ router.put('/training/:id', applicantController.updateTraining);
 router.put('/experience/:id', applicantController.updateExperience);
 router.put('/eligibility/:id', applicantController.updateEligibility);
 
-// Receives client-side pings to log performance metrics for browser-generated PDFs
-router.post('/logs/pdf-export', (req, res) => {
-    const { applicantCode, pdfName, timeMs } = req.body;
-    if (applicantCode && pdfName && timeMs) {
-        console.log(`[${new Date().toLocaleString()}] ${applicantCode}_${pdfName} exported - took ${timeMs}ms`);
-    }
-    res.status(200).send('Logged');
-});
+
 
 module.exports = router;

@@ -78,9 +78,10 @@ async function openAssignModal(id, name) {
     new bootstrap.Modal(document.getElementById('assignModal')).show();
 }
 
-async function generateAndComplete(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation) {
+
+async function generateAndComplete(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, docType = 'school') {
     // Generate the PDF
-    await window.printLetter(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, false);
+    await window.printLetter(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, false, docType);
     
     // Update the status to COMPLETED
     try {

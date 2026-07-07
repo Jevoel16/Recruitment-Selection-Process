@@ -30,6 +30,6 @@ if (scoreForm) {
     });
 }
 
-// PDF Generation has been extracted to pdfGenerator.js
+
 
 

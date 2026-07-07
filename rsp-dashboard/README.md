@@ -3,7 +3,7 @@
 A web-based platform to digitize the recruitment selection process.
 
 ## Tech Stack
-- **Backend:** Node.js, Express, Morgan (Audit Logging), JSONWebToken, cookie-parser
+- **Backend:** Node.js, Express, Morgan (Audit Logging), JSONWebToken, cookie-parser, docxtemplater, exceljs
 - **Frontend:** Handlebars (hbs), Vanilla JS, Bootstrap 5, Custom CSS
 - **Database:** MySQL
 
@@ -22,11 +22,11 @@ A web-based platform to digitize the recruitment selection process.
 - **Multi-Step Applicant Wizard:** Seamless data entry flow for applicant information ranging from Personal details to Education, Training, Experience, and Eligibility (now featuring real-time inline editing capabilities and robust active keystroke validation).
 
 ### Evaluation & Workflow System (Steps 1-5)
-- **Step 1:** Initial Evaluation (Qualify/Disqualify Applicants & Generate Official Word-styled PDF Evaluation forms)
+- **Step 1:** Initial Evaluation (Qualify/Disqualify Applicants & Generate Official Word (.docx) Evaluation forms)
 - **Step 2:** Deliberation Sheet (Assess & Input Interview Scores)
 - **Step 3:** Comparative Assessments (Leaderboard based on Scores)
 - **Step 4:** Requirements Collection & Tracking (Monitor missing requirements and qualify for Assignment)
-- **Step 5:** Assignment Orders (Generate & Print A4 Assignment Letters with advanced formatting and CC support)
+- **Step 5:** Assignment Orders (Generate A4 Word Document (.docx) Assignment Letters with advanced formatting and CC support)
 
 ### UI/UX & Modularity
 - **Component Modularization:** Sub-divided monolithic frontend templates into clean, feature-specific Handlebars partials, such as unifying the requirements checklist.

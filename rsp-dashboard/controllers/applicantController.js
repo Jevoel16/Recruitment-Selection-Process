@@ -33,16 +33,12 @@ function getShortenedPosition(position) {
 const requirementFields = [
     'req_pds', 'req_prcLicense', 'req_reportRating', 'req_medCert', 'req_birthCert', 'req_marriageCert', 
     'req_nbiClearance', 'req_tor', 'req_diplomaBachelors', 'req_masters', 'req_doctorate', 'req_soGraduation', 
-    'req_orderSeparation', 'req_saln'
+    'req_orderSeparation', 'req_saln', 'req_folders'
 ];
 
-// Evaluates if all 14 mandatory pre-assignment requirements are fulfilled for a specific applicant.
-// Automatically advances the applicant to 'ASSIGNMENT_PENDING' state if criteria are met, removing the need for manual status toggles.
+// Deprecated: assignmentReqStatus is now toggled when the DOC is downloaded, not automatically via checkboxes.
 async function syncAssignmentRequirementStatus(applicantId) {
-    const [rows] = await db.query(`SELECT * FROM applicants WHERE id = ?`, [applicantId]);
-    if (!rows.length) return;
-    const isComplete = requirementFields.every(field => Boolean(rows[0][field]));
-    await db.query(`UPDATE applicants SET assignmentReqStatus = ? WHERE id = ?`, [isComplete ? 'COMPLETE' : 'INCOMPLETE', applicantId]);
+    // No-op
 }
 
 // Initializes a new applicant record, processes their baseline information, and inserts it into the database.
