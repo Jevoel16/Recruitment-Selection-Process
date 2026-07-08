@@ -175,15 +175,6 @@ exports.updateRequirement = async (req, res) => {
     }
 };
 
-exports.scoreApplicant = async (req, res) => {
-    try {
-        await db.query(`UPDATE applicants SET status = 'ASSESSED' WHERE id = ?`, [req.params.id]);
-        res.json({ success: true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: "Internal server error" });
-    }
-};
 
 // Commits the complex evaluative assessment rubric scores into the database for Step 2 workflows.
 // This calculates and stores points across multiple criteria (Education, Training, Experience, etc.) critical for the Step 3 comparative leaderboard.
@@ -242,8 +233,9 @@ exports.toggleAssignmentReq = async (req, res) => {
 // Also deducts the corresponding vacancy count from the specific position/plantilla to enforce capacity limits natively in the database.
 exports.assignApplicant = async (req, res) => {
     try {
-        const { office, cc, ccDesignation } = req.body;
-        await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ?, cc = ?, ccDesignation = ? WHERE id = ?`, [office, cc || null, ccDesignation || null, req.params.id]);
+        const { office, cc, ccDesignation, cc_2, ccDesignation_2, cc_3, ccDesignation_3, cc_4, ccDesignation_4 } = req.body;
+        await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ?, cc = ?, ccDesignation = ?, cc_2 = ?, ccDesignation_2 = ?, cc_3 = ?, ccDesignation_3 = ?, cc_4 = ?, ccDesignation_4 = ? WHERE id = ?`, 
+            [office, cc || null, ccDesignation || null, cc_2 || null, ccDesignation_2 || null, cc_3 || null, ccDesignation_3 || null, cc_4 || null, ccDesignation_4 || null, req.params.id]);
         res.json({ success: true });
     } catch (error) {
         console.error(error);

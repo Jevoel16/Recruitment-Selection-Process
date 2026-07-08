@@ -28,7 +28,7 @@
 </div> <!-- End container-fluid -->
 
 <!-- Modals (Hidden from print) -->
-{{> dashboard_modals}}
+{{> index_modals}}
 
         </main>
     </div> <!-- End d-flex wrapper -->
@@ -63,6 +63,20 @@
 <script src="/js/assessment.js"></script>
 <script src="/js/main.js"></script>
 <script src="/js/modal_stack.js"></script>
+<!-- Choices JS -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.searchable-select').forEach(function(el) {
+            new Choices(el, {
+                searchEnabled: true,
+                itemSelectText: '',
+                shouldSort: false,
+                position: 'bottom'
+            });
+        });
+    });
+</script>
 {{> dashboard_scripts}}
     {{> global_toasts}}
     <script src="/js/utils.js"></script>

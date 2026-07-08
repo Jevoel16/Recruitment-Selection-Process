@@ -54,23 +54,24 @@ window.printInitialEvalDQNotNotarized = async function(id) {
         Address: addressStr,
         Title: title,
         Position: pos,
+        PositionAppliedFor: pos,
         ApplicationCode: appCode,
         ReasonText: reasonText,
         
-        QSEducation: 'Education: ' + cleanText(data.positionStandards?.qsEducation || 'N/A'),
-        AppEducation: cleanText((data.education || []).map(e => e.degree || e.title).join(', ')) || 'None',
+        QSEducation: data.positionStandards?.qsEducation ? 'Education: ' + cleanText(data.positionStandards.qsEducation) : '',
+        AppEducation: cleanText((data.education || []).map(e => e.degree || e.title).join(', ')) || '',
         RmEducation: getRemark(data.education),
 
-        QSTraining: 'Training: ' + cleanText(data.positionStandards?.qsTraining || 'N/A'),
-        AppTraining: cleanText((data.training || []).map(e => e.title).join(', ')) || 'None',
+        QSTraining: data.positionStandards?.qsTraining ? 'Training: ' + cleanText(data.positionStandards.qsTraining) : '',
+        AppTraining: cleanText((data.training || []).map(e => e.title).join(', ')) || '',
         RmTraining: getRemark(data.training),
 
-        QSExperience: 'Experience: ' + cleanText(data.positionStandards?.qsExperience || 'N/A'),
-        AppExperience: cleanText((data.experience || []).map(e => e.details).join(', ')) || 'None',
+        QSExperience: data.positionStandards?.qsExperience ? 'Experience: ' + cleanText(data.positionStandards.qsExperience) : '',
+        AppExperience: cleanText((data.experience || []).map(e => e.details).join(', ')) || '',
         RmExperience: getRemark(data.experience),
 
-        QSEligibility: 'Eligibility: ' + cleanText(data.positionStandards?.qsEligibility || 'N/A'),
-        AppEligibility: cleanText((data.eligibility || []).map(e => e.title || e.details).join(', ')) || 'None',
+        QSEligibility: data.positionStandards?.qsEligibility ? 'Eligibility: ' + cleanText(data.positionStandards.qsEligibility) : '',
+        AppEligibility: cleanText((data.eligibility || []).map(e => e.title || e.details).join(', ')) || '',
         RmEligibility: getRemark(data.eligibility),
 
         Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`

@@ -15,13 +15,76 @@
                             <input type="text" class="form-control" id="assignedOffice" required placeholder="e.g. IT Department">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">CC</label>
-                            <input type="text" class="form-control" id="assignedCC" placeholder="e.g. John Doe">
+                            <label class="form-label">Number of CCs</label>
+                            <select class="form-select" id="ccCountDropdown" onchange="toggleCCFields()">
+                                <option value="0">0 CC</option>
+                                <option value="1">1 CC</option>
+                                <option value="2">2 CCs</option>
+                                <option value="3">3 CCs</option>
+                                <option value="4">4 CCs</option>
+                            </select>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">CC Designation</label>
-                            <input type="text" class="form-control" id="assignedCCDesignation" placeholder="e.g. HR Manager">
+                        <div id="ccFieldsContainer">
+                            <!-- CC 1 -->
+                            <div class="cc-group d-none" id="ccGroup1">
+                                <div class="mb-2">
+                                    <label class="form-label">CC 1 Name</label>
+                                    <input type="text" class="form-control" id="assignedCC" placeholder="e.g. John Doe">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">CC 1 Designation</label>
+                                    <input type="text" class="form-control" id="assignedCCDesignation" placeholder="e.g. HR Manager">
+                                </div>
+                            </div>
+                            <!-- CC 2 -->
+                            <div class="cc-group d-none" id="ccGroup2">
+                                <div class="mb-2">
+                                    <label class="form-label">CC 2 Name</label>
+                                    <input type="text" class="form-control" id="assignedCC2" placeholder="e.g. Jane Smith">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">CC 2 Designation</label>
+                                    <input type="text" class="form-control" id="assignedCCDesignation2" placeholder="e.g. Finance Officer">
+                                </div>
+                            </div>
+                            <!-- CC 3 -->
+                            <div class="cc-group d-none" id="ccGroup3">
+                                <div class="mb-2">
+                                    <label class="form-label">CC 3 Name</label>
+                                    <input type="text" class="form-control" id="assignedCC3" placeholder="e.g. Peter Jones">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">CC 3 Designation</label>
+                                    <input type="text" class="form-control" id="assignedCCDesignation3" placeholder="e.g. IT Director">
+                                </div>
+                            </div>
+                            <!-- CC 4 -->
+                            <div class="cc-group d-none" id="ccGroup4">
+                                <div class="mb-2">
+                                    <label class="form-label">CC 4 Name</label>
+                                    <input type="text" class="form-control" id="assignedCC4" placeholder="e.g. Mary Clark">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">CC 4 Designation</label>
+                                    <input type="text" class="form-control" id="assignedCCDesignation4" placeholder="e.g. Operations Head">
+                                </div>
+                            </div>
                         </div>
+                        <script>
+                            function toggleCCFields() {
+                                const count = parseInt(document.getElementById('ccCountDropdown').value);
+                                for (let i = 1; i <= 4; i++) {
+                                    const group = document.getElementById('ccGroup' + i);
+                                    if (i <= count) {
+                                        group.classList.remove('d-none');
+                                    } else {
+                                        group.classList.add('d-none');
+                                        if(i===1) { document.getElementById('assignedCC').value = ''; document.getElementById('assignedCCDesignation').value = ''; }
+                                        else { document.getElementById('assignedCC'+i).value = ''; document.getElementById('assignedCCDesignation'+i).value = ''; }
+                                    }
+                                }
+                            }
+                        </script>
                         <button type="submit" class="btn btn-success text-white w-100">Confirm Assignment</button>
                     </form>
                 </div>

@@ -14,13 +14,27 @@
 <script src="/js/requirements.js"></script>
 <script src="/js/qualifications.js"></script>
 <script src="/js/scores.js"></script>
-<script src="/js/assignment.js"></script>
+<script src="/js/assignment.js?v=1.6"></script>
 <script src="/js/applicantDetails.js"></script>
 <script src="/js/documents.js"></script>
 <script src="/js/assessment.js"></script>
     <!-- Custom JS -->
     <script src="/js/main.js"></script>
     <script src="/js/modal_stack.js"></script>
+<!-- Choices JS -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.searchable-select').forEach(function(el) {
+            new Choices(el, {
+                searchEnabled: true,
+                itemSelectText: '',
+                shouldSort: false,
+                position: 'bottom'
+            });
+        });
+    });
+</script>
     {{> global_toasts}}
     <script src="/js/utils.js"></script>
 </body>

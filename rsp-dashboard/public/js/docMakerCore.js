@@ -2,8 +2,8 @@
 
 window.exportFromTemplate = async (templateUrl, data, filename) => {
     try {
-        // Add a timestamp to prevent the browser from aggressively caching the old template
-        const response = await fetch(templateUrl + "?v=" + Date.now());
+        // Use a static version parameter to allow the browser to cache the 3MB template!
+        const response = await fetch(templateUrl + "?v=2.0");
         if (!response.ok) throw new Error("Could not fetch template: " + response.statusText);
         const arrayBuffer = await response.arrayBuffer();
 
@@ -119,8 +119,8 @@ window.openGenericDocModal = function(step, id, status, docRemark, name, office,
         }
     } else if (step === 4) {
         selectEl.innerHTML = `
-            <option value="Notice of Requirements - Newly Hired">Notice of Requirements - Newly Hired</option>
-            <option value="Notice of Requirements - Promotion">Notice of Requirements - Promotion</option>
+            <option value="Notice of Requirements - Newly Hired">Newly Hired</option>
+            <option value="Notice of Requirements - Promotion">Promotion</option>
             <option value="Transfer Acceptance">Transfer Acceptance</option>
         `;
     } else if (step === 5) {

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-08 14:15 (v1.1.1-Release+202607081415)
+### ADDED
+- Implemented `Choices.js` searchable dropdown integration globally for Assessment calculators to replace basic selects and fix overlapping UI layers.
+- Added strict `oninput` keypress restrictions for Criteria H (Potential) and Criteria D (Performance) inputs based on their dynamic maximum allowable scores.
+
+### CHANGED
+- Cleaned up modularity: extracted the unified Masterlist modal into a dedicated partial `modal_unified.hbs`.
+- Removed massive redundant codebase segments by utilizing a single-source-of-truth `index_modals.hbs` across all views (`index`, `dashboard`, `add-applicant`), eliminating the duplicated `dashboard_modals.hbs` and `modals.hbs`.
+
+### REMOVED
+- Deleted obsolete legacy UI components and route handlers for single-score functionality (`scores.js`, `modal_score.hbs`, and the `/api/applicants/:id/score` endpoint) as it was superseded by the detailed Evaluative Assessment system.
+- Purged various `.ps1`, `.xml`, and one-off `fix_*.js` patch scripts from the root directory that were used during development but are no longer necessary.
 ## 2026-07-08 02:34 (v1.1.0-Release+202607080234)
 ### ADDED
 - Implemented robust document generation using Word (`.docx`) templates via `docxtemplater`, `pizzip`, and `html-docx-js`, replacing the previous PDF-based solution.

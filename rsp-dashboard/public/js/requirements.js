@@ -115,11 +115,26 @@ async function openRequirementsModal(id, skipFetch = false) {
                 ${itemsHtml}
             </div>
 
-            <div class="d-flex justify-content-end pt-3 border-top gap-2">
-                <button type="button" class="btn ${btnClass} flex-grow-1" onclick="setAllRequirements(${id}, ${targetValue})">
-                    <i class="bi ${btnIcon}"></i> ${btnText}
-                </button>
-                <button type="button" class="btn btn-secondary flex-grow-1" data-bs-dismiss="modal">Close</button>
+            <div class="border-top pt-3 mt-3">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-5">
+                        <select class="form-select" id="requirementsDocTypeSelect">
+                            <option value="Notice of Requirements - Newly Hired">Notice of Requirements - Newly Hired</option>
+                            <option value="Notice of Requirements - Promotion">Notice of Requirements - Promotion</option>
+                            <option value="Transfer Acceptance">Transfer Acceptance</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-primary w-100 fw-bold shadow-sm" onclick="downloadRequirementsDoc(${id})">
+                            <i class="bi bi-file-earmark-word"></i> Download DOC
+                        </button>
+                    </div>
+                    <div class="col-md-4 d-flex gap-2">
+                        <button type="button" class="btn ${btnClass} flex-grow-1" onclick="setAllRequirements(${id}, ${targetValue})">
+                            <i class="bi ${btnIcon}"></i> ${btnText}
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -131,3 +146,21 @@ async function openRequirementsModal(id, skipFetch = false) {
     } catch (error) { console.error(error); window.showToast('Failed to fetch applicant data', 'danger'); }
 }
 
+window.downloadRequirementsDoc = function(id) {
+    const type = document.getElementById('requirementsDocTypeSelect').value;
+    
+    // Close the modal
+    const modalEl = document.getElementById('requirementsModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if(modalInstance) modalInstance.hide();
+    
+    if (type === 'Notice of Requirements - Newly Hired' && window.printReqNewlyHired) {
+        window.printReqNewlyHired(id);
+    } else if (type === 'Notice of Requirements - Promotion' && window.printReqPromotion) {
+        window.printReqPromotion(id);
+    } else if (type === 'Transfer Acceptance' && window.printTransferAcceptance) {
+        window.printTransferAcceptance(id);
+    } else {
+        window.showToast('Function for this template is not defined.', 'danger');
+    }
+};

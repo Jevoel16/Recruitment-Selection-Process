@@ -54,17 +54,32 @@ if (assignForm) {
         e.preventDefault();
         const id = document.getElementById('assignId').value;
         const office = document.getElementById('assignedOffice').value;
-        const cc = document.getElementById('assignedCC') ? document.getElementById('assignedCC').value : null;
-        const ccDesignation = document.getElementById('assignedCCDesignation') ? document.getElementById('assignedCCDesignation').value : null;
+        const ccCount = document.getElementById('ccCountDropdown') ? parseInt(document.getElementById('ccCountDropdown').value) : 0;
+        const cc = ccCount >= 1 ? document.getElementById('assignedCC').value : null;
+        const ccDesignation = ccCount >= 1 ? document.getElementById('assignedCCDesignation').value : null;
+        const cc_2 = ccCount >= 2 ? document.getElementById('assignedCC2').value : null;
+        const ccDesignation_2 = ccCount >= 2 ? document.getElementById('assignedCCDesignation2').value : null;
+        const cc_3 = ccCount >= 3 ? document.getElementById('assignedCC3').value : null;
+        const ccDesignation_3 = ccCount >= 3 ? document.getElementById('assignedCCDesignation3').value : null;
+        const cc_4 = ccCount >= 4 ? document.getElementById('assignedCC4').value : null;
+        const ccDesignation_4 = ccCount >= 4 ? document.getElementById('assignedCCDesignation4').value : null;
+        
         try {
             const res = await fetch(`/api/applicants/${id}/assign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ office, cc, ccDesignation })
+                body: JSON.stringify({ office, cc, ccDesignation, cc_2, ccDesignation_2, cc_3, ccDesignation_3, cc_4, ccDesignation_4 })
             });
-            if (res.ok) window.showToast('Assigned and moved successfully!', 'success', true);
-            else window.showToast('Error assigning applicant', 'danger');
-        } catch(err) { console.error(err); window.showToast('Error assigning applicant', 'danger'); }
+            if (res.ok) {
+                window.showToast('Assigned Successfully!', 'success', true);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                window.showToast('Error assigning applicant', 'danger');
+            }
+        } catch(err) {
+            console.error(err);
+            window.showToast('Error assigning applicant', 'danger');
+        }
     });
 }
 
@@ -73,8 +88,21 @@ async function openAssignModal(id, name) {
     document.getElementById('assignId').value = id;
     document.getElementById('assignName').innerText = name;
     document.getElementById('assignedOffice').value = '';
+    
+    if(document.getElementById('ccCountDropdown')) {
+        document.getElementById('ccCountDropdown').value = '0';
+        if(typeof toggleCCFields === 'function') toggleCCFields();
+    }
+    
     if(document.getElementById('assignedCC')) document.getElementById('assignedCC').value = '';
     if(document.getElementById('assignedCCDesignation')) document.getElementById('assignedCCDesignation').value = '';
+    if(document.getElementById('assignedCC2')) document.getElementById('assignedCC2').value = '';
+    if(document.getElementById('assignedCCDesignation2')) document.getElementById('assignedCCDesignation2').value = '';
+    if(document.getElementById('assignedCC3')) document.getElementById('assignedCC3').value = '';
+    if(document.getElementById('assignedCCDesignation3')) document.getElementById('assignedCCDesignation3').value = '';
+    if(document.getElementById('assignedCC4')) document.getElementById('assignedCC4').value = '';
+    if(document.getElementById('assignedCCDesignation4')) document.getElementById('assignedCCDesignation4').value = '';
+
     new bootstrap.Modal(document.getElementById('assignModal')).show();
 }
 

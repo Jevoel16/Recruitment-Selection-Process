@@ -32,7 +32,7 @@
                             <th>Application Code</th>
                             <th>Applicant Name</th>
                             <th>Position</th>
-                            <th class="text-center">Requirements</th>
+                            <th class="text-center">Document</th>
                             <th class="text-center">Score</th>
                             <th class="text-center">Remarks</th>
                             <th class="text-end">Action</th>
@@ -45,8 +45,8 @@
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
                             <td>{{this.position}}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openRequirementsModal({{this.id}}, '{{this.name}}')">
-                                    <i class="bi bi-list-check"></i> View
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(4, {{this.id}}, '', '', `{{this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC">
+                                    <i class="bi bi-file-earmark-word"></i> DOC
                                 </button>
                             </td>
                             <td class="text-center fw-bold text-success fs-5">
@@ -57,14 +57,13 @@
                                 {{/unless}}
                             </td>
                             <td class="text-center">
-                                    {{#if (allRequirementsMet this)}}
-                                        <span id="requirements-status-{{this.id}}" class="badge bg-success">Complete</span>
-                                    {{else}}
-                                        <span id="requirements-status-{{this.id}}" class="badge bg-warning text-dark">Incomplete</span>
-                                    {{/if}}
+                                {{#if (eq this.assignmentReqStatus 'COMPLETE')}}
+                                    <span id="requirements-status-{{this.id}}" class="badge bg-success">Generated</span>
+                                {{else}}
+                                    <span id="requirements-status-{{this.id}}" class="badge bg-warning text-dark">Pending</span>
+                                {{/if}}
                             </td>
                             <td class="text-end pe-4">
-                                <button class="btn btn-sm btn-outline-primary action-btn me-1" onclick="window.openGenericDocModal(4, {{this.id}}, '', '', `{{this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC"><i class="bi bi-file-earmark-word"></i> DOC</button>
                                 <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Must generate Notice of Requirements first"{{else}}title="Move to Step 5"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move</button>
                             </td>
                         </tr>

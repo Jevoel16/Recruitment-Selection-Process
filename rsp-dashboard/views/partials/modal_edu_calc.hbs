@@ -8,14 +8,14 @@
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Applicant's Education Level</label>
-                        <select class="form-select" id="applicantEduLevel" onchange="calculateEduPoints()">
+                        <label class="form-label fw-bold">Position's Standard Requirement</label>
+                        <select class="form-select searchable-select" id="standardEduLevel" onchange="calculateEduPoints()">
                             <option value="1">Level 1: Can Read and Write / Elem Level</option>
                             <option value="2">Level 2: Elementary Graduate</option>
                             <option value="3">Level 3: Completed Junior High School</option>
                             <option value="4">Level 4: Senior High School Graduate</option>
                             <option value="5">Level 5: Completed 2 years College</option>
-                            <option value="6">Level 6: Bachelor's Degree</option>
+                            <option value="6" selected>Level 6: Bachelor's Degree</option>
                             <option value="7">Level 7: 6 Units Master's</option>
                             <option value="8">Level 8: 9 Units Master's</option>
                             <option value="9">Level 9: 12 Units Master's</option>
@@ -45,14 +45,14 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Position's Standard Requirement</label>
-                        <select class="form-select" id="standardEduLevel" onchange="calculateEduPoints()">
+                        <label class="form-label fw-bold">Applicant's Education Level</label>
+                        <select class="form-select searchable-select" id="applicantEduLevel" onchange="calculateEduPoints()">
                             <option value="1">Level 1: Can Read and Write / Elem Level</option>
                             <option value="2">Level 2: Elementary Graduate</option>
                             <option value="3">Level 3: Completed Junior High School</option>
                             <option value="4">Level 4: Senior High School Graduate</option>
                             <option value="5">Level 5: Completed 2 years College</option>
-                            <option value="6" selected>Level 6: Bachelor's Degree</option>
+                            <option value="6">Level 6: Bachelor's Degree</option>
                             <option value="7">Level 7: 6 Units Master's</option>
                             <option value="8">Level 8: 9 Units Master's</option>
                             <option value="9">Level 9: 12 Units Master's</option>

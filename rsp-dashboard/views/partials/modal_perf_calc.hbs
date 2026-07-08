@@ -20,7 +20,7 @@
 
                     <div class="mb-3" id="perfRatingDiv">
                         <label class="form-label fw-bold" id="perfRatingLabel">Rating (x)</label>
-                        <input type="number" class="form-control" id="perfRatingInput" step="0.001" placeholder="e.g. 4.356" oninput="calculatePerfPoints()">
+                        <input type="number" class="form-control" id="perfRatingInput" step="0.001" max="5" placeholder="e.g. 4.356" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePerfPoints();">
                         <div class="form-text" id="perfRatingHelp">Enter RPMS rating (0-5) or midpoint value.</div>
                         <div class="mt-2" id="midpointHelperDiv">
                             <label class="form-label small text-muted">Midpoint Helper (External Applicants)</label>

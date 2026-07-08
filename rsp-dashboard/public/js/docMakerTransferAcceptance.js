@@ -53,7 +53,7 @@ window.printTransferAcceptance = async function(id) {
         "POSITION_OF_APPROVER": "Schools Division Superintendent"
     };
 
-    const templateUrl = "/templates/Transfer Acceptance.docx";
+    const templateUrl = "/templates/Notice of Requirements - Transfer Acceptance.docx";
     const filename = `Transfer_Acceptance_${appName.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
 
     try {

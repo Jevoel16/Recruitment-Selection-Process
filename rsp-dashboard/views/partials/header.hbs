@@ -14,7 +14,25 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/styles.css">
     <!-- Bootstrap Icons -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.css">
+    <!-- Choices.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <style>
+        .choices__inner {
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            min-height: calc(3.5rem + 2px);
+            padding: 0.75rem;
+        }
+        .choices[data-type*="select-one"]::after {
+            right: 1.15rem;
+        }
+        .choices__list--dropdown {
+            z-index: 9999 !important;
+        }
+    </style>
 </head>
 <body>
     <div class="d-flex" style="min-height: 100vh;">

@@ -20,17 +20,17 @@
                     <div id="potentialOtherDiv">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">a. Written Examinations (WE) - Max 5 pts</label>
-                            <input type="number" class="form-control form-control-sm mb-1" id="potWEInput" step="0.01" max="100" placeholder="Rating in percentage (0-100)" oninput="calculatePotentialPoints()">
-                            <div class="form-text mt-0">Score = (x / 100) * 5</div>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potWEInput" step="0.01" max="5" placeholder="Raw points (0-5)" oninput="if(parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
+                            <div class="form-text mt-0">Enter cumulative raw points given.</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small">b. Skills or Work Sample Test (S/WST) - Max 10 pts</label>
-                            <input type="number" class="form-control form-control-sm mb-1" id="potSWSTInput" step="0.01" max="100" placeholder="Rating in percentage (0-100)" oninput="calculatePotentialPoints()">
-                            <div class="form-text mt-0">Score = (x / 100) * 10</div>
+                            <input type="number" class="form-control form-control-sm mb-1" id="potSWSTInput" step="0.01" max="10" placeholder="Raw points (0-10)" oninput="if(parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
+                            <div class="form-text mt-0">Enter cumulative raw points given.</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small">c. Behavioural Events Interview (BEI) - Max 5 pts</label>
-                            <input type="number" class="form-control form-control-sm mb-1" id="potBEIInput" step="0.01" max="5" placeholder="Raw BEI points (0-5)" oninput="calculatePotentialPoints()">
+                            <input type="number" class="form-control form-control-sm mb-1" id="potBEIInput" step="0.01" max="5" placeholder="Raw BEI points (0-5)" oninput="if(parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
                             <div class="form-text mt-0">Enter cumulative raw points given.</div>
                         </div>
                     </div>

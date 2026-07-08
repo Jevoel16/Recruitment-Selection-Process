@@ -29,7 +29,7 @@
 
                     <div class="mb-3 d-none" id="appEduGWADiv">
                         <label class="form-label fw-bold">GWA Transmuted to Percentage (x)</label>
-                        <input type="number" class="form-control" id="appEduGWAInput" step="0.01" max="100" placeholder="e.g. 82.75" oninput="calculateAppEduPoints()">
+                        <input type="number" class="form-control" id="appEduGWAInput" step="0.01" max="100" placeholder="e.g. 82.75" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculateAppEduPoints();">
                         <div class="form-text small text-muted">Enter percentage from 0 to 100.</div>
                     </div>
 

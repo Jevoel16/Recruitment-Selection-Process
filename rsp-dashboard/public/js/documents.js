@@ -351,7 +351,7 @@ async function openEligModal(id, isWizard = false) {
             <form id="addElig-${id}" class="mb-3">
                 <div class="d-flex gap-2 w-100">
                     <input type="text" class="form-control" name="title" placeholder="License / Exam" style="flex: 4;" required>
-                    <input type="text" class="form-control" name="rating" placeholder="Rating" style="flex: 1;" required>
+                    <input type="number" class="form-control" name="rating" placeholder="Rating" step="any" max="100" oninput="if(parseFloat(this.value) > 100) this.value = 100;" style="flex: 1;" required>
                 </div>
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Eligibility</button>
             </form>

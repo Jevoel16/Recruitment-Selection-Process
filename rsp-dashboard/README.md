@@ -29,8 +29,9 @@ A web-based platform to digitize the recruitment selection process.
 - **Step 5:** Assignment Orders (Generate A4 Word Document (.docx) Assignment Letters with advanced formatting and CC support)
 
 ### UI/UX & Modularity
-- **Component Modularization:** Sub-divided monolithic frontend templates into clean, feature-specific Handlebars partials, such as unifying the requirements checklist.
-- **Real-Time Validations:** Form validations using active keystroke prevention restricting incorrect input values natively on the frontend.
+- **Component Modularization:** Sub-divided monolithic frontend templates into clean, feature-specific Handlebars partials, completely eliminating redundant files like `dashboard_modals.hbs` in favor of a single-source-of-truth structure.
+- **Searchable Dropdowns:** Integrated `Choices.js` globally to transform standard form selects into advanced, searchable dropdowns without compromising z-index UI layering in modals.
+- **Real-Time Validations:** Form validations using active keystroke prevention restricting incorrect input values (such as dynamically capping assessment inputs) natively on the frontend.
 - **Stateful UI & Instant DOM Updates:** Dashboard features persistent state retention across manual page reloads using browser History APIs and session storage, alongside lightning-fast instant DOM updates for CRUD operations to eliminate full page reloads.
 - **Modern Aesthetics:** Utilizes responsive glassmorphism UI components (glass panels), custom scrollbars, and seamless borderless inputs for a deeply immersive and premium user experience.
 

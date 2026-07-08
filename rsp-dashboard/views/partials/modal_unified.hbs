@@ -1,0 +1,43 @@
+    <!-- Unified Applicant Details Modal -->
+    <div class="modal fade glass-modal" id="unifiedDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-bottom-0 pb-0 bg-primary bg-opacity-10 text-primary">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-card-list me-2"></i>Applicant Details: <span id="unifiedModalName" class="text-dark"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <input type="hidden" id="unifiedModalId">
+                    <input type="hidden" id="unifiedModalAssignedOffice">
+                    <input type="hidden" id="unifiedModalCategory">
+                    <input type="hidden" id="unifiedModalAppCode">
+                    <input type="hidden" id="unifiedModalStatus">
+                    
+                    <h6 class="text-start fw-bold mb-3 border-bottom pb-2 text-muted">Step 1: Document Checks</h6>
+                    <div class="d-flex flex-wrap gap-2 justify-content-center mb-4">
+                        <button class="btn btn-outline-primary shadow-sm flex-grow-1" onclick="launchFromUnified('info')"><i class="bi bi-person-badge"></i> Info</button>
+                        <button class="btn btn-outline-info shadow-sm flex-grow-1" onclick="launchFromUnified('edu')"><i class="bi bi-mortarboard-fill"></i> Education</button>
+                        <button class="btn btn-outline-warning shadow-sm flex-grow-1" onclick="launchFromUnified('train')"><i class="bi bi-award-fill"></i> Training</button>
+                        <button class="btn btn-outline-success shadow-sm flex-grow-1" onclick="launchFromUnified('exp')"><i class="bi bi-briefcase-fill"></i> Experience</button>
+                        <button class="btn btn-outline-secondary shadow-sm flex-grow-1" onclick="launchFromUnified('elig')"><i class="bi bi-shield-check"></i> Eligibility</button>
+                        <div class="d-flex w-100 gap-2 mt-2">
+                            <button class="btn btn-primary shadow-sm w-50" onclick="launchFromUnified('step1_summary')"><i class="bi bi-card-checklist"></i> Document Summary</button>
+                            <button class="btn btn-outline-primary shadow-sm w-50" id="unifiedBtnStep1Pdf" onclick="launchFromUnified('step1_pdf')"><i class="bi bi-file-earmark-word"></i> Generate DOC (Eval)</button>
+                        </div>
+                    </div>
+
+                    <h6 class="text-start fw-bold mb-3 border-bottom pb-2 text-muted">Step 2 & 3: Assessment</h6>
+                    <div class="d-flex flex-wrap gap-2 justify-content-center mb-4">
+                        <button class="btn btn-info text-white shadow-sm flex-grow-1" id="unifiedBtnEval" onclick="launchFromUnified('eval_assessment')"><i class="bi bi-clipboard-check"></i> Evaluative Assessment</button>
+                        <button class="btn btn-primary shadow-sm flex-grow-1" id="unifiedBtnAssessSum" onclick="launchFromUnified('step2_summary')"><i class="bi bi-clipboard-data"></i> Assessment Summary</button>
+                    </div>
+
+                    <h6 class="text-start fw-bold mb-3 border-bottom pb-2 text-muted">Step 4 & 5: Requirements & Action</h6>
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <button class="btn btn-outline-primary shadow-sm flex-grow-1" id="unifiedBtnPdfStep4" onclick="launchFromUnified('step4_pdf')"><i class="bi bi-file-earmark-word"></i> Generate Step 4 DOC</button>
+                        <button class="btn btn-outline-primary shadow-sm flex-grow-1" id="unifiedBtnPdf" onclick="launchFromUnified('generate_pdf')"><i class="bi bi-file-earmark-word"></i> Generate Step 5 DOC</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

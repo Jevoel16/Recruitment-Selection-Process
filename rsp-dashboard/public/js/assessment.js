@@ -588,8 +588,8 @@ function calculatePotentialPoints() {
         const swstVal = parseFloat(document.getElementById('potSWSTInput').value) || 0;
         const beiVal = parseFloat(document.getElementById('potBEIInput').value) || 0;
         
-        const wePts = (weVal / 100) * 5;
-        const swstPts = (swstVal / 100) * 10;
+        const wePts = weVal > 5 ? 5 : weVal;
+        const swstPts = swstVal > 10 ? 10 : swstVal;
         let finalBeiPts = beiVal > 5 ? 5 : beiVal;
         
         totalPoints = wePts + swstPts + finalBeiPts;

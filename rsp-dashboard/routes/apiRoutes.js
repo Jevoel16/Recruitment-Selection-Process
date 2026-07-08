@@ -18,7 +18,6 @@ router.post('/applicants/:id/proceed-step2', applicantController.proceedStep2);
 router.put('/applicants/:id/status', applicantController.updateStatus);
 router.post('/applicants/:id/requirements/all', applicantController.toggleAllRequirements);
 router.post('/applicants/:id/requirement', applicantController.updateRequirement);
-router.post('/applicants/:id/score', applicantController.scoreApplicant);
 router.post('/applicants/:id/assess', applicantController.assessApplicant);
 router.post('/applicants/:id/no-appearance', applicantController.noAppearanceApplicant);
 router.post('/applicants/:id/proceed-requirements', applicantController.proceedRequirements);

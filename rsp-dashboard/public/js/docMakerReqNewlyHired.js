@@ -43,8 +43,8 @@ window.printReqNewlyHired = async function(id) {
         "MADAM_SIR": title,
         "CURRENT_POSITION": pos,
         "SCHOOL": office,
-        "HRMO": "JUAN DELA CRUZ",
-        "ASDS": "ROSEMARIE T. MACESAR",
+        "HRMO": "AZOR B. QUIJANO",
+        "ASDS": "JONATHAN S. DELA PEÑA, PhD, CESO V",
         "REMARKS": `MPM/ABQ/KMJ - ${remarksDate}`,
         "SDS": "JONATHAN S. DELA PEÑA, PhD, CESO V"
     };

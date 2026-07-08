@@ -3,12 +3,27 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
     const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     let rankTitle = 'Teacher I';
+    let appCC1 = '', appCCDesignation1 = '';
+    let appCC2 = '', appCCDesignation2 = '';
+    let appCC3 = '', appCCDesignation3 = '';
+    let appCC4 = '', appCCDesignation4 = '';
+
     try {
         const res = await fetch(`/api/applicants/${id}/details`);
         if (res.ok) {
             const data = await res.json();
             const applicant = data.applicant || data;
             if (applicant.position) rankTitle = applicant.position;
+
+            appCC1 = applicant.cc || '';
+            appCCDesignation1 = applicant.ccDesignation || '';
+            appCC2 = applicant.cc_2 || '';
+            appCCDesignation2 = applicant.ccDesignation_2 || '';
+            appCC3 = applicant.cc_3 || '';
+            appCCDesignation3 = applicant.ccDesignation_3 || '';
+            appCC4 = applicant.cc_4 || '';
+            appCCDesignation4 = applicant.ccDesignation_4 || '';
+
             const fName = applicant.firstName || '';
             const mName = applicant.middleName || '';
             const lName = applicant.lastName || '';
@@ -41,10 +56,14 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
         "APPOINTMENT_EFFECTIVITY": "",
         "APPROVED_BY": "ARTURO B. BAYOCOT, CESO III",
         "POSITION_OF_APPROVER": "Regional Director",
-        "CC_1": "ROSEMARIE T. MACESAR",
-        "POSITIONS_OF_CC": "Assistant Schools Division Superintendent",
-        "CC_2": ccName && ccName.trim() !== '' ? ccName.toUpperCase() : "LEONARDA LUNA ARAZO",
-        "POSITIONS_OF_CC_2": ccDesignation && ccDesignation.trim() !== '' ? ccDesignation : "School Principal I",
+        "CC_1": appCC1.toUpperCase(),
+        "POSITIONS_OF_CC": appCCDesignation1,
+        "CC_2": appCC2.toUpperCase(),
+        "POSITIONS_OF_CC_2": appCCDesignation2,
+        "CC_3": appCC3.toUpperCase(),
+        "POSITIONS_OF_CC_3": appCCDesignation3,
+        "CC_4": appCC4.toUpperCase(),
+        "POSITIONS_OF_CC_4": appCCDesignation4,
         "REMARKS": `JSD/MPM/ABQ/KMJ - ${remarksDate}`
     };
 

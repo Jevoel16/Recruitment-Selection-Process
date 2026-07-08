@@ -342,7 +342,9 @@ window.launchFromUnified = function(type) {
             break;
         case 'eval_assessment': openAssessmentModal(id, name); break;
         case 'step2_summary': openStep2SummaryModal(id, name, true); break;
-        case 'requirements': openRequirementsModal(id, name); break;
+        case 'step4_pdf':
+            window.openGenericDocModal(4, id, '', '', name, '', '', appCode, '', '');
+            break;
         case 'generate_pdf': 
             window.openGenericDocModal(5, id, '', '', name, assignedOffice, category, appCode, '', ''); 
             break;
