@@ -78,6 +78,15 @@ async function seed() {
         const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara'];
         const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
 
+        const civilStatuses = ['Single', 'Married', 'Widowed', 'Separated'];
+        const religions = ['Catholic', 'Islam', 'Iglesia Ni Cristo', 'Born Again', 'N/A'];
+        const disabilities = ['None', 'Visual Impairment', 'Hearing Impairment', 'Physical Disability', 'N/A'];
+        const ethnicGroups = ['None', 'Tagalog', 'Cebuano', 'Ilocano', 'N/A'];
+        const degrees = ['BS Computer Science', 'BS Business Administration', 'AB English', 'BS Nursing', 'BS Accountancy', 'BSEd', 'BS Civil Engineering'];
+        const trainings = ['Leadership Seminar', 'Technical Writing', 'Data Analysis Workshop', 'Customer Service Training', 'Project Management'];
+        const experiences = ['Administrative Assistant', 'Software Engineer', 'Customer Service Representative', 'Sales Executive', 'Project Coordinator', 'Teacher'];
+        const eligibilities = ['Civil Service Professional', 'Civil Service Sub-Professional', 'LET', 'CPA', 'N/A'];
+
         console.log(`🚀 Sending API requests to create ${TOTAL_APPLICANTS} applicants (this will take time)...`);
         
         let allApplicantIds = [];
@@ -91,6 +100,10 @@ async function seed() {
                 const lName = lastNames[Math.floor(Math.random() * lastNames.length)];
                 const positionObj = openPositions[Math.floor(Math.random() * openPositions.length)];
                 
+                const randomYear = Math.floor(Math.random() * (2000 - 1970 + 1)) + 1970;
+                const randomMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+                const randomDay = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+                
                 const payload = {
                     firstName: fName,
                     lastName: lName,
@@ -98,22 +111,30 @@ async function seed() {
                     nameExtension: Math.random() > 0.85 ? 'Jr.' : '',
                     applicationType: Math.random() > 0.5 ? 'Walk-in' : 'Online',
                     district: 'District ' + (Math.floor(Math.random() * 6) + 1),
-                    address: '123 Seed Street',
-                    birthdate: '1990-01-01',
+                    address: JSON.stringify({
+                        res_house: Math.floor(Math.random() * 999) + 1,
+                        res_street: 'Seed Street',
+                        res_subdivision: 'Seed Village',
+                        res_barangay: 'Barangay ' + (Math.floor(Math.random() * 20) + 1),
+                        res_city: 'Seed City',
+                        res_province: 'Seed Province',
+                        res_zip: '1000'
+                    }),
+                    birthdate: `${randomYear}-${randomMonth}-${randomDay}`,
                     sex: Math.random() > 0.5 ? 'Male' : 'Female',
-                    civilStatus: 'Single',
-                    religion: 'Catholic',
-                    disability: 'None',
-                    ethnicGroup: 'None',
+                    civilStatus: civilStatuses[Math.floor(Math.random() * civilStatuses.length)],
+                    religion: religions[Math.floor(Math.random() * religions.length)],
+                    disability: disabilities[Math.floor(Math.random() * disabilities.length)],
+                    ethnicGroup: ethnicGroups[Math.floor(Math.random() * ethnicGroups.length)],
                     emailAddress: `${fName}.${lName}${i+j}@example.com`.toLowerCase(),
-                    contactNo: '09123456789',
+                    contactNo: '09' + Math.floor(100000000 + Math.random() * 900000000),
                     pdsLink: 'http://example.com/pds',
                     category: positionObj.category,
                     position: positionObj.title,
-                    education: JSON.stringify([{ degree: 'BS Seed', year: 2020, link: 'http://link' }]),
-                    training: JSON.stringify([{ title: 'Seed Training', hours: 40, link: 'http://link' }]),
-                    experience: JSON.stringify([{ details: 'Seed XP', years: 2, link: 'http://link' }]),
-                    eligibility: JSON.stringify([{ details: 'Seed Elig', rating: '85', link: 'http://link' }])
+                    education: JSON.stringify([{ degree: degrees[Math.floor(Math.random() * degrees.length)], year: Math.floor(Math.random() * (2022 - 2010 + 1)) + 2010, link: 'http://link' }]),
+                    training: JSON.stringify([{ title: trainings[Math.floor(Math.random() * trainings.length)], hours: Math.floor(Math.random() * 80) + 8, link: 'http://link' }]),
+                    experience: JSON.stringify([{ details: experiences[Math.floor(Math.random() * experiences.length)], years: (Math.random() * 10).toFixed(1), link: 'http://link' }]),
+                    eligibility: JSON.stringify([{ details: eligibilities[Math.floor(Math.random() * eligibilities.length)], rating: (Math.random() * 20 + 80).toFixed(2), link: 'http://link' }])
                 };
 
                 try {

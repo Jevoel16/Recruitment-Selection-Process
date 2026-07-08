@@ -58,10 +58,10 @@
                         {{#each step3}}
                         <tr>
                             <td class="ps-4"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                            <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                            <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                             <td>{{this.position}}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{this.name}}', true)" title="View Summary">
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{titleCase this.name}}', true)" title="View Summary">
                                     <i class="bi bi-eye"></i> View
                                 </button>
                             </td>
@@ -90,13 +90,13 @@
                             </td>
                             <td class="text-end pe-4">
                                 {{#if (eq this.status 'ASSESSED')}}
-                                <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{this.name}}')" title="Move to Step 4"><i class="bi bi-arrow-right-circle"></i> Move</button>
+                                <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{titleCase this.name}}')" title="Move to Step 4"><i class="bi bi-arrow-right-circle"></i> Move</button>
                                 {{/if}}
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
-                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
+                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{titleCase this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
                                 {{/if}}
                                 {{#if (eq this.status 'NEWLY_PROMOTED')}}
-                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
+                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{titleCase this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
                                 {{/if}}
                             </td>
                         </tr>

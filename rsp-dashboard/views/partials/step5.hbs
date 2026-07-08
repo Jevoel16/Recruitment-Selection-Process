@@ -51,7 +51,7 @@
                         {{#each step5}}
                         <tr>
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                            <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                            <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                             <td>{{this.position}}</td>
                             <td>{{this.assignedOffice}}</td>
                             <td class="fw-bold text-success">
@@ -62,7 +62,7 @@
                                 {{/unless}}
                             </td>
                             <td class="text-end pe-4">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(5, {{this.id}}, '', '', `{{this.name}}`, `{{this.assignedOffice}}`, `{{this.category}}`, `{{this.applicationCode}}`, `{{this.cc}}`, `{{this.ccDesignation}}`)" title="Generate DOC">
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(5, {{this.id}}, '', '', `{{titleCase this.name}}`, `{{this.assignedOffice}}`, `{{this.category}}`, `{{this.applicationCode}}`, `{{this.cc}}`, `{{this.ccDesignation}}`)" title="Generate DOC">
                                     <i class="bi bi-file-earmark-word"></i> DOC
                                 </button>
                             </td>

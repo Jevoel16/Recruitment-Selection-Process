@@ -44,6 +44,10 @@ hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 hbs.registerHelper('inc', function(value) { return parseInt(value) + 1; });
 hbs.registerHelper('incOffset', function(value, offset) { return parseInt(value) + parseInt(offset) + 1; });
 hbs.registerHelper('eq', function (a, b) { return a === b; });
+hbs.registerHelper('titleCase', function(str) {
+    if (!str || typeof str !== 'string') return str;
+    return str.split(' ').map(word => word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : '').join(' ');
+});
 hbs.registerHelper('allRequirementsMet', function(applicant) { return requirementFields.every((field) => Boolean(applicant[field])); });
 hbs.registerHelper('formatDate', function(date) {
     if (!date) return '';

@@ -42,10 +42,10 @@
                         {{#each step4}}
                         <tr id="applicant-row-{{this.id}}">
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                            <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                            <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                             <td>{{this.position}}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(4, {{this.id}}, '', '', `{{this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC">
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(4, {{this.id}}, '', '', `{{titleCase this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC">
                                     <i class="bi bi-file-earmark-word"></i> DOC
                                 </button>
                             </td>
@@ -64,7 +64,7 @@
                                 {{/if}}
                             </td>
                             <td class="text-end pe-4">
-                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Must generate Notice of Requirements first"{{else}}title="Move to Step 5"{{/if}} onclick="openAssignModal({{this.id}}, '{{this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move</button>
+                                <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Must generate Notice of Requirements first"{{else}}title="Move to Step 5"{{/if}} onclick="openAssignModal({{this.id}}, '{{titleCase this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move</button>
                             </td>
                         </tr>
                         {{else}}

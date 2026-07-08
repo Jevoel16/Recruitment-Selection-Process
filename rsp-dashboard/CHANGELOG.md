@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-09 06:10 (v1.1.3-Release+202607090610)
+### ADDED
+- Implemented `titleCase` Handlebars helper to universally format applicant names in Title Case across the Masterlist and all Step 1-5 workflow tables.
+
+### CHANGED
+- Overhauled the applicant data payload generation in `seed.js` to populate realistic, randomized datasets including civil status, religion, disability, ethnic group, education, and precisely formatted JSON address structures.
+- Updated the applicant name string formatter in the IER Excel generator (`excelGenerator.js`) to strictly adhere to the `Last Name, First Name, M.I.` naming convention.
+- Restricted the width of the "Notes and Instructions for the HRMO" block in the IER export to span a maximum of 10 columns (columns A-J) to prevent merged-cell conflicts when concealing data privacy columns.
+- Changed browser form validations for numerical assessment fields (Rating, Hours, Years) by swapping `type="number"` with explicitly regex-filtered `type="text"` inputs to safely bypass destructive browser-native decimal handling bugs.
+
 ## 2026-07-08 16:30 (v1.1.2-Release+202607081630)
 ### ADDED
 - Added `appointmentEffectivity` date field in the Step 5 assignment modal and database schema.

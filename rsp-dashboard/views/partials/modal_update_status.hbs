@@ -1,0 +1,37 @@
+<div class="modal fade glass-modal" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-warning" id="updateStatusTitle">Update Applicant Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="updateStatusForm">
+                <div class="modal-body pb-4">
+                    <input type="hidden" id="updateStatusId">
+                    <p class="text-muted mb-3">Updating status for: <strong id="updateStatusName" class="text-dark"></strong></p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select" id="updateStatusSelect" required>
+                            <option value="PENDING">Step 1: Pending</option>
+                            <option value="QUALIFIED">Step 1: Qualified</option>
+                            <option value="DISQUALIFIED">Step 1: Disqualified</option>
+                            <option value="WAITING_FOR_ASSESSMENT">Step 2: Deliberation (Waiting for Assessment)</option>
+                            <option value="ASSESSED">Step 3: Assessed</option>
+                            <option value="NO_APPEARANCE">Step 3: No Appearance</option>
+                            <option value="NEWLY_PROMOTED">Step 3: Newly Promoted</option>
+                            <option value="WAITING">Step 4: Requirements (Waiting)</option>
+                            <option value="ASSIGNED">Step 5: Assigned</option>
+                            <option value="COMPLETED">Step 5: Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light shadow-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary shadow-sm" id="saveStatusBtn">
+                        <i class="bi bi-check-lg"></i> Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

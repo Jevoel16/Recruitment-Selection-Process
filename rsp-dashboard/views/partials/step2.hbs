@@ -42,10 +42,10 @@
                         {{#each step2}}
                         <tr>
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                            <td class="fw-medium applicant-name-display-{{this.id}}">{{this.name}}</td>
+                            <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                             <td>{{this.position}}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-info action-btn text-white fw-bold shadow-sm" onclick="openAssessmentModal({{this.id}}, '{{this.name}}')">
+                                <button class="btn btn-sm btn-info action-btn text-white fw-bold shadow-sm" onclick="openAssessmentModal({{this.id}}, '{{titleCase this.name}}')">
                                     <i class="bi bi-pencil-square"></i> Assess
                                 </button>
                             </td>
@@ -62,7 +62,7 @@
                                 {{else}}<span class="badge bg-warning text-dark">Pending</span>{{/if}}
                             </td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{this.name}}')" {{#unless (eq this.assessmentRemarks 'Assessed')}}disabled title="Must be fully Assessed"{{/unless}}>
+                                <button class="btn btn-sm btn-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{titleCase this.name}}')" {{#unless (eq this.assessmentRemarks 'Assessed')}}disabled title="Must be fully Assessed"{{/unless}}>
                                     <i class="bi bi-arrow-right-circle"></i> Move
                                 </button>
                             </td>

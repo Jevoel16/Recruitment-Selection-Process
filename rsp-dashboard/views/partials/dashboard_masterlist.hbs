@@ -55,7 +55,7 @@
                             {{#each applicants}}
                             <tr>
                                 <td class="ps-4 pe-3 text-nowrap"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                                <td class="fw-medium px-3 applicant-name-display-{{this.id}}">{{this.name}}</td>
+                                <td class="fw-medium px-3 applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                                 <td class="px-4 text-nowrap">{{this.category}}</td>
                                 <td class="px-4 text-nowrap">
                                     {{#if (eq this.status 'PENDING')}}<span class="badge bg-warning text-dark">Step 1: Pending</span>{{/if}}
@@ -70,11 +70,11 @@
                                     {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Step 5: Completed</span>{{/if}}
                                 </td>
                                 <td class="text-center px-4 text-nowrap">
-                                    <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="openApplicantDetailsModal({{this.id}}, '{{this.name}}', '{{this.assignedOffice}}', '{{this.category}}', '{{this.applicationCode}}', '{{this.status}}')" title="Applicant Details"><i class="bi bi-card-list"></i> Details</button>
+                                    <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="openApplicantDetailsModal({{this.id}}, '{{titleCase this.name}}', '{{this.assignedOffice}}', '{{this.category}}', '{{this.applicationCode}}', '{{this.status}}')" title="Applicant Details"><i class="bi bi-card-list"></i> Details</button>
                                 </td>
                                 <td class="text-center pe-4 ps-3 text-nowrap">
                                     <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openUpdateStatusModal({{this.id}}, '{{this.name}}', '{{this.status}}')" title="Update Status"><i class="bi bi-pencil"></i> Update</button>
+                                        <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openUpdateStatusModal({{this.id}}, '{{titleCase this.name}}', '{{this.status}}')" title="Update Status"><i class="bi bi-pencil"></i> Update</button>
                                         <button class="btn btn-sm btn-danger action-btn shadow-sm px-2 py-1" onclick="deleteApplicant({{this.id}})" title="Delete Applicant"><i class="bi bi-trash"></i> Delete</button>
                                     </div>
                                 </td>

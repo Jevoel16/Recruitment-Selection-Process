@@ -1,5 +1,17 @@
 const escapeHtml = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+const toTitleCase = (str) => {
+    if (!str || typeof str !== 'string') return str;
+    if (str.toUpperCase() === 'N/A') return 'N/A';
+    return str.split(' ').map(word => {
+        if (!word) return '';
+        // Keep roman numerals and common acronyms if they are all caps? Let's just strictly apply Title Case as requested, but handle hyphens/slashes.
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
+};
+
+const escapeTitle = (str) => escapeHtml(toTitleCase(str));
+
 function generateIERHtml(exportType, positionFilter, posData, applicants, allEdu, allTrain, allExp, allElig) {
     const vAnnounce = posData?.vacancyAnnouncement || '';
     const pItem = posData?.plantillaItem || '';
@@ -8,6 +20,10 @@ function generateIERHtml(exportType, positionFilter, posData, applicants, allEdu
     const qsTrain = posData?.qsTraining || '';
     const qsExp = posData?.qsExperience || '';
     const qsElig = posData?.qsEligibility || '';
+
+    const showName = (exportType === 'withName' || exportType === 'withDetails' || exportType === 'true');
+    const showDetails = (exportType === 'withDetails');
+    const totalCols = showDetails ? 18 : (showName ? 10 : 9);
 
     let html = `
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
@@ -47,24 +63,29 @@ function generateIERHtml(exportType, positionFilter, posData, applicants, allEdu
 </head>
 <body>
 <table>
-    <tr class="no-border"><td colspan="7"></td><td colspan="2" style="text-align: right; font-weight: bold; font-size: 14pt;">Annex D</td></tr>
-    <tr class="no-border"><td colspan="9" style="text-align: center; font-size: 16pt; font-weight: bold;">INITIAL EVALUATION RESULT (IER)</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">Position: <span style="font-weight: bold;">${escapeHtml(positionFilter)}</span></td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">VACANCY ANNOUNCEMENT NO. ${escapeHtml(vAnnounce)}</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">PLANTILLA ITEM/S NUMBER: ${escapeHtml(pItem)}</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">Salary Grade and Monthly Salary: ${escapeHtml(sGrade)}</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">Qualification Standards:</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Education: ${escapeHtml(qsEdu)}</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Training: ${escapeHtml(qsTrain)}</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Experience: ${escapeHtml(qsExp)}</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="9">&nbsp;&nbsp;&nbsp;&nbsp;Eligibility: ${escapeHtml(qsElig)}</td></tr>
-    <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
+    <tr class="no-border"><td colspan="${totalCols - 2}"></td><td colspan="2" style="text-align: right; font-weight: bold; font-size: 14pt;">Annex D</td></tr>
+    <tr class="no-border"><td colspan="${totalCols}" style="text-align: center; font-size: 16pt; font-weight: bold;">INITIAL EVALUATION RESULT (IER)</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">Position: <span style="font-weight: bold;">${escapeHtml(positionFilter)}</span></td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">VACANCY ANNOUNCEMENT NO. ${escapeHtml(vAnnounce)}</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">PLANTILLA ITEM/S NUMBER: ${escapeHtml(pItem)}</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">Salary Grade and Monthly Salary: ${escapeHtml(sGrade)}</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">Qualification Standards:</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">&nbsp;&nbsp;&nbsp;&nbsp;Education: ${escapeHtml(qsEdu)}</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">&nbsp;&nbsp;&nbsp;&nbsp;Training: ${escapeHtml(qsTrain)}</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">&nbsp;&nbsp;&nbsp;&nbsp;Experience: ${escapeHtml(qsExp)}</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols}">&nbsp;&nbsp;&nbsp;&nbsp;Eligibility: ${escapeHtml(qsElig)}</td></tr>
+    <tr class="no-border"><td colspan="${totalCols}">&nbsp;</td></tr>
     <tr class="bordered" style="font-size: 12pt;">
-        <th rowspan="2" style="width: 3%;">No.</th><th rowspan="2" style="width: 8%;">Application<br>Code${(exportType === 'withName' || exportType === 'withDetails') ? '<br>& Name' : ''}</th><th rowspan="2" style="width: 24%;">Education</th>
+        <th rowspan="2" style="width: 3%;">No.</th>
+        <th rowspan="2" style="width: 8%;">Application<br>Code</th>
+        ${showName ? '<th rowspan="2" style="width: 15%;">Name</th>' : ''}
+        ${showDetails ? '<th colspan="9" style="width: 30%;">Personal Information</th>' : ''}
+        <th rowspan="2" style="width: 24%;">Education</th>
         <th colspan="2" style="width: 28%;">Training</th><th colspan="2" style="width: 19%;">Experience</th><th rowspan="2" style="width: 10%;">Eligibility</th>
         <th rowspan="2" style="width: 8%;">Remarks<br>(Qualified or<br>Disqualified)</th>
     </tr>
     <tr class="bordered" style="font-size: 12pt;">
+        ${showDetails ? '<th style="width: 6%;">Birthdate</th><th style="width: 4%;">Sex</th><th style="width: 6%;">Civil Status</th><th style="width: 6%;">Religion</th><th style="width: 6%;">Disability</th><th style="width: 6%;">Ethnic Group</th><th style="width: 8%;">Email Address</th><th style="width: 8%;">Contact No.</th><th style="width: 15%;">Address</th>' : ''}
         <th style="width: 24%;">Title</th><th style="width: 4%;">Hours</th><th style="width: 15%;">Details</th><th style="width: 4%;">Years</th>
     </tr>`;
 
@@ -77,10 +98,10 @@ function generateIERHtml(exportType, positionFilter, posData, applicants, allEdu
 
         const eduStr = edu.length ? edu.map(e => escapeHtml(e.degree)).join('<br>') : 'N/A';
         const trainTitleStr = train.length ? train.map(t => escapeHtml(t.title)).join('<br>') : 'N/A';
-        const trainHoursStr = train.length ? train.map(t => escapeHtml(t.hours)).join('<br>') : '0';
+        const trainHoursStr = train.length ? train.map(t => escapeHtml(t.hours)).join('<br>') : 'N/A';
         const expDetailsStr = exp.length ? exp.map(e => escapeHtml(e.details)).join('<br>') : 'N/A';
-        const expYearsStr = exp.length ? exp.map(e => escapeHtml(e.years)).join('<br>') : '0';
-        const eligStr = elig.length ? elig.map(e => escapeHtml(e.details) + (e.rating ? ' (' + escapeHtml(e.rating) + ')' : '')).join('<br>') : 'NONE';
+        const expYearsStr = exp.length ? exp.map(e => escapeHtml(e.years)).join('<br>') : 'N/A';
+        const eligStr = elig.length ? elig.map(e => escapeHtml(e.details) + (e.rating ? ' (' + escapeHtml(e.rating) + ')' : '')).join('<br>') : 'N/A';
         
         const eduHasDisq = edu.some(e => e.status === 'DISQUALIFIED');
         const trainHasDisq = train.some(t => t.status === 'DISQUALIFIED');
@@ -90,22 +111,65 @@ function generateIERHtml(exportType, positionFilter, posData, applicants, allEdu
         let remarks = app.status === 'QUALIFIED' ? 'QUALIFIED' : (app.status === 'DISQUALIFIED' ? 'DISQUALIFIED' : '');
         let remarksStyle = remarks === 'DISQUALIFIED' ? 'color: red;' : '';
 
-        let appName = `${escapeHtml(app.lastName || '')}, ${escapeHtml(app.firstName || '')}`;
-        if (app.nameExtension) appName += ` ${escapeHtml(app.nameExtension)}`;
-        if (app.middleName) appName += ` ${escapeHtml(app.middleName)}`;
-        appName = appName.replace(/^,\s*/, '').trim();
+        let appName = `${escapeTitle(app.lastName || '')}, ${escapeTitle(app.firstName || '')}`;
+        if (app.nameExtension) appName += ` ${escapeTitle(app.nameExtension)}`;
+        if (app.middleName) {
+            const mi = app.middleName.trim().charAt(0).toUpperCase();
+            if (mi) appName += `, ${mi}.`;
+        }
+        appName = appName.replace(/^,\s*/, '').replace(/,\s*,/g, ',').trim();
 
         let extraDetails = '';
-        if (exportType === 'withName' || exportType === 'true') {
-            extraDetails = `<br><b>${appName}</b>`;
-        } else if (exportType === 'withDetails') {
-            extraDetails = `<br><b>${appName}</b><br><span style="font-size: 8pt; font-weight: normal;">Sex: ${escapeHtml(app.sex || 'N/A')}<br>Status: ${escapeHtml(app.civilStatus || 'N/A')}<br>Contact: ${escapeHtml(app.contactNumber || 'N/A')}<br>Address: ${escapeHtml(app.address || 'N/A')}</span>`;
+        if (showName) {
+            extraDetails = `<b>${appName}</b>`;
+        }
+        
+        let detailsHtml = '';
+        if (showDetails) {
+            let birthdate = 'N/A';
+            if (app.birthdate) {
+                const b = new Date(app.birthdate);
+                if (!isNaN(b)) birthdate = escapeHtml(b.toISOString().split('T')[0]);
+            }
+            let sexVal = 'N/A';
+            if (app.sex) {
+                if (app.sex.toLowerCase() === 'male') sexVal = 'M';
+                else if (app.sex.toLowerCase() === 'female') sexVal = 'F';
+                else sexVal = escapeHtml(app.sex);
+            }
+
+            let addressStr = 'N/A';
+            if (app.address) {
+                try {
+                    const parsedObj = JSON.parse(app.address);
+                    let parts = [];
+                    if (parsedObj.res_barangay) parts.push(parsedObj.res_barangay);
+                    if (parsedObj.res_city) parts.push(parsedObj.res_city);
+                    addressStr = parts.length > 0 ? parts.join(', ') : app.address;
+                } catch(e) {
+                    addressStr = app.address;
+                }
+            }
+
+            detailsHtml = `
+                <td>${birthdate}</td>
+                <td>${sexVal}</td>
+                <td>${escapeTitle(app.civilStatus || 'N/A')}</td>
+                <td>${escapeTitle(app.religion || 'N/A')}</td>
+                <td>${escapeTitle(app.disability || 'N/A')}</td>
+                <td>${escapeTitle(app.ethnicGroup || 'N/A')}</td>
+                <td>${escapeHtml(app.emailAddress || 'N/A')}</td>
+                <td style="mso-number-format:'\\@';">${escapeHtml(app.contactNo || 'N/A')}</td>
+                <td>${escapeTitle(addressStr)}</td>
+            `;
         }
 
         html += `
     <tr class="bordered">
         <td>${count}</td>
-        <td>${escapeHtml(app.applicationCode)}${extraDetails}</td>
+        <td>${escapeHtml(app.applicationCode)}</td>
+        ${showName ? `<td>${extraDetails}</td>` : ''}
+        ${showDetails ? detailsHtml : ''}
         <td style="${eduHasDisq ? 'color: red;' : ''}">${eduStr}</td>
         <td style="${trainHasDisq ? 'color: red;' : ''}">${trainTitleStr}</td>
         <td style="${trainHasDisq ? 'color: red;' : ''}">${trainHoursStr}</td>
@@ -120,17 +184,20 @@ function generateIERHtml(exportType, positionFilter, posData, applicants, allEdu
     const d = new Date();
     const currentDateStr = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
+    const notesColspan = Math.min(totalCols, 10);
     html += `
-    <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: left;">Prepared and certified correct by:</td></tr>
-    <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: center; font-weight: bold; text-decoration: underline;">AZOR B. QUIJANO</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: center;">Administrative Officer IV (Personnel)</td></tr>
-    <tr class="no-border" style="font-size: 12pt;"><td colspan="7"></td><td colspan="2" style="text-align: center;">Date: ${currentDateStr}</td></tr>
-    <tr class="no-border"><td colspan="9">&nbsp;</td></tr>
-    <tr class="no-border"><td colspan="9" style="font-weight: bold;">Notes and Instructions for the HRMO:</td></tr>
-    <tr class="no-border"><td colspan="9">&nbsp;&nbsp;&nbsp;a) For the purpose of posting the IER, Column C (Name of the applicant) and Column L (Remarks) shall be concealed in accordance with RA No. 10163 (Data Privacy Act). The only information that shall be made public are the Application Code, Education, Training, Experience, Eligibility, and the Remarks (Qualified or Disqualified).</td></tr>
-    <tr class="no-border"><td colspan="9">&nbsp;&nbsp;&nbsp;b) If the information does not apply to the applicant, please put N/A.</td></tr>
+    <tr class="no-border"><td colspan="${totalCols}">&nbsp;</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols - 2}"></td><td colspan="2" style="text-align: left;">Prepared and certified correct by:</td></tr>
+    <tr class="no-border"><td colspan="${totalCols}">&nbsp;</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols - 2}"></td><td colspan="2" style="text-align: center; font-weight: bold; text-decoration: underline;">AZOR B. QUIJANO</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols - 2}"></td><td colspan="2" style="text-align: center;">Administrative Officer IV (Personnel)</td></tr>
+    <tr class="no-border" style="font-size: 12pt;"><td colspan="${totalCols - 2}"></td><td colspan="2" style="text-align: center;">Date: ${currentDateStr}</td></tr>
+    <tr class="no-border"><td colspan="${totalCols}">&nbsp;</td></tr>
+    <tr class="no-border"><td colspan="${notesColspan}" style="font-weight: bold;">Notes and Instructions for the HRMO:</td></tr>
+    ${showDetails ? 
+    `<tr class="no-border"><td colspan="${notesColspan}">&nbsp;&nbsp;&nbsp;a) For the purpose of posting the IER, columns D to M shall be concealed in accordance with RA No. 10163 (Data Privacy Act). The only information that shall be made public are the application codes, qualifications of the applicants in terms of Education, Training, Experience, Eligibility, and Competency (if applicable), and remark on whether Qualified or Disqualified</td></tr>` : 
+    `<tr class="no-border"><td colspan="${notesColspan}">&nbsp;&nbsp;&nbsp;a) For the purpose of posting the IER, Column C (Name of the applicant) and the Remarks shall be concealed in accordance with RA No. 10163 (Data Privacy Act). The only information that shall be made public are the Application Code, Education, Training, Experience, Eligibility, and the Remarks (Qualified or Disqualified).</td></tr>`}
+    <tr class="no-border"><td colspan="${notesColspan}">&nbsp;&nbsp;&nbsp;b) If the information does not apply to the applicant, please put N/A.</td></tr>
 </table>
 </body>
 </html>`;
@@ -229,7 +296,7 @@ function generateCARHtml(exportType, positionFilter, posData, applicants) {
 
         let extraDetails = '';
         if (exportType === 'withDetails') {
-            extraDetails = `<br><span style="font-size: 8pt; font-weight: normal;">Sex: ${escapeHtml(app.sex || 'N/A')}<br>Status: ${escapeHtml(app.civilStatus || 'N/A')}<br>Contact: ${escapeHtml(app.contactNumber || 'N/A')}<br>Address: ${escapeHtml(app.address || 'N/A')}</span>`;
+            extraDetails = `<br><span style="font-size: 8pt; font-weight: normal;">Sex: ${escapeHtml(app.sex || 'N/A')}<br>Status: ${escapeHtml(app.civilStatus || 'N/A')}<br>Contact: ${escapeHtml(app.contactNo || 'N/A')}<br>Address: ${escapeHtml(app.address || 'N/A')}</span>`;
         }
 
         html += `

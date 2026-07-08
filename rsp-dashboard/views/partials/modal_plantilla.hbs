@@ -1,0 +1,26 @@
+<div class="modal fade glass-modal" id="plantillaModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-success" id="plantillaModalTitle">Setup Plantilla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="plantillaForm">
+                <div class="modal-body pb-4">
+                    <input type="hidden" id="plantillaPosId" name="id">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Plantilla Item Numbers</label>
+                        <textarea class="form-control" id="plantillaItemNumbers" rows="4" placeholder="e.g. OSEC-DECSB-ADAS2-12000-2015, OSEC-DECSB-ADAS2-12001-2015" required></textarea>
+                        <div class="form-text text-muted">Separate multiple item numbers with a comma. The vacancy count will be automatically calculated based on the number of items.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light shadow-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary shadow-sm" id="savePlantillaBtn">
+                        <i class="bi bi-save"></i> Save Setup
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -154,48 +154,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-        function renderPlantillaInputs(count, existingValues = []) {
-            const container = document.getElementById('plantillaItemsContainer');
-            container.innerHTML = '';
-            for(let i = 0; i < count; i++) {
-                const val = existingValues[i] ? existingValues[i].trim() : '';
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'form-control plantilla-item-input';
-                input.placeholder = `Plantilla Number ${i + 1}`;
-                input.value = val;
-                input.required = true;
-                container.appendChild(input);
-            }
-        }
-
-        const vacCountInput = document.getElementById('plantillaVacancyCount');
-        if (vacCountInput) {
-            vacCountInput.addEventListener('input', function() {
-                let count = parseInt(this.value);
-                if (count > 100) {
-                    this.value = 100;
-                    count = 100;
-                }
-                if (isNaN(count) || count < 1) return;
-                // Preserve current inputs before re-rendering
-                const currentInputs = Array.from(document.querySelectorAll('.plantilla-item-input')).map(inp => inp.value);
-                renderPlantillaInputs(count, currentInputs);
-            });
-        }
-
         document.querySelectorAll('.plantilla-setup-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.getElementById('plantillaModalTitle').innerText = this.getAttribute('data-title');
                 document.getElementById('plantillaPosId').value = this.getAttribute('data-id');
                 
-                const count = parseInt(this.getAttribute('data-count')) || 1;
-                document.getElementById('plantillaVacancyCount').value = count;
-                
                 const plantillaStr = this.getAttribute('data-plantilla') || '';
-                const existingValues = plantillaStr.split(',').map(s => s.trim()).filter(s => s);
-                
-                renderPlantillaInputs(count, existingValues);
+                document.getElementById('plantillaItemNumbers').value = plantillaStr;
             });
         });
 
@@ -209,17 +174,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.disabled = true;
 
                 const id = document.getElementById('plantillaPosId').value;
-                const vacancyCount = document.getElementById('plantillaVacancyCount').value;
+                const rawPlantillaStr = document.getElementById('plantillaItemNumbers').value;
                 
-                const inputs = Array.from(document.querySelectorAll('.plantilla-item-input'));
-                const hasEmpty = inputs.some(inp => inp.value.trim() === '');
-                if (hasEmpty) {
-                    alert('Please fill out all Plantilla Item fields before saving.');
+                const items = rawPlantillaStr.split(',').map(s => s.trim()).filter(s => s !== '');
+                if (items.length === 0) {
+                    alert('Please enter at least one Plantilla Item number.');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
                 }
-                const plantillaItem = inputs.map(inp => inp.value.trim()).join(', ');
+                
+                const vacancyCount = items.length;
+                const plantillaItem = items.join(', ');
 
                 try {
                     const response = await fetch(`/api/positions/${id}/plantilla`, {

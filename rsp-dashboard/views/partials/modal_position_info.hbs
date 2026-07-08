@@ -1,0 +1,59 @@
+<div class="modal fade glass-modal" id="positionInfoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary" id="positionInfoModalTitle">Position Info</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="positionForm">
+                <div class="modal-body pb-4">
+                    <input type="hidden" id="modalPosId" name="id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Vacancy Announcement (URL / Reference)</label>
+                            <input type="text" class="form-control" id="modalPosVacancy" name="vacancyAnnouncement">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Salary Grade</label>
+                            <input type="text" class="form-control" id="modalPosSalaryGrade" name="salaryGrade">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Monthly Salary</label>
+                            <input type="text" class="form-control" id="modalPosMonthlySalary" name="monthlySalary">
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Current Active Plantilla Items</label>
+                            <div id="modalPosPlantillaList" class="p-2 border rounded-3 bg-light text-muted"></div>
+                            <input type="hidden" id="modalPosPlantillaHidden" name="plantillaItem">
+                            <div class="form-text">Plantilla items are managed via the 'Setup' button.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">QS: Education</label>
+                            <textarea class="form-control" id="modalPosEdu" name="qsEducation" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">QS: Training</label>
+                            <textarea class="form-control" id="modalPosTrain" name="qsTraining" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">QS: Experience</label>
+                            <textarea class="form-control" id="modalPosExp" name="qsExperience" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">QS: Eligibility</label>
+                            <textarea class="form-control" id="modalPosElig" name="qsEligibility" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary shadow-sm" id="savePositionBtn">
+                        <i class="bi bi-save"></i> Save Info
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

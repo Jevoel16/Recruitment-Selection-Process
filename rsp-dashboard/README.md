@@ -13,7 +13,7 @@ A web-based platform to digitize the recruitment selection process.
 - **MVC Architecture:** Structured logically with decoupled routes, controllers, and database interfaces for long-term scalability.
 - **Audit Logging:** Implemented `morgan` middleware for filtered professional audit trailing and tracking metrics on document exports.
 - **Concurrency Locks (SSE & JWT):** Robust anti-deadlock mechanisms using JWT tracking cookies alongside continuous Server-Sent Events (SSE) background streams that drop locks instantly upon browser tab closure.
-- **Dynamic Seeding & Setup:** Dedicated scripts to safely initialize the database and dynamically map raw text-based qualification standards.
+- **Dynamic Seeding & Setup:** Dedicated scripts to safely initialize the database and dynamically map raw text-based qualification standards, including a high-concurrency 1000-applicant seeder with fully randomized, realistic JSON metadata.
 
 ### Applicant & Vacancy Management
 - **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades and fully editable text-based qualification standards.
@@ -29,7 +29,7 @@ A web-based platform to digitize the recruitment selection process.
 - **Step 5:** Assignment Orders (Generate A4 Word Document (.docx) Assignment Letters with advanced formatting and CC support)
 
 ### UI/UX & Modularity
-- **Component Modularization:** Sub-divided monolithic frontend templates into clean, feature-specific Handlebars partials, completely eliminating redundant files like `dashboard_modals.hbs` in favor of a single-source-of-truth structure.
+- **Component Modularization:** Sub-divided monolithic frontend templates into clean, feature-specific Handlebars partials, eliminating redundant files in favor of a single-source-of-truth structure, complemented by global formatting helpers (e.g., `titleCase`).
 - **Searchable Dropdowns:** Integrated `Choices.js` globally to transform standard form selects into advanced, searchable dropdowns without compromising z-index UI layering in modals.
 - **Real-Time Validations:** Form validations using active keystroke prevention restricting incorrect input values (such as dynamically capping assessment inputs) natively on the frontend.
 - **Stateful UI & Instant DOM Updates:** Dashboard features persistent state retention across manual page reloads using browser History APIs and session storage, alongside lightning-fast instant DOM updates for CRUD operations to eliminate full page reloads.
