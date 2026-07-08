@@ -3,6 +3,7 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
     const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     let rankTitle = 'Teacher I';
+    let appEffectivity = '';
     let appCC1 = '', appCCDesignation1 = '';
     let appCC2 = '', appCCDesignation2 = '';
     let appCC3 = '', appCCDesignation3 = '';
@@ -14,6 +15,15 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
             const data = await res.json();
             const applicant = data.applicant || data;
             if (applicant.position) rankTitle = applicant.position;
+            if (applicant.appointmentEffectivity) {
+                const parts = applicant.appointmentEffectivity.split('-');
+                if (parts.length === 3) {
+                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                    appEffectivity = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                } else {
+                    appEffectivity = applicant.appointmentEffectivity;
+                }
+            }
 
             appCC1 = applicant.cc || '';
             appCCDesignation1 = applicant.ccDesignation || '';
@@ -50,10 +60,10 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
     const templateData = {
         "Assignment_Order_No": orderNum,
         "DATE": formattedDate,
-        "\"COMPLETE_NAME\"": name.toUpperCase(),
+        "COMPLETE_NAME": name.toUpperCase(),
         "CURRENT_POSITION": rankTitle,
         "OFFICE": office,
-        "APPOINTMENT_EFFECTIVITY": "",
+        "APPOINTMENT_EFFECTIVITY": appEffectivity,
         "APPROVED_BY": "ARTURO B. BAYOCOT, CESO III",
         "POSITION_OF_APPROVER": "Regional Director",
         "CC_1": appCC1.toUpperCase(),

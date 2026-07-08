@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-07-08 16:30 (v1.1.2-Release+202607081630)
+### ADDED
+- Added `appointmentEffectivity` date field in the Step 5 assignment modal and database schema.
+- Added "Newly Promoted" and "No Appearance" buttons/statuses in the Step 2 evaluative assessment, enforcing a 0-score calculation while maintaining them on the Step 3 leaderboard and CAR exports.
+
+### CHANGED
+- Refactored Excel export generation (IER and CAR) out of their respective Express routes into a dedicated utility file `utils/excelGenerator.js` for better modularity.
+- Updated IER and CAR exports to support distinct export modes: "With Name", "With Personal Details" (currently disabled), and "Without Name".
+- Ensured "Without Name" CAR export strictly maintains anonymity by completely stripping the Applicant Name column for public posting compliance.
+
+### FIXED
+- Fixed a workflow disruption where assessed applicants were failing to transition to the Step 3 module by correcting the UI submission endpoint to use `PUT /status` instead of a non-existent `/score` route.
+- Corrected the high-concurrency API seeder script (`seed.js`) to properly finalize the `ASSESSED` status of applicants, ensuring accurate Step 3 population.
+
+### REMOVED
+- Removed obsolete `alter.js` database migration script and cleaned up lingering unused variable declarations from the export routes.
+
 ## 2026-07-08 14:15 (v1.1.1-Release+202607081415)
 ### ADDED
 - Implemented `Choices.js` searchable dropdown integration globally for Assessment calculators to replace basic selects and fix overlapping UI layers.

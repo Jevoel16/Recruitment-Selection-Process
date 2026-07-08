@@ -23,8 +23,8 @@ A web-based platform to digitize the recruitment selection process.
 
 ### Evaluation & Workflow System (Steps 1-5)
 - **Step 1:** Initial Evaluation (Qualify/Disqualify Applicants & Generate Official Word (.docx) Evaluation forms)
-- **Step 2:** Deliberation Sheet (Assess & Input Interview Scores)
-- **Step 3:** Comparative Assessments (Leaderboard based on Scores)
+- **Step 2:** Deliberation Sheet (Assess & Input Interview Scores; support for "No Appearance" and "Newly Promoted" overrides)
+- **Step 3:** Comparative Assessments (Leaderboard based on Scores with seamless CAR excel exports handling privacy masking)
 - **Step 4:** Requirements Collection & Tracking (Monitor missing requirements and qualify for Assignment)
 - **Step 5:** Assignment Orders (Generate A4 Word Document (.docx) Assignment Letters with advanced formatting and CC support)
 

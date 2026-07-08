@@ -20,6 +20,7 @@ router.post('/applicants/:id/requirements/all', applicantController.toggleAllReq
 router.post('/applicants/:id/requirement', applicantController.updateRequirement);
 router.post('/applicants/:id/assess', applicantController.assessApplicant);
 router.post('/applicants/:id/no-appearance', applicantController.noAppearanceApplicant);
+router.post('/applicants/:id/newly-promoted', applicantController.newlyPromotedApplicant);
 router.post('/applicants/:id/proceed-requirements', applicantController.proceedRequirements);
 router.post('/applicants/:id/toggle-assignment-req', applicantController.toggleAssignmentReq);
 router.post('/applicants/:id/assign', applicantController.assignApplicant);

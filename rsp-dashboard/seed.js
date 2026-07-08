@@ -99,7 +99,7 @@ async function seed() {
                     applicationType: Math.random() > 0.5 ? 'Walk-in' : 'Online',
                     district: 'District ' + (Math.floor(Math.random() * 6) + 1),
                     address: '123 Seed Street',
-                    age: Math.floor(Math.random() * 20) + 22,
+                    birthdate: '1990-01-01',
                     sex: Math.random() > 0.5 ? 'Male' : 'Female',
                     civilStatus: 'Single',
                     religion: 'Catholic',
@@ -192,7 +192,11 @@ async function seed() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(scorePayload)
                 });
-                await fetch(`${API_BASE}/applicants/${id}/score`, { method: 'POST' });
+                await fetch(`${API_BASE}/applicants/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'ASSESSED' })
+                });
             });
             await Promise.all(batchPromises);
             await delay(100);
@@ -229,7 +233,13 @@ async function seed() {
                     body: JSON.stringify({ 
                         office: offices[Math.floor(Math.random() * offices.length)],
                         cc: 'Juan Dela Cruz',
-                        ccDesignation: 'Division Head'
+                        ccDesignation: 'Division Head',
+                        cc_2: 'Maria Clara',
+                        ccDesignation_2: 'Department Manager',
+                        cc_3: 'Jose Rizal',
+                        ccDesignation_3: 'Operations Head',
+                        cc_4: 'Andres Bonifacio',
+                        ccDesignation_4: 'HR Director'
                     })
                 });
             });

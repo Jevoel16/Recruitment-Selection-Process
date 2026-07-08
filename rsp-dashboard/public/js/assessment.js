@@ -675,13 +675,14 @@ if (step2SummaryForm) {
         const id = document.getElementById('step2SummaryApplicantId').value;
         
         try {
-            const res = await fetch(`/api/applicants/${id}/score`, {
-                method: 'POST',
+            const res = await fetch(`/api/applicants/${id}/status`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+                body: JSON.stringify({ status: 'ASSESSED' })
             });
             if (res.ok) {
                 window.showToast('Moved to Step 3 successfully!', 'success', true);
+                setTimeout(() => location.reload(), 1000);
             }
         } catch (err) {
             console.error(err);
@@ -707,6 +708,24 @@ async function markNoAppearance() {
     }
 }
 window.markNoAppearance = markNoAppearance;
+
+async function markNewlyPromoted() {
+    const id = document.getElementById('assessmentApplicantId').value;
+    try {
+        const res = await fetch(`/api/applicants/${id}/newly-promoted`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            window.showToast('Applicant marked as Newly Promoted!', 'success', true);
+            bootstrap.Modal.getInstance(document.getElementById('assessmentModal')).hide();
+        }
+    } catch (err) {
+        console.error(err);
+        window.showToast('Error updating status', 'danger');
+    }
+}
+window.markNewlyPromoted = markNewlyPromoted;
 
 // Move modals to body to fix stacking context issues
 document.addEventListener('DOMContentLoaded', function() { document.querySelectorAll('.modal').forEach(function(m) { document.body.appendChild(m); }); });

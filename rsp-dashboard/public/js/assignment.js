@@ -54,6 +54,7 @@ if (assignForm) {
         e.preventDefault();
         const id = document.getElementById('assignId').value;
         const office = document.getElementById('assignedOffice').value;
+        const appointmentEffectivity = document.getElementById('appointmentEffectivity') ? document.getElementById('appointmentEffectivity').value : null;
         const ccCount = document.getElementById('ccCountDropdown') ? parseInt(document.getElementById('ccCountDropdown').value) : 0;
         const cc = ccCount >= 1 ? document.getElementById('assignedCC').value : null;
         const ccDesignation = ccCount >= 1 ? document.getElementById('assignedCCDesignation').value : null;
@@ -68,7 +69,7 @@ if (assignForm) {
             const res = await fetch(`/api/applicants/${id}/assign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ office, cc, ccDesignation, cc_2, ccDesignation_2, cc_3, ccDesignation_3, cc_4, ccDesignation_4 })
+                body: JSON.stringify({ office, appointmentEffectivity, cc, ccDesignation, cc_2, ccDesignation_2, cc_3, ccDesignation_3, cc_4, ccDesignation_4 })
             });
             if (res.ok) {
                 window.showToast('Assigned Successfully!', 'success', true);
@@ -88,6 +89,7 @@ async function openAssignModal(id, name) {
     document.getElementById('assignId').value = id;
     document.getElementById('assignName').innerText = name;
     document.getElementById('assignedOffice').value = '';
+    if (document.getElementById('appointmentEffectivity')) document.getElementById('appointmentEffectivity').value = '';
     
     if(document.getElementById('ccCountDropdown')) {
         document.getElementById('ccCountDropdown').value = '0';

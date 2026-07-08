@@ -273,7 +273,7 @@
 
 <script>
     // Make positions map available to frontend
-    const positionsByCategory = {
+    const dynamicPositionsByCategory = {
         {{#each groupedPositions}}
         "{{this.categoryName}}": [
             {{#each this.positions}}
@@ -283,19 +283,19 @@
         {{/each}}
     };
 
-    let currentWizardCategory = '';
+    let dynamicWizardCategory = '';
     let currentPositions = [];
     let currentPage = 1;
     const itemsPerPage = 10;
 
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            selectCategory(e.target.getAttribute('data-category'));
+            handleCategorySelection(e.target.getAttribute('data-category'));
         });
     });
 
-    function selectCategory(cat) {
-        currentWizardCategory = cat;
+    function handleCategorySelection(cat) {
+        dynamicWizardCategory = cat;
         document.getElementById('positionSelection').classList.remove('d-none');
         document.getElementById('selectedCategoryTitle').innerText = `${cat} Positions`;
         document.getElementById('categorySelectionTitle').classList.add('d-none');
@@ -311,7 +311,7 @@
         });
         
         document.getElementById('positionSearch').value = '';
-        currentPositions = positionsByCategory[cat] || [];
+        currentPositions = dynamicPositionsByCategory[cat] || [];
         filterAndPaginatePositions(1);
     }
 
@@ -319,39 +319,42 @@
         currentPage = page;
         const searchQuery = document.getElementById('positionSearch').value.toLowerCase();
         
-        const filteredPositions = currentPositions.filter(pos => pos.toLowerCase().includes(searchQuery));
-        const totalPages = Math.ceil(filteredPositions.length / itemsPerPage);
-        
-        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-        
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const paginatedPositions = filteredPositions.slice(startIndex, startIndex + itemsPerPage);
-        
-        const list = document.getElementById('positionList');
-        list.innerHTML = '';
-        
-        if (filteredPositions.length === 0) {
-            list.innerHTML = '<div class="p-4 text-muted text-center fs-6 bg-light">No positions found.</div>';
-            renderPagination(0);
-            return;
+        let filtered = currentPositions;
+        if (searchQuery) {
+            filtered = currentPositions.filter(p => p.toLowerCase().includes(searchQuery));
         }
 
-        paginatedPositions.forEach(pos => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'list-group-item list-group-item-action py-2 px-4 d-flex justify-content-between align-items-center border-bottom';
-            btn.innerHTML = `<span class="fw-semibold text-dark" style="font-size: 0.95rem;">${pos}</span> <i class="bi bi-chevron-right text-primary small"></i>`;
-            btn.onclick = () => selectPosition(currentWizardCategory, pos);
-            list.appendChild(btn);
-        });
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
         
+        if (currentPage > totalPages) currentPage = totalPages;
+        
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = startIdx + itemsPerPage;
+        const paginated = filtered.slice(startIdx, endIdx);
+
+        const list = document.getElementById('positionList');
+        list.innerHTML = '';
+
+        if (paginated.length === 0) {
+            list.innerHTML = '<div class="p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No positions found.</div>';
+        } else {
+            paginated.forEach(pos => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 border-bottom bg-transparent fw-medium';
+                btn.innerHTML = `<span>${pos}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
+                btn.onclick = () => handlePositionSelection(pos);
+                list.appendChild(btn);
+            });
+        }
+
         renderPagination(totalPages);
     }
 
     function renderPagination(totalPages) {
-        const pagination = document.getElementById('positionPagination');
-        pagination.innerHTML = '';
-        
+        const container = document.getElementById('paginationContainer');
+        container.innerHTML = '';
         if (totalPages <= 1) return;
         
         const createEllipsis = () => {
@@ -396,13 +399,17 @@
 
         cleanPagination.forEach((p, index) => {
             if (p.isEllipsis) {
-                pagination.appendChild(createEllipsis());
+                container.appendChild(createEllipsis());
             } else {
                 const isFirst = index === 0;
                 const isLast = index === cleanPagination.length - 1;
-                pagination.appendChild(createLi(p.page, p.page, p.isCurrent, isFirst, isLast));
+                container.appendChild(createLi(p.page, p.page, p.isCurrent, isFirst, isLast));
             }
         });
+    }
+
+    function handlePositionSelection(pos) {
+        handleWizardPositionSelection(dynamicWizardCategory, pos);
     }
 
     function backToCategories() {
@@ -415,7 +422,7 @@
         document.getElementById('wizardStep0').classList.remove('d-none');
     }
 
-    function selectPosition(cat, pos) {
+    function handleWizardPositionSelection(cat, pos) {
         document.getElementById('wizardCategory').value = cat;
         document.getElementById('wizardPosition').value = pos;
         document.getElementById('selectedPositionText').innerText = `${cat} > ${pos}`;
@@ -756,12 +763,10 @@
 {{> index_modals}}
 </div>
 </div>
-<!-- Bootstrap Bundle with Popper -->
-<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+
 <!-- Custom Script -->
 <script src="/js/requirements.js"></script>
 <script src="/js/qualifications.js"></script>
-<script src="/js/scores.js"></script>
 <script src="/js/assignment.js"></script>
 <script src="/js/applicantDetails.js"></script>
 <script src="/js/documents.js"></script>

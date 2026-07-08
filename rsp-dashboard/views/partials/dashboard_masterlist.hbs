@@ -64,6 +64,7 @@
                                     {{#if (eq this.status 'WAITING_FOR_ASSESSMENT')}}<span class="badge bg-info text-dark">Step 2: Deliberation</span>{{/if}}
                                     {{#if (eq this.status 'ASSESSED')}}<span class="badge bg-primary">Step 3: Assessed</span>{{/if}}
                                     {{#if (eq this.status 'NO_APPEARANCE')}}<span class="badge bg-danger">Step 3: No Appearance</span>{{/if}}
+                                    {{#if (eq this.status 'NEWLY_PROMOTED')}}<span class="badge bg-primary">Step 3: Newly Promoted</span>{{/if}}
                                     {{#if (eq this.status 'WAITING')}}<span class="badge bg-secondary">Step 4: Requirements</span>{{/if}}
                                     {{#if (eq this.status 'ASSIGNED')}}<span class="badge bg-success shadow-sm border border-light">Step 5: Assigned</span>{{/if}}
                                     {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Step 5: Completed</span>{{/if}}

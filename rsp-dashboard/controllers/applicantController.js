@@ -233,9 +233,9 @@ exports.toggleAssignmentReq = async (req, res) => {
 // Also deducts the corresponding vacancy count from the specific position/plantilla to enforce capacity limits natively in the database.
 exports.assignApplicant = async (req, res) => {
     try {
-        const { office, cc, ccDesignation, cc_2, ccDesignation_2, cc_3, ccDesignation_3, cc_4, ccDesignation_4 } = req.body;
-        await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ?, cc = ?, ccDesignation = ?, cc_2 = ?, ccDesignation_2 = ?, cc_3 = ?, ccDesignation_3 = ?, cc_4 = ?, ccDesignation_4 = ? WHERE id = ?`, 
-            [office, cc || null, ccDesignation || null, cc_2 || null, ccDesignation_2 || null, cc_3 || null, ccDesignation_3 || null, cc_4 || null, ccDesignation_4 || null, req.params.id]);
+        const { office, appointmentEffectivity, cc, ccDesignation, cc_2, ccDesignation_2, cc_3, ccDesignation_3, cc_4, ccDesignation_4 } = req.body;
+        await db.query(`UPDATE applicants SET status = 'ASSIGNED', assignedOffice = ?, appointmentEffectivity = ?, cc = ?, ccDesignation = ?, cc_2 = ?, ccDesignation_2 = ?, cc_3 = ?, ccDesignation_3 = ?, cc_4 = ?, ccDesignation_4 = ? WHERE id = ?`, 
+            [office, appointmentEffectivity || null, cc || null, ccDesignation || null, cc_2 || null, ccDesignation_2 || null, cc_3 || null, ccDesignation_3 || null, cc_4 || null, ccDesignation_4 || null, req.params.id]);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -517,6 +517,16 @@ exports.updateEligibility = async (req, res) => {
 exports.noAppearanceApplicant = async (req, res) => {
     try {
         await db.query(`UPDATE applicants SET status = 'NO_APPEARANCE', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+};
+
+exports.newlyPromotedApplicant = async (req, res) => {
+    try {
+        await db.query(`UPDATE applicants SET status = 'NEWLY_PROMOTED', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (error) {
         console.error(error);

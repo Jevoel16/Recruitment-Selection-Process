@@ -293,7 +293,7 @@ exports.getStepPage = async (req, res, next) => {
     const stepsConfig = {
         'step1': { conditions: "status IN ('PENDING', 'QUALIFIED', 'DISQUALIFIED')", orderBy: "createdAt ASC" },
         'step2': { conditions: "status = 'WAITING_FOR_ASSESSMENT'", orderBy: "createdAt ASC" },
-        'step3': { conditions: "status IN ('ASSESSED', 'NO_APPEARANCE')", orderBy: "assessmentTotal DESC" },
+        'step3': { conditions: "status IN ('ASSESSED', 'NO_APPEARANCE', 'NEWLY_PROMOTED')", orderBy: "assessmentTotal DESC" },
         'step4': { conditions: "status = 'WAITING'", orderBy: "createdAt ASC" },
         'step5': { conditions: "status = 'ASSIGNED'", orderBy: "createdAt ASC" }
     };

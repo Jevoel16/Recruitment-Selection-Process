@@ -28,13 +28,14 @@
                                 <option value="">All Status</option>
                                 <option value="ASSESSED" {{#if (eq statusFilter 'ASSESSED')}}selected{{/if}}>Assessed</option>
                                 <option value="NO_APPEARANCE" {{#if (eq statusFilter 'NO_APPEARANCE')}}selected{{/if}}>No Appearance</option>
+                                <option value="NEWLY_PROMOTED" {{#if (eq statusFilter 'NEWLY_PROMOTED')}}selected{{/if}}>Newly Promoted</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <a href="/api/export/car{{#if positionFilter}}?position={{positionFilter}}{{/if}}" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold text-nowrap" style="white-space: nowrap;">
+                        <button type="button" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold text-nowrap" style="white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#carDownloadModal">
                             <i class="bi bi-file-earmark-spreadsheet me-2"></i> Download CAR
-                        </a>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -65,8 +66,10 @@
                                 </button>
                             </td>
                             <td class="fw-bold text-primary text-center">#{{incOffset @index ../offset}}</td>
-                            <td class="text-center fw-bold {{#if (eq this.status 'NO_APPEARANCE')}}text-danger{{else}}text-success{{/if}} fs-5">
+                            <td class="text-center fw-bold {{#if (eq this.status 'NO_APPEARANCE')}}text-danger{{else if (eq this.status 'NEWLY_PROMOTED')}}text-primary{{else}}text-success{{/if}} fs-5">
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
+                                    0
+                                {{else if (eq this.status 'NEWLY_PROMOTED')}}
                                     0
                                 {{else}}
                                     {{#unless (eq this.scores.total null)}}
@@ -79,6 +82,8 @@
                             <td class="text-center">
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
                                     <span class="badge bg-danger">No Appearance</span>
+                                {{else if (eq this.status 'NEWLY_PROMOTED')}}
+                                    <span class="badge bg-primary">Newly Promoted</span>
                                 {{else}}
                                     <span class="badge bg-success">Assessed</span>
                                 {{/if}}
@@ -88,6 +93,9 @@
                                 <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{this.name}}')" title="Move to Step 4"><i class="bi bi-arrow-right-circle"></i> Move</button>
                                 {{/if}}
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
+                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
+                                {{/if}}
+                                {{#if (eq this.status 'NEWLY_PROMOTED')}}
                                 <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
                                 {{/if}}
                             </td>
