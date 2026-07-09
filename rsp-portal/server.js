@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 const hbs = require('hbs');
 const path = require('path');
 const db = require('./db');
@@ -39,11 +40,13 @@ function getShortenedPosition(position) {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
-app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
+const staticOptions = { maxAge: '30d' };
+app.use(express.static(path.join(__dirname, 'public'), staticOptions));
+app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist'), staticOptions));
+app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font'), staticOptions));
 
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -146,4 +149,4 @@ app.post('/api/apply', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`RSP Portal running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`RSP Portal running on port ${PORT} at 0.0.0.0`));

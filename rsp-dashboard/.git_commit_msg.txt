@@ -1,9 +1,0 @@
-refactor: streamline UI/UX, standardize pagination, and add RPMS 10-point scale
-
-- Added "Performance Rating (RPMS 10-point scale)" calculation logic to the Step 2 evaluation calculators.
-- Updated Midpoint Helper dropdown labels to explicitly display minimum and maximum criteria ranges while removing redundant "Midpoint:" text.
-- Synchronized "Add Applicant" category grid aesthetics (folder icons, hover effects) to match the "Vacancy Setup" design.
-- Standardized pagination globally by replacing legacy manual controls in the unified applicant wizard modal with `PaginationHelper.js`.
-- Fixed a global JS collision (`backToCategories`) preventing backward navigation in the standalone Applicant Wizard.
-- Purged all unused `(CT)` positions from the database seeder to reduce bloat.
-- Cleaned up obsolete Excel templates (`ADAS-IER.xlsx`, etc.) from the repository since exports are now entirely generated via `exceljs`.
