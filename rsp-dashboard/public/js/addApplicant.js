@@ -1,7 +1,6 @@
     let dynamicWizardCategory = '';
     let currentPositions = [];
-    let currentPage = 1;
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
 
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -11,27 +10,16 @@
 
     function handleCategorySelection(cat) {
         dynamicWizardCategory = cat;
+        document.getElementById('categorySelectionContainer').classList.add('d-none');
         document.getElementById('positionSelection').classList.remove('d-none');
-        document.getElementById('selectedCategoryTitle').innerText = `${cat} Positions`;
-        document.getElementById('categorySelectionTitle').classList.add('d-none');
-        
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            if (btn.getAttribute('data-category') === cat) {
-                btn.classList.remove('btn-outline-primary');
-                btn.classList.add('btn-primary', 'shadow');
-            } else {
-                btn.classList.remove('btn-primary', 'shadow');
-                btn.classList.add('btn-outline-primary');
-            }
-        });
+        document.getElementById('selectedCategoryTitle').innerText = `${cat}`;
         
         document.getElementById('positionSearch').value = '';
         currentPositions = window.dynamicPositionsByCategory ? (window.dynamicPositionsByCategory[cat] || []) : [];
-        filterAndPaginatePositions(1);
+        filterAndPaginatePositions(true);
     }
 
-    function filterAndPaginatePositions(page = 1) {
-        currentPage = page;
+    function filterAndPaginatePositions(resetPage = false) {
         const searchQuery = document.getElementById('positionSearch').value.toLowerCase();
         
         let filtered = currentPositions;
@@ -39,99 +27,48 @@
             filtered = currentPositions.filter(p => p.toLowerCase().includes(searchQuery));
         }
 
-        const totalItems = filtered.length;
-        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-        
-        if (currentPage > totalPages) currentPage = totalPages;
-        
-        const startIdx = (currentPage - 1) * itemsPerPage;
-        const endIdx = startIdx + itemsPerPage;
-        const paginated = filtered.slice(startIdx, endIdx);
+        if (typeof PaginationHelper !== 'undefined') {
+            PaginationHelper.paginateArray('addAppPositions', filtered, itemsPerPage, (paginated, currentPg, totalPgs) => {
+                const list = document.getElementById('positionList');
+                list.innerHTML = '';
 
-        const list = document.getElementById('positionList');
-        list.innerHTML = '';
+                if (paginated.length === 0) {
+                    list.innerHTML = '<div class="p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No positions found.</div>';
+                } else {
+                    paginated.forEach(pos => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 border-bottom bg-transparent fw-medium';
+                        btn.innerHTML = `<span>${pos}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
+                        btn.onclick = () => handlePositionSelection(pos);
+                        list.appendChild(btn);
+                    });
+                }
 
-        if (paginated.length === 0) {
-            list.innerHTML = '<div class="p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No positions found.</div>';
-        } else {
-            paginated.forEach(pos => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 border-bottom bg-transparent fw-medium';
-                btn.innerHTML = `<span>${pos}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
-                btn.onclick = () => handlePositionSelection(pos);
-                list.appendChild(btn);
-            });
+                const container = document.getElementById('positionPaginationContainer');
+                if (container) {
+                    if (filtered.length > itemsPerPage) {
+                        container.classList.remove('d-none');
+                        container.classList.add('d-block');
+                    } else {
+                        container.classList.add('d-none');
+                        container.classList.remove('d-block');
+                    }
+                }
+            }, resetPage, 'positionPaginationContainer');
         }
-
-        renderPagination(totalPages);
-    }
-
-    function renderPagination(totalPages) {
-        const container = document.getElementById('positionPagination');
-        container.innerHTML = '';
-        if (totalPages <= 1) return;
-        
-        const createEllipsis = () => {
-            const li = document.createElement('li');
-            li.className = 'page-item disabled';
-            li.innerHTML = '<span class="page-link border-0 bg-transparent text-muted">...</span>';
-            return li;
-        };
-        
-        const createLi = (text, pageNum, active, isFirst, isLast) => {
-            const li = document.createElement('li');
-            li.className = `page-item ${active ? 'active' : ''}`;
-            const a = document.createElement('a');
-            
-            let extraClasses = 'rounded-circle';
-            if (isFirst) extraClasses = 'page-first';
-            else if (isLast) extraClasses = 'page-last';
-            
-            a.className = `page-link mx-1 ${active ? 'shadow-sm' : ''} ${extraClasses}`;
-            a.href = 'javascript:void(0)';
-            a.innerHTML = text;
-            if (!active) {
-                a.onclick = () => filterAndPaginatePositions(pageNum);
-            }
-            li.appendChild(a);
-            return li;
-        };
-
-        const paginationList = [];
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
-                paginationList.push({ page: i, isCurrent: i === currentPage });
-            } else if (i === currentPage - 3 || i === currentPage + 3) {
-                paginationList.push({ isEllipsis: true });
-            }
-        }
-
-        const cleanPagination = paginationList.filter((p, index, arr) => {
-            if (p.isEllipsis && arr[index - 1] && arr[index - 1].isEllipsis) return false;
-            return true;
-        });
-
-        cleanPagination.forEach((p, index) => {
-            if (p.isEllipsis) {
-                container.appendChild(createEllipsis());
-            } else {
-                const isFirst = index === 0;
-                const isLast = index === cleanPagination.length - 1;
-                container.appendChild(createLi(p.page, p.page, p.isCurrent, isFirst, isLast));
-            }
-        });
     }
 
     function handlePositionSelection(pos) {
         handleWizardPositionSelection(dynamicWizardCategory, pos);
     }
 
-    function backToCategories() {
-        // Obsolete as categories remain visible
+    function addAppBackToCategories() {
+        document.getElementById('positionSelection').classList.add('d-none');
+        document.getElementById('categorySelectionContainer').classList.remove('d-none');
     }
 
-    function backToPositions() {
+    function addAppBackToPositions() {
         document.getElementById('addApplicantTitle').innerHTML = '<i class="bi bi-person-plus-fill me-2"></i>New Applicant Wizard';
         document.getElementById('wizardStep1').classList.add('d-none');
         document.getElementById('wizardStep0').classList.remove('d-none');

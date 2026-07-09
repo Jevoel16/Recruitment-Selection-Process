@@ -37,7 +37,15 @@ exports.getDashboard = async (req, res) => {
         for (const row of rows) {
             if (row.title) positionList.push(row.title);
             if (!groupedPositions[row.category]) {
-                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [], vacantCount: 0, totalCount: 0 };
+                groupedPositions[row.category] = { 
+                    categoryName: row.category, 
+                    categorySlug: row.category.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase(),
+                    hasVacancy: false, 
+                    positions: [], 
+                    positionGroups: {}, 
+                    vacantCount: 0, 
+                    totalCount: 0 
+                };
             }
             groupedPositions[row.category].totalCount++;
             totalPositionsCount++;
@@ -47,6 +55,20 @@ exports.getDashboard = async (req, res) => {
                 totalVacantCount++;
             }
             groupedPositions[row.category].positions.push(row);
+
+            let groupName = row.title;
+            const groupMatch = row.title.match(/^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX|X)$/);
+            if (groupMatch) {
+                groupName = groupMatch[1];
+            }
+            if (!groupedPositions[row.category].positionGroups[groupName]) {
+                groupedPositions[row.category].positionGroups[groupName] = { 
+                    groupName: groupName, 
+                    groupSlug: groupName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase(),
+                    positions: [] 
+                };
+            }
+            groupedPositions[row.category].positionGroups[groupName].positions.push(row);
         }
 
         const page = parseInt(req.query.page) || 1;
@@ -142,7 +164,15 @@ exports.getDashboardPosition = async (req, res, next) => {
             if (row.title) positionList.push(row.title);
             if (row.id == req.params.id) selectedPosition = row;
             if (!groupedPositions[row.category]) {
-                groupedPositions[row.category] = { categoryName: row.category, hasVacancy: false, positions: [], vacantCount: 0, totalCount: 0 };
+                groupedPositions[row.category] = { 
+                    categoryName: row.category, 
+                    categorySlug: row.category.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase(),
+                    hasVacancy: false, 
+                    positions: [], 
+                    positionGroups: {}, 
+                    vacantCount: 0, 
+                    totalCount: 0 
+                };
             }
             groupedPositions[row.category].totalCount++;
             totalPositionsCount++;
@@ -152,6 +182,20 @@ exports.getDashboardPosition = async (req, res, next) => {
                 totalVacantCount++;
             }
             groupedPositions[row.category].positions.push(row);
+            
+            let groupName = row.title;
+            const groupMatch = row.title.match(/^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX|X)$/);
+            if (groupMatch) {
+                groupName = groupMatch[1];
+            }
+            if (!groupedPositions[row.category].positionGroups[groupName]) {
+                groupedPositions[row.category].positionGroups[groupName] = { 
+                    groupName: groupName, 
+                    groupSlug: groupName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase(),
+                    positions: [] 
+                };
+            }
+            groupedPositions[row.category].positionGroups[groupName].positions.push(row);
         }
         
         const page = parseInt(req.query.page) || 1;

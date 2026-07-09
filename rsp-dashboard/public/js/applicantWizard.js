@@ -47,6 +47,46 @@ const positionsByCategory = {
 };
 
 let currentWizardCategory = '';
+let currentPosPage = 1;
+const posPerPage = 5;
+let filteredPositions = [];
+
+function renderCategoryGrid() {
+    const cats = Object.keys(positionsByCategory);
+    const container = document.getElementById('categorySelection');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    let colClass = 'col-12';
+    if (cats.length >= 4) colClass = 'col-6';
+    else if (cats.length === 3) colClass = 'col-4';
+    else if (cats.length === 2) colClass = 'col-6';
+    
+    cats.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = colClass;
+        
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-outline-primary w-100 py-4 fw-bold rounded-4 shadow-sm bg-white';
+        
+        // Add folder icon
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-folder-fill fs-3 d-block mb-2';
+        btn.appendChild(icon);
+        
+        const span = document.createElement('span');
+        span.className = 'fs-6';
+        span.innerText = cat;
+        btn.appendChild(span);
+        
+        btn.onclick = () => selectCategory(cat);
+        div.appendChild(btn);
+        
+        container.appendChild(div);
+    });
+}
 
 window.selectCategory = function(cat) {
     currentWizardCategory = cat;
@@ -54,16 +94,37 @@ window.selectCategory = function(cat) {
     document.getElementById('positionSelection').classList.remove('d-none');
     document.getElementById('selectedCategoryTitle').innerText = `${cat} Positions`;
     
+    filteredPositions = positionsByCategory[cat] || [];
+    currentPosPage = 1;
+    renderPositionPage();
+};
+
+window.renderPositionPage = function() {
     const list = document.getElementById('positionList');
     list.innerHTML = '';
-    positionsByCategory[cat].forEach(pos => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'list-group-item list-group-item-action py-3';
-        btn.innerText = pos;
-        btn.onclick = () => selectPosition(cat, pos);
-        list.appendChild(btn);
-    });
+    
+    PaginationHelper.paginateArray('wizardPositions', filteredPositions, posPerPage, (paginatedItems, currentPage, totalPages) => {
+        paginatedItems.forEach(pos => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action py-3 fw-semibold text-secondary';
+            btn.innerText = pos;
+            btn.onclick = () => selectPosition(currentWizardCategory, pos);
+            list.appendChild(btn);
+        });
+        
+        // Update pagination controls visibility
+        const container = document.getElementById('modalPositionPaginationContainer');
+        if (container) {
+            if (filteredPositions.length > posPerPage) {
+                container.classList.remove('d-none');
+                container.classList.add('d-block');
+            } else {
+                container.classList.add('d-none');
+                container.classList.remove('d-block');
+            }
+        }
+    }, false, 'modalPositionPaginationContainer');
 };
 
 window.backToCategories = function() {
@@ -93,6 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('positionSelection').classList.add('d-none');
         document.getElementById('wizardStep1').classList.add('d-none');
         document.getElementById('addApplicantForm').reset();
+        
+        renderCategoryGrid();
     });
 
     const addApplicantForm = document.getElementById('addApplicantForm');

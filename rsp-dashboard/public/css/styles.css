@@ -432,3 +432,10 @@ body {
 .modal.fade .modal-dialog {
     transition: transform 0.10s ease-out !important;
 }
+
+/* Category Button Hover (Green) */
+.category-btn-hover:hover {
+    background-color: #198754 !important; /* Bootstrap success */
+    border-color: #198754 !important;
+    color: white !important;
+}

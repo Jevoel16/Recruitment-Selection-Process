@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const hbs = require('hbs');
@@ -21,18 +22,20 @@ morgan.token('localdate', () => new Date().toLocaleString());
 app.use(morgan('[:localdate] :method :url :status :response-time ms - :res[content-length]', {
     skip: function (req, res) { return req.method === 'GET' }
 }));
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(identityMiddleware);
 
 // Serve static assets for application public directory and third-party dependencies
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
-app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
-app.use('/pizzip', express.static(path.join(__dirname, 'node_modules/pizzip/dist')));
-app.use('/docxtemplater', express.static(path.join(__dirname, 'node_modules/docxtemplater/build')));
-app.use('/file-saver', express.static(path.join(__dirname, 'node_modules/file-saver/dist')));
+const staticOptions = { maxAge: '30d' };
+app.use(express.static(path.join(__dirname, 'public'), staticOptions));
+app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist'), staticOptions));
+app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font'), staticOptions));
+app.use('/pizzip', express.static(path.join(__dirname, 'node_modules/pizzip/dist'), staticOptions));
+app.use('/docxtemplater', express.static(path.join(__dirname, 'node_modules/docxtemplater/build'), staticOptions));
+app.use('/file-saver', express.static(path.join(__dirname, 'node_modules/file-saver/dist'), staticOptions));
 
 
 // Initialize Handlebars view engine and register partial components
@@ -83,8 +86,8 @@ async function ensureRequirementColumns() {
 async function startServer() {
     try {
         await ensureRequirementColumns();
-        app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}`);
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });
     } catch (error) {
         console.error('Failed to initialize requirement columns:', error.message);

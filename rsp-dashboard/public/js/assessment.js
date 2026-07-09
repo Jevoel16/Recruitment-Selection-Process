@@ -373,6 +373,13 @@ function togglePerfInputs() {
         labelEl.innerText = 'Rating (x) [Max 5]';
         helpEl.innerText = 'Enter RPMS rating (0-5) or midpoint value.';
         helperDiv.classList.remove('d-none');
+    } else if (method === 'rpms10') {
+        ratingDiv.classList.remove('d-none');
+        inputEl.max = 10;
+        inputEl.step = '0.001';
+        labelEl.innerText = 'Rating (x) [Max 10]';
+        helpEl.innerText = 'Enter RPMS rating (0-10).';
+        helperDiv.classList.add('d-none');
     } else if (method === 'gwa') {
         ratingDiv.classList.remove('d-none');
         inputEl.max = 100;
@@ -418,6 +425,8 @@ function calculatePerfPoints() {
         
         if (method === 'rpms') {
             points = (x / 5) * wa;
+        } else if (method === 'rpms10') {
+            points = (x / 10) * wa;
         } else if (method === 'gwa') {
             points = (x / 100) * wa;
         }

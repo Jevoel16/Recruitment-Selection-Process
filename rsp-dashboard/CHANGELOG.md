@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-09 15:52 (v1.1.5-Release+202607091552)
+### ADDED
+- Integrated "Performance Rating (RPMS 10-point scale)" calculation logic into the Evaluation Method options in Step 2.
+- Added explicit minimum and maximum criteria ranges to the Midpoint Helper labels for enhanced clarity during manual data entry.
+
+### CHANGED
+- Synchronized the visual design of the standalone "Add Applicant" category grid to perfectly match the "Vacancy Setup" grid (large folder icons, consistent hover states, and unified pagination layout).
+- Refactored `applicantWizard.js` and standalone modules to resolve JavaScript global function collisions (`backToCategories`), ensuring flawless backward navigation across both contexts.
+
+### REMOVED
+- Purged unused `(CT)` positions (e.g., Accountant II (CT), Clerk III (CT)) from the primary `seed_positions.js` database initializer.
+- Removed legacy manual pagination controls from the unified applicant wizard modal, replacing them entirely with the standardized `PaginationHelper` logic.
+- Deleted deprecated Excel template files (`ADAS-IER.xlsx`, `Non-Teaching SG 1-9.xlsx`) as the system now dynamically natively generates Excel exports from scratch via `exceljs`.
+
 ## 2026-07-09 08:22 (v1.1.4-Release+202607090822)
 ### ADDED
 - Implemented corresponding numerical Level Increment selections for Qualification Standards (Education, Training, Experience) directly within the Position Info Modal.

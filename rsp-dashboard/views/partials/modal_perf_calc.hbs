@@ -11,6 +11,7 @@
                         <label class="form-label fw-bold">Evaluation Method</label>
                         <select class="form-select mb-2" id="perfEvalMethod" onchange="togglePerfInputs(); calculatePerfPoints()">
                             <option value="rpms">Performance Rating (RPMS 5-point scale)</option>
+                            <option value="rpms10">Performance Rating (RPMS 10-point scale)</option>
                             <option value="gwa">CS Eligibility / Board Exam / GWA (100-point scale)</option>
                             <option value="summa">Honor Graduate - Summa Cum Laude (Auto 20 pts)</option>
                             <option value="magna">Honor Graduate - Magna Cum Laude (Auto 19 pts)</option>
@@ -26,11 +27,11 @@
                             <label class="form-label small text-muted">Midpoint Helper (External Applicants)</label>
                             <select class="form-select form-select-sm" id="perfMidpointHelper" onchange="applyMidpoint()">
                                 <option value="">-- Select Adjectival Rating --</option>
-                                <option value="4.75">Outstanding (4.75)</option>
-                                <option value="3.995">Very Satisfactory (3.995)</option>
-                                <option value="2.995">Satisfactory (2.995)</option>
-                                <option value="1.995">Unsatisfactory (1.995)</option>
-                                <option value="0.7495">Poor (0.7495)</option>
+                                <option value="4.75">Outstanding (4.500 - 5.000)</option>
+                                <option value="3.995">Very Satisfactory (3.500 - 4.499)</option>
+                                <option value="2.995">Satisfactory (2.500 - 3.499)</option>
+                                <option value="1.995">Unsatisfactory (1.500 - 2.499)</option>
+                                <option value="0.7495">Poor (Below 1.500)</option>
                             </select>
                         </div>
                     </div>

@@ -73,7 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
     <script>
+    async function initDashboard() {
+        filterVacancyTable();
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        initDashboard();
 
         document.querySelectorAll('.vacancy-toggle').forEach(toggle => {
             toggle.addEventListener('change', async function() {
@@ -259,24 +264,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.style.display = 'none';
             }
         });
-        
-        // Hide/Show Category Group Headers based on visible rows
-        document.querySelectorAll('.vacancy-category-group').forEach(group => {
-            const category = group.getAttribute('data-category');
+
+        // Hide/Show Position Group Wrappers based on visible rows
+        document.querySelectorAll('.vacancy-group-wrapper').forEach(wrapper => {
+            const category = wrapper.getAttribute('data-category');
             if (selectedCategory && category !== selectedCategory) {
-                group.style.display = 'none';
+                wrapper.classList.add('search-hidden');
+                return;
+            }
+            const rowsInGroup = wrapper.querySelectorAll('.vacancy-row');
+            let hasVisibleRow = Array.from(rowsInGroup).some(row => row.style.display !== 'none');
+            
+            if (hasVisibleRow) {
+                wrapper.classList.remove('search-hidden');
+                if (query) {
+                    const collapse = wrapper.querySelector('.accordion-collapse');
+                    if (collapse && !collapse.classList.contains('show')) {
+                        const bsCollapse = bootstrap.Collapse.getInstance(collapse) || new bootstrap.Collapse(collapse, {toggle: false});
+                        bsCollapse.show();
+                    }
+                }
+            } else {
+                wrapper.classList.add('search-hidden');
+            }
+        });
+        
+        // Hide/Show Category Group Headers based on visible groups
+        let firstVisibleTab = null;
+        document.querySelectorAll('.vacancy-category-group').forEach(pane => {
+            const category = pane.getAttribute('data-category');
+            const gridItem = document.querySelector(`.vacancy-category-grid-item[data-category="${category}"]`);
+            const slug = pane.getAttribute('id').replace('v-pills-', '');
+            
+            if (selectedCategory && category !== selectedCategory) {
+                if (gridItem) gridItem.style.display = 'none';
                 return;
             }
             
-            const rowsInCategory = document.querySelectorAll(`.vacancy-row[data-category="${category}"]`);
-            let hasVisibleRow = Array.from(rowsInCategory).some(row => row.style.display !== 'none');
+            const groupsInCategory = pane.querySelectorAll('.vacancy-group-wrapper:not(.search-hidden)');
+            let hasVisibleGroup = groupsInCategory.length > 0;
             
-            if (hasVisibleRow || (!query && (!selectedCategory || selectedCategory === category))) {
-                group.style.display = '';
+            if (hasVisibleGroup) {
+                if (gridItem) gridItem.style.display = '';
+                if (!firstVisibleTab) firstVisibleTab = pane;
             } else {
-                group.style.display = 'none';
+                if (gridItem) gridItem.style.display = 'none';
             }
+
+            // Apply pagination for this category
+            applyPagination(slug);
         });
+        
+        if (firstVisibleTab && (query || selectedCategory)) {
+            const slug = firstVisibleTab.getAttribute('id').replace('v-pills-', '');
+            const title = firstVisibleTab.getAttribute('data-category');
+            if (typeof showVacancyCategory === 'function') {
+                showVacancyCategory(slug, title);
+            }
+        } else if (!query && !selectedCategory && typeof showVacancyCategorySelection === 'function') {
+            showVacancyCategorySelection();
+        }
+    }
+
+    const itemsPerPage = 5;
+
+    function applyPagination(slug) {
+        const pane = document.getElementById('v-pills-' + slug);
+        if (!pane) return;
+        
+        const allGroups = pane.querySelectorAll('.vacancy-group-wrapper:not(.search-hidden)');
+        
+        // Hide all groups first to avoid flickering
+        pane.querySelectorAll('.vacancy-group-wrapper').forEach(wrapper => wrapper.style.display = 'none');
+        
+        PaginationHelper.paginateDOM(`vacancy-${slug}`, allGroups, itemsPerPage, 'pagination-' + slug, true); // Reset page on filter
     }
         async function refreshMetricsTab() {
             try {
