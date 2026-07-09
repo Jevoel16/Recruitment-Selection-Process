@@ -145,8 +145,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('modalPosSalaryGrade').value = this.getAttribute('data-salary');
                 document.getElementById('modalPosMonthlySalary').value = this.getAttribute('data-monthly');
                 document.getElementById('modalPosEdu').value = this.getAttribute('data-edu');
+                document.getElementById('modalPosEduLevel').value = this.getAttribute('data-edu-level') || '';
                 document.getElementById('modalPosTrain').value = this.getAttribute('data-train');
+                document.getElementById('modalPosTrainLevel').value = this.getAttribute('data-train-level') || '';
                 document.getElementById('modalPosExp').value = this.getAttribute('data-exp');
+                document.getElementById('modalPosExpLevel').value = this.getAttribute('data-exp-level') || '';
                 document.getElementById('modalPosElig').value = this.getAttribute('data-elig');
             });
         });

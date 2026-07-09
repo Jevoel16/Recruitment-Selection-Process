@@ -5,12 +5,17 @@ const db = require('../db');
 exports.updatePosition = async (req, res) => {
     try {
         const { id, vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
+        let { qsEducationLevel, qsTrainingLevel, qsExperienceLevel } = req.body;
+
+        qsEducationLevel = qsEducationLevel || null;
+        qsTrainingLevel = qsTrainingLevel || null;
+        qsExperienceLevel = qsExperienceLevel || null;
         
         // Manual validation
         if (!id) return res.status(400).json({ error: "Missing ID" });
 
-        await db.query(`UPDATE positions SET vacancyAnnouncement=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsTraining=?, qsExperience=?, qsEligibility=? WHERE id=?`, 
-            [vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility, id]);
+        await db.query(`UPDATE positions SET vacancyAnnouncement=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsEducationLevel=?, qsTraining=?, qsTrainingLevel=?, qsExperience=?, qsExperienceLevel=?, qsEligibility=? WHERE id=?`, 
+            [vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, id]);
         res.json({ success: true });
     } catch (e) {
         console.error(e);

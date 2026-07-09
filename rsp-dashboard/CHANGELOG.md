@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-09 08:22 (v1.1.4-Release+202607090822)
+### ADDED
+- Implemented corresponding numerical Level Increment selections for Qualification Standards (Education, Training, Experience) directly within the Position Info Modal.
+- Extended the database `positions` schema to support `qsEducationLevel`, `qsTrainingLevel`, and `qsExperienceLevel`.
+
+### CHANGED
+- Overhauled `assessment.js` to automatically fetch and apply the configured position's increment level natively within the Step 2 Evaluation Calculators.
+- Updated `seed.js` and `seed_positions.js` to map default increment levels intelligently (e.g. assigning Level 6 for "Bachelor's degree" and Level 0 for "None required").
+
+### REMOVED
+- Purged temporary scripts and obsolete codes generated during recent updates to maintain repository cleanliness.
+
 ## 2026-07-09 06:10 (v1.1.3-Release+202607090610)
 ### ADDED
 - Implemented `titleCase` Handlebars helper to universally format applicant names in Title Case across the Masterlist and all Step 1-5 workflow tables.

@@ -10,7 +10,10 @@ const positionsData = [
         "qsEducation": "Bachelor of Elementary Education (BEEd) or bachelor's degree plus 18 professional units in Education",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "PBET; Teacher; LET/RA 1080"
+        "qsEligibility": "PBET; Teacher; LET/RA 1080",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "School Administration",
@@ -23,7 +26,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Elementary Education; or Bachelor's\ndegree with 18 professional education units + 6 units of\nManagement",
         "qsTraining": "40 hours of relevant training",
         "qsExperience": "3 years as Principal",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -36,7 +42,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Elementary Education; or Bachelor's degree with 18 professional education units plus 6 units of Management",
         "qsTraining": "40 hours of relevant training",
         "qsExperience": "2 years as principal",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -49,7 +58,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -62,7 +74,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Elementary Education; or Bachelor's degree with 18 professional education units + 6 units of Management",
         "qsTraining": "40 hours of relevant training",
         "qsExperience": "1 year as Principal",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -75,7 +90,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -88,7 +106,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in education or its equivalent with a major and minor, or Bachelor's degree in Arts and Sciences with at least ten (10) units in professional education",
         "qsTraining": "8 hours of relevant training",
         "qsExperience": "2 years of supervisory experience",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -101,7 +122,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -114,7 +138,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Elementary Education; or Bachelor's degree with 18 professional education units",
         "qsTraining": "40 hours of relevant training",
         "qsExperience": "Head Teacher for 1 year; or Teacher-In-Charge for 2 years; or Master Teacher for 2 years; or Teacher for 5 years",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -127,7 +154,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -140,7 +170,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in education or its equivalent with a major and minor, or Bachelor's degree in Arts and Sciences with at least ten (10) units in professional education",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of supervisory experience",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -153,7 +186,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -166,7 +202,10 @@ const positionsData = [
         "qsEducation": "Bachelor's Degree in Elementary Education; or Bachelor's Degree w/ 18 professional education units with appropriate field of specialization",
         "qsTraining": "24 hours of relevant training",
         "qsExperience": "Head Teacher (HT) for 4 years; or Master Teacher for 3 years",
-        "qsEligibility": "PBET/RA 1080/LET/Teacher"
+        "qsEligibility": "PBET/RA 1080/LET/Teacher",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -179,7 +218,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -192,7 +234,10 @@ const positionsData = [
         "qsEducation": "Bachelor's Degree in Elementary Education; or Bachelor's Degree w/ 18 professional education units",
         "qsTraining": "24 hours of relevant training",
         "qsExperience": "Head Teacher (HT) for 2 years; or Teacher-In-Charge for 2 years; or Teacher for 5 years",
-        "qsEligibility": "PBET/RA 1080/LET/Teacher"
+        "qsEligibility": "PBET/RA 1080/LET/Teacher",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -205,7 +250,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -218,7 +266,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Elementary Education; or Bachelor's degree with 18 professional education units",
         "qsTraining": "24 hours of relevant training",
         "qsExperience": "Teacher In Charge for 1 year; or Teacher for 3 years",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -231,7 +282,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -244,7 +298,10 @@ const positionsData = [
         "qsEducation": "Master's Degree in Education or other relevant degree; Master's degree with specific area of specialization",
         "qsTraining": "8 hours of relevant training",
         "qsExperience": "At least 2 years experience as Principal, Head Teacher or Master Teacher",
-        "qsEligibility": "PBET; Teacher; LET/RA 1080"
+        "qsEligibility": "PBET; Teacher; LET/RA 1080",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -257,7 +314,10 @@ const positionsData = [
         "qsEducation": "Master's degree in Education or other relevant Master's degree",
         "qsTraining": "16 hours of relevant training",
         "qsExperience": "5 years cumulative experience in instructional supervision and school management",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -270,7 +330,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -283,7 +346,10 @@ const positionsData = [
         "qsEducation": "Bachelor'S Degree In Education Or Its\nEquivalent And Completion Of Academic\nRequirements For Master'S Degree\nRelevant To The Job",
         "qsTraining": "8 Hours Of Relevant Training",
         "qsExperience": "2 Years Experience In Education, Research,\nDevelopment, Implementation, Or Other\nRelevant Experience",
-        "qsEligibility": "Ra 1080; Career Service (Professional)\nAppropriate Eligibility For Second Level\nPosition"
+        "qsEligibility": "Ra 1080; Career Service (Professional)\nAppropriate Eligibility For Second Level\nPosition",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -296,7 +362,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -309,7 +378,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -322,7 +394,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -335,7 +410,10 @@ const positionsData = [
         "qsEducation": "Bachelor's Degree in Education or its equivalent",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "2 years experience in education, research, development, implementation, or other relevant experience",
-        "qsEligibility": "RA 1080; (Career Service (Professional) / Eligibility for Second Level Position"
+        "qsEligibility": "RA 1080; (Career Service (Professional) / Eligibility for Second Level Position",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -348,7 +426,10 @@ const positionsData = [
         "qsEducation": "Master's degree in Guidance and Counseling",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "RA 1080 (Guidance Counselor)"
+        "qsEligibility": "RA 1080 (Guidance Counselor)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -361,7 +442,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -374,7 +458,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -387,7 +474,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -400,7 +490,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -413,7 +506,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -426,7 +522,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -439,7 +538,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -452,7 +554,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -465,7 +570,10 @@ const positionsData = [
         "qsEducation": "Master's degree in Guidance and Counseling",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "RA 1080 (Guidance Counselor)"
+        "qsEligibility": "RA 1080 (Guidance Counselor)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -478,7 +586,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -491,7 +602,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -504,7 +618,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -517,7 +634,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -530,7 +650,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -543,7 +666,10 @@ const positionsData = [
         "qsEducation": "Master's degree in Guidance and Counseling",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "RA 1080 (Guidance Counselor)"
+        "qsEligibility": "RA 1080 (Guidance Counselor)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -556,7 +682,10 @@ const positionsData = [
         "qsEducation": "Master's degree in Guidance and Counseling",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "RA 1080 (Guidance Counselor)"
+        "qsEligibility": "RA 1080 (Guidance Counselor)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Related Teaching",
@@ -569,7 +698,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -582,7 +714,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -595,7 +730,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -608,7 +746,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Related Teaching",
@@ -621,7 +762,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -634,7 +778,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -647,7 +794,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -660,7 +810,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -673,7 +826,10 @@ const positionsData = [
         "qsEducation": "Master's Degree or Certificate in Leadership and Management from CSC",
         "qsTraining": "40 hours of supervisory/management learning and development intervention undertaken within the last 5 years",
         "qsExperience": "4 years of supervisory/management experience",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -686,7 +842,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -699,7 +858,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -712,7 +874,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -725,7 +890,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -738,7 +906,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -751,7 +922,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -764,7 +938,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -777,7 +954,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -790,7 +970,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -803,7 +986,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -816,7 +1002,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -829,7 +1018,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -842,7 +1034,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -855,7 +1050,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -868,7 +1066,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -881,7 +1082,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -894,7 +1098,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -907,7 +1114,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -920,7 +1130,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -933,7 +1146,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -946,7 +1162,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -959,7 +1178,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -972,7 +1194,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -985,7 +1210,10 @@ const positionsData = [
         "qsEducation": "Bachelor of Law",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "One (1) year relevant experience",
-        "qsEligibility": "RA 1080 (Bar)"
+        "qsEligibility": "RA 1080 (Bar)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -998,7 +1226,10 @@ const positionsData = [
         "qsEducation": "Doctor of Medicine",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "At least 1 year of relevant experience in the practice of\nMedicine",
-        "qsEligibility": "RA 1080 (Physicians Licensure Exam)"
+        "qsEligibility": "RA 1080 (Physicians Licensure Exam)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1011,7 +1242,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1024,7 +1258,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Commerce / Business Administration major in Accounting",
         "qsTraining": "8 hours of relevant training",
         "qsExperience": "2 years of relevant experience",
-        "qsEligibility": "RA 1080 (CPA)"
+        "qsEligibility": "RA 1080 (CPA)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1037,7 +1274,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1050,7 +1290,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Engineering relevant to the job",
         "qsTraining": "8 hours of relevant training",
         "qsExperience": "2 years of relevant experience",
-        "qsEligibility": "RA 1080 (ENGINEER)"
+        "qsEligibility": "RA 1080 (ENGINEER)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1063,7 +1306,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1076,7 +1322,10 @@ const positionsData = [
         "qsEducation": "Bachelors Degree relevant to the job",
         "qsTraining": "8 hours of relevant training",
         "qsExperience": "2 years of relevant experience",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1089,7 +1338,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the job",
         "qsTraining": "8 hours of relevant training",
         "qsExperience": "2 years of relevant experience",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1102,7 +1354,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1115,7 +1370,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1128,7 +1386,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1141,7 +1402,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1154,7 +1418,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1167,7 +1434,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1180,7 +1450,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1193,7 +1466,10 @@ const positionsData = [
         "qsEducation": "Bachelor's Degree relevant to the job",
         "qsTraining": "8 hours of relevant training",
         "qsExperience": "2 years relevant experience",
-        "qsEligibility": "Career Service Professional/2nd Level Eligibility"
+        "qsEligibility": "Career Service Professional/2nd Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1206,7 +1482,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1219,7 +1498,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1232,7 +1514,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1245,7 +1530,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1258,7 +1546,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1271,7 +1562,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1284,7 +1578,10 @@ const positionsData = [
         "qsEducation": "Doctor of Dental Medicine or Dental surgery",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "RA 1080 (Dentist)"
+        "qsEligibility": "RA 1080 (Dentist)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1297,7 +1594,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1310,7 +1610,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1323,7 +1626,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1336,7 +1642,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1349,7 +1658,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1362,7 +1674,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1375,7 +1690,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1388,7 +1706,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the job",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1401,7 +1722,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1414,7 +1738,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1427,7 +1754,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1440,7 +1770,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1453,7 +1786,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1466,7 +1802,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1479,7 +1818,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Library Science or Information\nScience or Bachelor of Science in Education/Arts Major in\nLibrary Science",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "R.A. 1080 (Librarian License)"
+        "qsEligibility": "R.A. 1080 (Librarian License)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1492,7 +1834,10 @@ const positionsData = [
         "qsEducation": "Bachelors degree in Nursing",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year relevant experience",
-        "qsEligibility": "RA 1080"
+        "qsEligibility": "RA 1080",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1505,7 +1850,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1518,7 +1866,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1531,7 +1882,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the Job",
         "qsTraining": "4 hours relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1544,7 +1898,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1557,7 +1914,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1570,7 +1930,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1583,7 +1946,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1596,7 +1962,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1609,7 +1978,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1622,7 +1994,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the job",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "Career Service (Professional)/Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional)/Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1635,7 +2010,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1648,7 +2026,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1661,7 +2042,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1674,7 +2058,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1687,7 +2074,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1700,7 +2090,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1713,7 +2106,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1726,7 +2122,10 @@ const positionsData = [
         "qsEducation": "Bachelor of Library Science or Information Science or any\nBachelor's Degree major in Library Science or Information\nScience",
         "qsTraining": "8 hours relevant training",
         "qsExperience": "2 year relevant experience",
-        "qsEligibility": "RA 1080 (Librarian)"
+        "qsEligibility": "RA 1080 (Librarian)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1739,7 +2138,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1752,7 +2154,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1765,7 +2170,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1778,7 +2186,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1791,7 +2202,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1804,7 +2218,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1817,7 +2234,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1830,7 +2250,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1843,7 +2266,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the job",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -1856,7 +2282,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1869,7 +2298,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1882,7 +2314,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1895,7 +2330,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1908,7 +2346,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1921,7 +2362,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1934,7 +2378,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1947,7 +2394,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1960,7 +2410,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1973,7 +2426,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -1986,7 +2442,10 @@ const positionsData = [
         "qsEducation": "Bachelors Degree in Library Science or Information Science or Bachelor of Science in Education/Arts major in Library Science",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "RA 1080 (Librarian License)"
+        "qsEligibility": "RA 1080 (Librarian License)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -1999,7 +2458,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2012,7 +2474,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2025,7 +2490,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2038,7 +2506,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the job",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2051,7 +2522,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2064,7 +2538,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2077,7 +2554,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Library Science or Information\nScience or Bachelor of Science in Education/Arts major in\nLibrary Science",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "RA 1080 (Librarian)"
+        "qsEligibility": "RA 1080 (Librarian)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2090,7 +2570,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2103,7 +2586,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2116,7 +2602,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2129,7 +2618,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the job",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Professional) Second Level Eligibility"
+        "qsEligibility": "Career Service (Professional) Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2142,7 +2634,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2155,7 +2650,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2168,7 +2666,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2181,7 +2682,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2194,7 +2698,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2207,7 +2714,10 @@ const positionsData = [
         "qsEducation": "Completion of 2 years studies in College",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility"
+        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2220,7 +2730,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2233,7 +2746,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2246,7 +2762,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2259,7 +2778,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2272,7 +2794,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2285,7 +2810,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2298,7 +2826,10 @@ const positionsData = [
         "qsEducation": "Completion of two-year studies in college",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility"
+        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2311,7 +2842,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2324,7 +2858,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2337,7 +2874,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2350,7 +2890,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2363,7 +2906,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2376,7 +2922,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2389,7 +2938,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2402,7 +2954,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2415,7 +2970,10 @@ const positionsData = [
         "qsEducation": "High school graduate",
         "qsTraining": "Four (4) hours of relevant training",
         "qsExperience": "One (1) year of relevant experience",
-        "qsEligibility": "Security Guard License (CSC MC No. 10, s. 2013)"
+        "qsEligibility": "Security Guard License (CSC MC No. 10, s. 2013)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2428,7 +2986,10 @@ const positionsData = [
         "qsEducation": "Completion of two years studies in college",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility"
+        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2441,7 +3002,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2454,7 +3018,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2467,7 +3034,10 @@ const positionsData = [
         "qsEducation": "Completion of two years studies in college or High School Graduate with relevant  vocational/ trade course",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Subprofessional) / First Level Eligibility"
+        "qsEligibility": "Career Service (Subprofessional) / First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2480,7 +3050,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2493,7 +3066,10 @@ const positionsData = [
         "qsEducation": "Completion of two years studies in college or High School Graduate with relevant  vocational/ trade course",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Communications Equipment Operator (MC No. 10, s. 2013 - Cat. II)"
+        "qsEligibility": "Communications Equipment Operator (MC No. 10, s. 2013 - Cat. II)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2506,7 +3082,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2519,7 +3098,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2532,7 +3114,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2545,7 +3130,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2558,7 +3146,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2571,7 +3162,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2584,7 +3178,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2597,7 +3194,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2610,7 +3210,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2623,7 +3226,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2636,7 +3242,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2649,7 +3258,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2662,7 +3274,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2675,7 +3290,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2688,7 +3306,10 @@ const positionsData = [
         "qsEducation": "High School Graduate",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "SECURITY GUARD LICENSE (MC 11.S. 1996 CAT. IV)"
+        "qsEligibility": "SECURITY GUARD LICENSE (MC 11.S. 1996 CAT. IV)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2701,7 +3322,10 @@ const positionsData = [
         "qsEducation": "Completion of two-year studies in college",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility"
+        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2714,7 +3338,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2727,7 +3354,10 @@ const positionsData = [
         "qsEducation": "Completion of two years studies in college or High School Graduate with relevant  vocational/ trade course",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Communications Equipment Operator (MC No. 10, s. 2013)"
+        "qsEligibility": "Communications Equipment Operator (MC No. 10, s. 2013)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2740,7 +3370,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2753,7 +3386,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2766,7 +3402,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2779,7 +3418,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2792,7 +3434,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2805,7 +3450,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2818,7 +3466,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2831,7 +3482,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2844,7 +3498,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2857,7 +3514,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2870,7 +3530,10 @@ const positionsData = [
         "qsEducation": "High School Graduate",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "None Required"
+        "qsEligibility": "None Required",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2883,7 +3546,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2896,7 +3562,10 @@ const positionsData = [
         "qsEducation": "Completion of two-year studies in college",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility"
+        "qsEligibility": "Career Service (Sub-Professional)/First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -2909,7 +3578,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2922,7 +3594,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2935,7 +3610,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2948,7 +3626,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2961,7 +3642,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2974,7 +3658,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -2987,7 +3674,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3000,7 +3690,10 @@ const positionsData = [
         "qsEducation": "High School Graduate",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "Security Guard License (MC 10, s.2013, Cat. IV)"
+        "qsEligibility": "Security Guard License (MC 10, s.2013, Cat. IV)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3013,7 +3706,10 @@ const positionsData = [
         "qsEducation": "Elementary School Graduate",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "MC 10, s. 2013 - Cat. III)"
+        "qsEligibility": "MC 10, s. 2013 - Cat. III)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3026,7 +3722,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3039,7 +3738,10 @@ const positionsData = [
         "qsEducation": "High School Graduate",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "None Required"
+        "qsEligibility": "None Required",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3052,7 +3754,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3065,7 +3770,10 @@ const positionsData = [
         "qsEducation": "Elementary School Graduate",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "None Required (MC 11, s. 96- Cat.III)"
+        "qsEligibility": "None Required (MC 11, s. 96- Cat.III)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3078,7 +3786,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3091,7 +3802,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3104,7 +3818,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3117,7 +3834,10 @@ const positionsData = [
         "qsEducation": "Must be able to read and write",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "None required (CSC MC 11, s. 1996, as amended by CSC"
+        "qsEligibility": "None required (CSC MC 11, s. 1996, as amended by CSC",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3130,7 +3850,10 @@ const positionsData = [
         "qsEducation": null,
         "qsTraining": null,
         "qsExperience": null,
-        "qsEligibility": null
+        "qsEligibility": null,
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3143,7 +3866,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Commerce / Business Administration major in Accounting",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "RA 1080 (CPA)"
+        "qsEligibility": "RA 1080 (CPA)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "School Administration",
@@ -3156,7 +3882,10 @@ const positionsData = [
         "qsEducation": "Masters Degree in Education or other relevant Masters\ndegree",
         "qsTraining": "16 hours of relevant training in management and\nsupervision",
         "qsExperience": "3 years relevant experience involving management and\nsupervision",
-        "qsEligibility": "RA 1080 /LET/ PBET"
+        "qsEligibility": "RA 1080 /LET/ PBET",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3166,10 +3895,13 @@ const positionsData = [
         "monthlySalary": null,
         "vacancyCount": 1,
         "plantillaItem": null,
-        "qsEducation": "Master\u2019s degree in Education or its equivalent",
+        "qsEducation": "Master’s degree in Education or its equivalent",
         "qsTraining": "32 hours of training in management and supervision",
         "qsExperience": "5 years of relevant experience involving management and supervision",
-        "qsEligibility": "Career Executive Service (CES)"
+        "qsEligibility": "Career Executive Service (CES)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3182,7 +3914,10 @@ const positionsData = [
         "qsEducation": "Completion of two years studies in college",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Subprofessional) / First Level Eligibility"
+        "qsEligibility": "Career Service (Subprofessional) / First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3195,7 +3930,10 @@ const positionsData = [
         "qsEducation": "Completion of two years studies in College or High School\nGraduate with relevant vocational/trade course",
         "qsTraining": "4 hours relevant training",
         "qsExperience": "1 year relevant experience",
-        "qsEligibility": "Communications Equipment Operator (MC 11, s. 1996 -\nCat. II)"
+        "qsEligibility": "Communications Equipment Operator (MC 11, s. 1996 -\nCat. II)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -3208,7 +3946,10 @@ const positionsData = [
         "qsEducation": "Bachelor of Elementary Education (BEEd) or Bachelor's degree plus 18 professional units in Education, and 18 units for a Master's degree in Education or its equivalent",
         "qsTraining": "None Required",
         "qsExperience": "3 years relevant experience",
-        "qsEligibility": "RA 1080 (Teacher)"
+        "qsEligibility": "RA 1080 (Teacher)",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -3221,7 +3962,10 @@ const positionsData = [
         "qsEducation": "Bachelor of Elementary Education (BEEd) or Bachelor's degree plus 18 professional units in Education; and 24 units for a Master's degree in Education or its equivalent",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year as Master Teacher I or 4 years as Teacher III",
-        "qsEligibility": "PBET/RA 1080/LET/Teacher"
+        "qsEligibility": "PBET/RA 1080/LET/Teacher",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3234,7 +3978,10 @@ const positionsData = [
         "qsEducation": "High School Graduate or Completion of relevant vocational / trade course",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Mechanical Equipment Operator (MC No. 10, s. 2013 - Cat. II)"
+        "qsEligibility": "Mechanical Equipment Operator (MC No. 10, s. 2013 - Cat. II)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3247,7 +3994,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree relevant to the job",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "Career Service- Professional Second Level Eligibility"
+        "qsEligibility": "Career Service- Professional Second Level Eligibility",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3257,10 +4007,13 @@ const positionsData = [
         "monthlySalary": null,
         "vacancyCount": 1,
         "plantillaItem": null,
-        "qsEducation": "Master\u2019s degree in Education or its equivalent",
+        "qsEducation": "Master’s degree in Education or its equivalent",
         "qsTraining": "32 hours of training in management and supervision",
         "qsExperience": "5 years of relevant experience involving management and supervision; 1 year as Assistant Schools Division",
-        "qsEligibility": "Career Service Executive Eligibility (CSEE)\nCareer Executive Service (CES)"
+        "qsEligibility": "Career Service Executive Eligibility (CSEE)\nCareer Executive Service (CES)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -3273,7 +4026,10 @@ const positionsData = [
         "qsEducation": "Bachelor's Degree in Education with specialization in Special Education",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "PBET/RA 1080/ LET/Teacher"
+        "qsEligibility": "PBET/RA 1080/ LET/Teacher",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Teaching",
@@ -3286,7 +4042,10 @@ const positionsData = [
         "qsEducation": "Bachelor's degree in Education with specialization in\nSpecial Education",
         "qsTraining": "4 hours of relevant training",
         "qsExperience": "1 year experience as Special Education Teacher",
-        "qsEligibility": "RA 1080"
+        "qsEligibility": "RA 1080",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": null,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -3299,7 +4058,10 @@ const positionsData = [
         "qsEducation": "None Required",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "None Required"
+        "qsEligibility": "None Required",
+        "qsEducationLevel": 0,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Non-Teaching",
@@ -3312,7 +4074,10 @@ const positionsData = [
         "qsEducation": "Completion of two years studies in college",
         "qsTraining": "None required",
         "qsExperience": "None required",
-        "qsEligibility": "Career Service (Subprofessional) First Level Eligibility"
+        "qsEligibility": "Career Service (Subprofessional) First Level Eligibility",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     },
     {
         "category": "Teaching",
@@ -3325,7 +4090,10 @@ const positionsData = [
         "qsEducation": "Bachelor of Elementary Education (BEED) or Bachelor's Degree plus 18 professional units in education",
         "qsTraining": "None Required",
         "qsExperience": "1 year of relevant experience",
-        "qsEligibility": "PBET/RA 1080/LET/TEACHER"
+        "qsEligibility": "PBET/RA 1080/LET/TEACHER",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": null
     },
     {
         "category": "Teaching",
@@ -3338,7 +4106,10 @@ const positionsData = [
         "qsEducation": "Bachelor of Elementary Education (BEED) or Bachelor's Degree plus 18 professional units in education",
         "qsTraining": "None Required",
         "qsExperience": "2 years of relevant experience",
-        "qsEligibility": "PBET/RA 1080/LET/Teacher"
+        "qsEligibility": "PBET/RA 1080/LET/Teacher",
+        "qsEducationLevel": 6,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": null
     },
     {
         "category": "Non-Teaching",
@@ -3351,7 +4122,10 @@ const positionsData = [
         "qsEducation": "Elementary School graduate",
         "qsTraining": "None Required",
         "qsExperience": "None Required",
-        "qsEligibility": "None required (CSC MC 11, s. 1996, as amended by CSC MC 10, s. 2013 - Cat. III)"
+        "qsEligibility": "None required (CSC MC 11, s. 1996, as amended by CSC MC 10, s. 2013 - Cat. III)",
+        "qsEducationLevel": null,
+        "qsTrainingLevel": 0,
+        "qsExperienceLevel": 0
     }
 ];
 

@@ -17,6 +17,7 @@ A web-based platform to digitize the recruitment selection process.
 
 ### Applicant & Vacancy Management
 - **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades and fully editable text-based qualification standards.
+- **Automated Assessment Scaling:** Fully synchronized Level Increment configurations dynamically bridge the Qualification Standards in Vacancy Setup with the Step 2 Assessment Calculators, automatically allocating predefined levels to accelerate accurate scoring.
 - **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values.
 - **Masterlist & Vacancy Dashboard:** Centralized dashboard for managing applicant masterlists alongside dynamic vacancy toggles and slot monitoring.
 - **Multi-Step Applicant Wizard:** Seamless data entry flow for applicant information ranging from Personal details to Education, Training, Experience, and Eligibility (now featuring real-time inline editing capabilities and robust active keystroke validation).

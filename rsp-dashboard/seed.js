@@ -44,9 +44,9 @@ async function seed() {
         console.log('📦 Seeding positions table from seed_positions.js...');
         for (let pos of positionsData) {
             await connection.query(
-                'INSERT INTO positions (category, title, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO positions (category, title, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility, qsEducationLevel, qsTrainingLevel, qsExperienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
-                    pos.category || '', pos.title || '', pos.salaryGrade || '', 0, pos.monthlySalary || '', 1, pos.plantillaItem || '', pos.qsEducation || '', pos.qsTraining || '', pos.qsExperience || '', pos.qsEligibility || ''
+                    pos.category || '', pos.title || '', pos.salaryGrade || '', 0, pos.monthlySalary || '', 1, pos.plantillaItem || '', pos.qsEducation || '', pos.qsTraining || '', pos.qsExperience || '', pos.qsEligibility || '', pos.qsEducationLevel || null, pos.qsTrainingLevel || null, pos.qsExperienceLevel || null
                 ]
             );
         }

@@ -154,6 +154,9 @@ if (assessmentForm) {
 function openEduCalcModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('eduCalcModal')).show();
     if (typeof setFloatingStandard === 'function') setFloatingStandard('eduCalcModal', currentPositionStandards?.qsEducation || null);
+    if (currentPositionStandards && currentPositionStandards.qsEducationLevel) {
+        document.getElementById('standardEduLevel').value = currentPositionStandards.qsEducationLevel;
+    }
     calculateEduPoints();
 }
 
@@ -227,6 +230,9 @@ function applyEduPoints() {
 function openTrainCalcModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('trainCalcModal')).show();
     if (typeof setFloatingStandard === 'function') setFloatingStandard('trainCalcModal', currentPositionStandards?.qsTraining || null);
+    if (currentPositionStandards && currentPositionStandards.qsTrainingLevel) {
+        document.getElementById('standardTrainLevel').value = currentPositionStandards.qsTrainingLevel;
+    }
     calculateTrainPoints();
 }
 
@@ -286,6 +292,9 @@ function applyTrainPoints() {
 function openExpCalcModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('expCalcModal')).show();
     if (typeof setFloatingStandard === 'function') setFloatingStandard('expCalcModal', currentPositionStandards?.qsExperience || null);
+    if (currentPositionStandards && currentPositionStandards.qsExperienceLevel) {
+        document.getElementById('standardExpLevel').value = currentPositionStandards.qsExperienceLevel;
+    }
     calculateExpPoints();
 }
 
