@@ -30,7 +30,7 @@ async function seed() {
 
         console.log('🧹 Dropping existing tables...');
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants, positions');
+        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         // 1. Run database.sql
@@ -40,33 +40,14 @@ async function seed() {
         console.log('📦 Executing database.sql...');
         await connection.query(sqlQuery);
 
-        // 2. Insert Positions
-        console.log('📦 Seeding positions table from seed_positions.js...');
-        for (let pos of positionsData) {
-            await connection.query(
-                'INSERT INTO positions (category, title, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility, qsEducationLevel, qsTrainingLevel, qsExperienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [
-                    pos.category || '', pos.title || '', pos.salaryGrade || '', 0, pos.monthlySalary || '', 1, pos.plantillaItem || '', pos.qsEducation || '', pos.qsTraining || '', pos.qsExperience || '', pos.qsEligibility || '', pos.qsEducationLevel || null, pos.qsTrainingLevel || null, pos.qsExperienceLevel || null
-                ]
-            );
-        }
-
         // 3. Set Open Vacancies
         console.log('🔓 Opening specific vacancies...');
-        const mandatoryPositions = ['Administrative Officer II', 'Project Development Officer I'];
-        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5 WHERE title IN (?, ?)', mandatoryPositions);
+        
+        const mandatoryPositions = ['Administrative Officer I', 'Project Development Officer II'];
+        await connection.query('UPDATE positions SET in_vacancy = 0'); // Reset all just in case
+        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5 WHERE title IN (?)', [mandatoryPositions]);
 
-        // Pick 3 random positions based on mode
-        let queryCondition = CATEGORY_MODE === 'specific' ? `title NOT IN (?, ?) AND category IN (?)` : `title NOT IN (?, ?)`;
-        let queryParams = CATEGORY_MODE === 'specific' ? [...mandatoryPositions, SPECIFIC_CATEGORIES] : mandatoryPositions;
-
-        const [availablePositions] = await connection.query(`SELECT id FROM positions WHERE ${queryCondition} ORDER BY RAND() LIMIT 3`, queryParams);
-        if (availablePositions.length > 0) {
-            const randomIds = availablePositions.map(p => p.id);
-            await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5 WHERE id IN (?)', [randomIds]);
-        }
-
-        // Fetch the 5 open positions to assign to applicants
+        // Fetch the open positions to assign to applicants
         const [openPositions] = await connection.query('SELECT title, category FROM positions WHERE in_vacancy = 1');
         console.log(`Open Positions: ${openPositions.map(p => p.title).join(', ')}`);
 

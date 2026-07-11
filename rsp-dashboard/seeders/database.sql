@@ -123,6 +123,7 @@ CREATE TABLE IF NOT EXISTS applicant_eligibility (
 CREATE TABLE IF NOT EXISTS positions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     category VARCHAR(100) NOT NULL,
+    groupName VARCHAR(255) DEFAULT NULL,
     title VARCHAR(255) NOT NULL,
     vacancyAnnouncement TEXT DEFAULT NULL,
     plantillaItem TEXT DEFAULT NULL,

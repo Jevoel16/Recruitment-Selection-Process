@@ -339,13 +339,134 @@ document.addEventListener('DOMContentLoaded', function() {
         
         PaginationHelper.paginateDOM(`vacancy-${slug}`, allGroups, itemsPerPage, 'pagination-' + slug, true); // Reset page on filter
     }
+        let metricsChartInstance = null;
+        let metricsDataCache = null;
+
+        async function showCategoryChart(categoryName) {
+            document.getElementById('metricsDashboardGrid').classList.add('d-none');
+            document.getElementById('metricsChartContainer').classList.remove('d-none');
+            document.getElementById('metricsChartTitle').innerText = categoryName;
+
+            let data = metricsDataCache;
+            if (!data) {
+                const response = await fetch('/api/dashboard/metrics');
+                data = await response.json();
+                metricsDataCache = data;
+            }
+            
+            let catData = null;
+            for (const key in data.groupedPositions) {
+                if (data.groupedPositions[key].categoryName === categoryName) {
+                    catData = data.groupedPositions[key];
+                    break;
+                }
+            }
+            
+            const flexContainer = document.getElementById('chartFlexContainer');
+            const noVacancyMessage = document.getElementById('noVacancyMessage');
+            
+            if (!catData || !catData.positions || catData.positions.length === 0) {
+                flexContainer.classList.add('d-none');
+                noVacancyMessage.classList.remove('d-none');
+                return;
+            } else {
+                flexContainer.classList.remove('d-none');
+                noVacancyMessage.classList.add('d-none');
+            }
+
+            const ctx = document.getElementById('categoryPieChart').getContext('2d');
+            
+            if (metricsChartInstance) {
+                metricsChartInstance.destroy();
+            }
+
+            const labels = catData.positions.map(p => p.title);
+            const counts = catData.positions.map(p => p.count);
+            
+            const backgroundColors = [
+                'rgba(13, 110, 253, 0.8)', 'rgba(102, 16, 242, 0.8)', 'rgba(111, 66, 193, 0.8)', 'rgba(214, 51, 132, 0.8)', 
+                'rgba(220, 53, 69, 0.8)', 'rgba(253, 126, 20, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(25, 135, 84, 0.8)', 
+                'rgba(32, 201, 151, 0.8)', 'rgba(13, 202, 240, 0.8)'
+            ];
+            
+            metricsChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: Array.from({length: labels.length}, (_, i) => backgroundColors[i % backgroundColors.length]),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Build custom scrollable legend
+            const customLegendContainer = document.getElementById('customChartLegend');
+            customLegendContainer.innerHTML = '';
+            
+            labels.forEach((label, index) => {
+                const count = counts[index];
+                const color = backgroundColors[index % backgroundColors.length];
+                
+                const legendItem = document.createElement('div');
+                legendItem.className = 'd-flex justify-content-between align-items-center mb-2 p-2 border rounded-3 bg-light';
+                legendItem.style.cursor = 'pointer';
+                legendItem.style.transition = 'opacity 0.2s';
+                
+                legendItem.innerHTML = `
+                    <div class="d-flex align-items-center" style="overflow: hidden;">
+                        <span style="display: inline-block; width: 12px; height: 12px; background-color: ${color}; border-radius: 50%; margin-right: 10px; flex-shrink: 0;"></span>
+                        <span class="text-truncate fw-semibold text-secondary legend-label-text" title="${label}" style="font-size: 0.85rem; transition: text-decoration 0.2s;">${label}</span>
+                    </div>
+                    <span class="badge bg-primary rounded-pill ms-2">${count}</span>
+                `;
+                
+                const labelSpan = legendItem.querySelector('.legend-label-text');
+
+                legendItem.onclick = () => {
+                    const meta = metricsChartInstance.getDatasetMeta(0);
+                    const isHidden = meta.data[index].hidden;
+                    
+                    if (isHidden) {
+                        meta.data[index].hidden = false;
+                        legendItem.style.opacity = '1';
+                        labelSpan.style.textDecoration = 'none';
+                    } else {
+                        meta.data[index].hidden = true;
+                        legendItem.style.opacity = '0.5';
+                        labelSpan.style.textDecoration = 'line-through';
+                    }
+                    metricsChartInstance.update();
+                };
+                
+                customLegendContainer.appendChild(legendItem);
+            });
+        }
+
+        function hideCategoryChart() {
+            document.getElementById('metricsChartContainer').classList.add('d-none');
+            document.getElementById('metricsDashboardGrid').classList.remove('d-none');
+        }
+
         async function refreshMetricsTab() {
+            metricsDataCache = null;
             try {
                 const response = await fetch('/api/dashboard/metrics');
                 const data = await response.json();
+                metricsDataCache = data;
                 
                 const mainCount = document.getElementById('metricsTotalVacant');
-                if (mainCount) mainCount.innerText = data.totalVacantCount + ' / ' + data.totalPositionsCount;
+                if (mainCount) mainCount.innerText = data.totalVacantCount;
                 
                 for (const cat in data.groupedPositions) {
                     const catData = data.groupedPositions[cat];

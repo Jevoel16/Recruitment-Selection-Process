@@ -10,6 +10,7 @@ const { identityMiddleware } = require('./middleware/authMiddleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.set('trust proxy', true);
 
 const requirementFields = [
     'req_pds', 'req_prcLicense', 'req_reportRating', 'req_medCert', 'req_birthCert', 'req_marriageCert',

@@ -40,8 +40,8 @@ A web-based platform to digitize the recruitment selection process.
 1. Clone or download this directory.
 2. Run `npm install` to install dependencies.
 3. Create a `.env` file with your MySQL credentials (if not using the default root user without password) or just remove `.example` from the `.env.example` file.
-4. Run `npm run db:reset` to initialize a clean database and automatically seed 1,000 mock applicants.
-5. *(Optional)* Run `npm run seed` to clear database data and seed new 1,000 mock applicants.
+4. Run `npm run seedPositions` to initialize the positions database.
+5. *(Optional)* Run `npm run seedApplicants` to open specific vacancies and seed 1,000 mock applicants into the system.
 6. To run the local development server (with hot-reloading), run:
    ```bash
    npm run dev

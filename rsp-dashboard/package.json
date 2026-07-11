@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon -e js,hbs,json,css server.js",
     "start": "nodemon server.js",
-    "seed": "node seed.js"
+    "seedPositions": "node seeders/seedPositions.js",
+    "seedApplicants": "node seeders/seedApplicants.js"
   },
   "keywords": [],
   "author": "",

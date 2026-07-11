@@ -419,8 +419,9 @@ exports.lockApplicant = async (req, res) => {
         const lockedBy = req.userId;
         const id = req.params.id;
 
+        // Anti-deadlock: Automatically override locks that are older than 10 minutes.
         const [result] = await db.query(
-            'UPDATE applicants SET lockedBy = ?, lockedAt = NOW() WHERE id = ? AND (lockedBy IS NULL OR lockedBy = ?)', 
+            'UPDATE applicants SET lockedBy = ?, lockedAt = NOW() WHERE id = ? AND (lockedBy IS NULL OR lockedBy = ? OR TIMESTAMPDIFF(MINUTE, lockedAt, NOW()) > 10)', 
             [lockedBy, id, lockedBy]
         );
 
@@ -471,7 +472,18 @@ exports.lockStream = async (req, res) => {
     // Send an initial connected message
     res.write('data: connected\n\n');
 
+    // Anti-deadlock heartbeat: Keep updating lockedAt every 5 minutes as long as stream is alive
+    const heartbeatInterval = setInterval(async () => {
+        try {
+            await db.query('UPDATE applicants SET lockedAt = NOW() WHERE id = ? AND lockedBy = ?', [id, lockedBy]);
+            res.write('data: heartbeat\n\n');
+        } catch (err) {
+            console.error('Heartbeat error:', err);
+        }
+    }, 5 * 60 * 1000); // 5 minutes
+
     req.on('close', async () => {
+        clearInterval(heartbeatInterval);
         try {
             // When connection drops, clear the lock if it still belongs to this user
             await db.query('UPDATE applicants SET lockedBy = NULL, lockedAt = NULL WHERE id = ? AND lockedBy = ?', [id, lockedBy]);

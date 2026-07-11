@@ -7,16 +7,21 @@ exports.getMetrics = async (req, res) => {
         let totalVacantCount = 0;
         let totalPositionsCount = 0;
         for (const row of rows) {
-            let cat = row.category.replace(/\\s+/g, '-');
+            let cat = row.category.replace(/\s+/g, '-');
             if (!groupedPositions[cat]) {
-                groupedPositions[cat] = { categoryName: row.category, hasVacancy: false, vacantCount: 0, totalCount: 0 };
+                groupedPositions[cat] = { categoryName: row.category, hasVacancy: false, vacantCount: 0, totalCount: 0, positions: [] };
             }
-            groupedPositions[cat].totalCount++;
-            totalPositionsCount++;
+            let itemsCount = row.vacancyCount || 1;
+            groupedPositions[cat].totalCount += itemsCount;
+            totalPositionsCount += itemsCount;
             if (row.in_vacancy) {
                 groupedPositions[cat].hasVacancy = true;
-                groupedPositions[cat].vacantCount++;
-                totalVacantCount++;
+                groupedPositions[cat].vacantCount += row.vacancyCount || 1;
+                totalVacantCount += row.vacancyCount || 1;
+                groupedPositions[cat].positions.push({
+                    title: row.title,
+                    count: row.vacancyCount || 1
+                });
             }
         }
         res.json({ totalVacantCount, totalPositionsCount, groupedPositions });
@@ -47,20 +52,17 @@ exports.getDashboard = async (req, res) => {
                     totalCount: 0 
                 };
             }
-            groupedPositions[row.category].totalCount++;
-            totalPositionsCount++;
+            let itemsCount = row.vacancyCount || 1;
+            groupedPositions[row.category].totalCount += itemsCount;
+            totalPositionsCount += itemsCount;
             if (row.in_vacancy) {
                 groupedPositions[row.category].hasVacancy = true;
-                groupedPositions[row.category].vacantCount++;
-                totalVacantCount++;
+                groupedPositions[row.category].vacantCount += itemsCount;
+                totalVacantCount += itemsCount;
             }
             groupedPositions[row.category].positions.push(row);
 
-            let groupName = row.title;
-            const groupMatch = row.title.match(/^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX|X)$/);
-            if (groupMatch) {
-                groupName = groupMatch[1];
-            }
+            let groupName = row.groupName || row.title;
             if (!groupedPositions[row.category].positionGroups[groupName]) {
                 groupedPositions[row.category].positionGroups[groupName] = { 
                     groupName: groupName, 
@@ -174,20 +176,17 @@ exports.getDashboardPosition = async (req, res, next) => {
                     totalCount: 0 
                 };
             }
-            groupedPositions[row.category].totalCount++;
-            totalPositionsCount++;
+            let itemsCount = row.vacancyCount || 1;
+            groupedPositions[row.category].totalCount += itemsCount;
+            totalPositionsCount += itemsCount;
             if (row.in_vacancy) {
                 groupedPositions[row.category].hasVacancy = true;
-                groupedPositions[row.category].vacantCount++;
-                totalVacantCount++;
+                groupedPositions[row.category].vacantCount += itemsCount;
+                totalVacantCount += itemsCount;
             }
             groupedPositions[row.category].positions.push(row);
             
-            let groupName = row.title;
-            const groupMatch = row.title.match(/^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX|X)$/);
-            if (groupMatch) {
-                groupName = groupMatch[1];
-            }
+            let groupName = row.groupName || row.title;
             if (!groupedPositions[row.category].positionGroups[groupName]) {
                 groupedPositions[row.category].positionGroups[groupName] = { 
                     groupName: groupName, 
@@ -455,5 +454,40 @@ exports.getStepPage = async (req, res, next) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('Database Error');
+    }
+};
+
+exports.getStep2Login = (req, res) => {
+    res.render('step2-login', { error: req.query.error, step2Active: true });
+};
+
+exports.postStep2Login = (req, res) => {
+    const { username, password } = req.body;
+    const validUsername = process.env.STEP2_USERNAME || 'admin';
+    const validPassword = process.env.STEP2_PASSWORD || 'password';
+
+    if (username === validUsername && password === validPassword) {
+        const jwt = require('jsonwebtoken');
+        const crypto = require('crypto');
+        
+        // Create a fingerprint using IP and User-Agent to prevent cookie theft/spoofing on HTTP
+        const clientIp = req.ip || req.connection.remoteAddress || '';
+        const userAgent = req.headers['user-agent'] || '';
+        const fingerprint = crypto.createHash('sha256').update(clientIp + userAgent).digest('hex');
+
+        const token = jwt.sign({ 
+            step2Auth: true,
+            fingerprint: fingerprint 
+        }, process.env.JWT_SECRET || 'fallback-secret-for-dev', { expiresIn: '12h' });
+        
+        res.cookie('step2Auth', token, {
+            httpOnly: true,
+            secure: false, // Must be false for standard HTTP
+            sameSite: 'lax',
+            maxAge: 12 * 60 * 60 * 1000 // 12 hours
+        });
+        res.redirect('/step2/1');
+    } else {
+        res.redirect('/step2-login?error=Invalid credentials');
     }
 };

@@ -8,6 +8,7 @@ const db = require('../db');
 router.post('/positions/update', positionController.updatePosition);
 router.post('/positions/:id/vacancy', positionController.togglePositionVacancy);
 router.post('/positions/:id/plantilla', positionController.updatePlantilla);
+router.get('/positions/export/doc', positionController.exportDoc);
 
 // Core endpoints for applicant creation, assessment, scoring, and workflow progression
 router.post('/applicants', applicantController.createApplicant);

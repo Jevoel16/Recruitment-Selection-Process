@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-12 01:36 (v1.1.6-Release+202607120136)
+### ADDED
+- Decoupled database initialization into `seedPositions.js` and `seedApplicants.js` for modular data seeding, allowing focused generation of positions and targeted applicant generation.
+- Created `seeders/` and `templates_xml/` directories to better organize backend utility scripts and modular XML template fragments.
+
+### CHANGED
+- Fixed corrupted Word Document issues (`Vacancy_Endorsement.docx`) by resolving ID conflicts in dynamically generated XML template fragments (`letterhead.xml`, `footer.xml`, `table_header.xml`), ensuring the document remains readable in Microsoft Word.
+- Corrected the dashboard UI's "Total Vacant Positions" metric to correctly aggregate the mathematical sum of `vacancyCount` across positions instead of merely counting the total number of unique position rows.
+- Cleaned up the Metrics dashboard UI by stripping fractional labels to present straightforward vacancy integer counts.
+
+### REMOVED
+- Purged legacy text logs, corrupted prototype `.docx` and `.xml` files, and outdated seeder test scripts from the root directory to maintain a clean production environment.
+- Removed deprecated reference document `salary_matrix.md`.
+
 ## 2026-07-09 15:52 (v1.1.5-Release+202607091552)
 ### ADDED
 - Integrated "Performance Rating (RPMS 10-point scale)" calculation logic into the Evaluation Method options in Step 2.
