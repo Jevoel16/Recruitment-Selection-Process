@@ -115,8 +115,6 @@ exports.exportDoc = async (req, res) => {
 
         const content = fs.readFileSync(path.resolve(__dirname, '../public/templates/Vacancy_Endorsement_Template3.docx'), 'binary');
         const zip = new PizZip(content);
-        let xml = zip.file("word/document.xml").asText();
-
         // Parameterize dynamic variables
         const directorName = 'ALONA B. CARUMBA';
         const superintendentName = 'JONATHAN S. DELA PEÑA, PhD, CESO V';
@@ -124,36 +122,8 @@ exports.exportDoc = async (req, res) => {
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         const dateHeaderStr = `${monthNames[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
         const dateJsdpStr = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
-        const jsdpFullStr = `JSDP/abq${dateJsdpStr}`;
 
-        // Globally inject variables by preserving original <w:p> and <w:pPr> metadata tags
-        xml = xml.replace(/(<w:p [^>]*w14:paraId="76D12F76"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${dateHeaderStr}</w:t></w:r></w:p>`);
-        xml = xml.replace(/(<w:p [^>]*w14:paraId="6BE0F84A"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${directorName}</w:t></w:r></w:p>`);
-        xml = xml.replace(/(<w:p [^>]*w14:paraId="31060566"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${superintendentName}</w:t></w:r></w:p>`);
-        xml = xml.replace(/(<w:p [^>]*w14:paraId="01DF2080"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:sz w:val="12"/><w:szCs w:val="12"/></w:rPr><w:t>${jsdpFullStr}</w:t></w:r></w:p>`);
-        
-        // Remove 2 of the 3 empty spacing paragraphs entirely
-        xml = xml.replace(/<w:p [^>]*w14:paraId="3B117B05"[^>]*>[\s\S]*?<\/w:p>/, '');
-        xml = xml.replace(/<w:p [^>]*w14:paraId="28A94C41"[^>]*>[\s\S]*?<\/w:p>/, '');
-        
-        // Save the mutated XML back to the zip so docxtemplater uses it for the first/last pages
-        zip.file("word/document.xml", xml);
-
-        let letterhead = fs.readFileSync(path.join(__dirname, '../templates_xml/letterhead.xml'), 'utf8');
-        let footer = fs.readFileSync(path.join(__dirname, '../templates_xml/footer.xml'), 'utf8');
         let tableHeader = fs.readFileSync(path.join(__dirname, '../templates_xml/table_header.xml'), 'utf8');
-
-        // Parameterize the duplicated chunks (same logic as global)
-        letterhead = letterhead.replace(/(<w:p [^>]*w14:paraId="76D12F76"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${dateHeaderStr}</w:t></w:r></w:p>`);
-        letterhead = letterhead.replace(/(<w:p [^>]*w14:paraId="6BE0F84A"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${directorName}</w:t></w:r></w:p>`);
-        footer = footer.replace(/(<w:p [^>]*w14:paraId="31060566"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${superintendentName}</w:t></w:r></w:p>`);
-        footer = footer.replace(/(<w:p [^>]*w14:paraId="01DF2080"[^>]*>[\s\S]*?<\/w:pPr>)[\s\S]*?<\/w:p>/, `$1<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style"/><w:sz w:val="12"/><w:szCs w:val="12"/></w:rPr><w:t>${jsdpFullStr}</w:t></w:r></w:p>`);
-        footer = footer.replace(/<w:p [^>]*w14:paraId="3B117B05"[^>]*>[\s\S]*?<\/w:p>/, '');
-        footer = footer.replace(/<w:p [^>]*w14:paraId="28A94C41"[^>]*>[\s\S]*?<\/w:p>/, '');
-        
-        // Strip unique identifiers from letterhead and footer to prevent duplication corruption on multiple pages
-        letterhead = letterhead.replace(/ w14:paraId="[^"]+"/g, '').replace(/ w14:textId="[^"]+"/g, '');
-        footer = footer.replace(/ w14:paraId="[^"]+"/g, '').replace(/ w14:textId="[^"]+"/g, '');
         tableHeader = tableHeader.replace(/ w14:paraId="[^"]+"/g, '').replace(/ w14:textId="[^"]+"/g, '');
 
         const tcPrLeft = '<w:tcPr><w:tcW w:w="1977" w:type="dxa"/>#MERGE#<w:tcBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="6" w:space="0" w:color="000000" w:themeColor="text1"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tcBorders><w:vAlign w:val="center"/><w:hideMark/></w:tcPr>';
@@ -161,33 +131,15 @@ exports.exportDoc = async (req, res) => {
         const tcPrItem = '<w:tcPr><w:tcW w:w="2549" w:type="dxa"/><w:tcBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tcBorders><w:vAlign w:val="center"/></w:tcPr>';
         const innerTcPr = '<w:tcW w:w="9052" w:type="dxa"/><w:tcBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="6" w:space="0" w:color="000000" w:themeColor="text1"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tcBorders><w:vAlign w:val="center"/>';
         
-        let pagesXml = '';
+        let pagesArray = [];
 
         for (let pIndex = 0; pIndex < pages.length; pIndex++) {
             const chunk = pages[pIndex];
             const leftCol = chunk.slice(0, 11);
             const rightCol = chunk.slice(11, 22);
             
-            // Add page break, letterhead, and start table (skip page break for the first page since template has letterhead)
-            if (pIndex > 0) {
-                let cleanFooter = footer.replace(/<w:sectPr[^>]*>[\s\S]*?<\/w:sectPr>/g, '');
-                const parts = cleanFooter.split(/(?=<w:p )/);
-                while(parts.length > 0) {
-                    let last = parts[parts.length - 1];
-                    if (last.includes('<w:p ') && !last.includes('<w:t>')) {
-                        parts.pop();
-                    } else {
-                        break;
-                    }
-                }
-                cleanFooter = parts.join('');
-                
-                pagesXml += cleanFooter;
-                pagesXml += '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
-                pagesXml += letterhead;
-            }
-            
-            pagesXml += tableHeader;
+            let tableXml = '';
+            tableXml += tableHeader;
             
             for (let r = 0; r < 11; r++) {
                 if (!leftCol[r] && !rightCol[r]) break;
@@ -213,7 +165,7 @@ exports.exportDoc = async (req, res) => {
                 let lFontSize = lTitle.length > 15 ? 14 : 22; // Size 7 if > 15 chars, else Size 11
                 let rFontSize = rTitle.length > 15 ? 14 : 22;
                 
-                let rowHeight = r === 0 ? 461 : 403;
+                let rowHeight = r === 0 ? 380 : 320;
                 let rowXml = `<w:tr><w:trPr><w:trHeight w:val="${rowHeight}" w:hRule="exact"/></w:trPr>`;
                 
                 // Left Title
@@ -226,11 +178,11 @@ exports.exportDoc = async (req, res) => {
                 rowXml += `<w:tc>${tcPrItem}<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${rEntry.itemStr}</w:t></w:r></w:p></w:tc>`;
                 
                 rowXml += `</w:tr>`;
-                pagesXml += rowXml;
+                tableXml += rowXml;
             }
             
             // Append NOTHING FOLLOWS row to EVERY page
-            pagesXml += `
+            tableXml += `
             <w:tr>
                 <w:tc>
                     <w:tcPr>
@@ -247,16 +199,35 @@ exports.exportDoc = async (req, res) => {
                 </w:tc>
             </w:tr>`;
             
-            pagesXml += '</w:tbl>';
+            tableXml += '</w:tbl>';
+
+            pagesArray.push({
+                tableXml: tableXml,
+                Date: dateHeaderStr,
+                Director_Name: directorName,
+                Superintendent_Name: superintendentName,
+                date_footer: dateJsdpStr,
+                pageBreak: pIndex > 0 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : ''
+            });
         }
+
+        // Dynamically wrap the entire document in the {#pages} loop 
+        // to repeat the entire letterhead and footer on every page.
+        let docXml = zip.file('word/document.xml').asText();
+        docXml = docXml.replace('<w:body>', '<w:body><w:p><w:r><w:t>{#pages}</w:t></w:r></w:p><w:p><w:r><w:t>{@pageBreak}</w:t></w:r></w:p>');
+        docXml = docXml.replace('<w:sectPr', '<w:p><w:r><w:t>{/pages}</w:t></w:r></w:p><w:sectPr');
+        docXml = docXml.replace('{@pagesXml}', '{@tableXml}');
+        zip.file('word/document.xml', docXml);
 
         const doc = new Docxtemplater(zip, {
             paragraphLoop: true,
             linebreaks: true,
         });
         
-        // Render raw XML injection
-        doc.render({ pagesXml });
+        // Render the array of pages
+        doc.render({ 
+            pages: pagesArray
+        });
         
         const buf = doc.getZip().generate({
             type: 'nodebuffer',

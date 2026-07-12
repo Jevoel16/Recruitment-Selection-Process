@@ -37,6 +37,8 @@ app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bo
 app.use('/pizzip', express.static(path.join(__dirname, 'node_modules/pizzip/dist'), staticOptions));
 app.use('/docxtemplater', express.static(path.join(__dirname, 'node_modules/docxtemplater/build'), staticOptions));
 app.use('/file-saver', express.static(path.join(__dirname, 'node_modules/file-saver/dist'), staticOptions));
+app.use('/chartjs', express.static(path.join(__dirname, 'node_modules/chart.js/dist'), staticOptions));
+app.use('/fontsource-inter', express.static(path.join(__dirname, 'node_modules/@fontsource/inter'), staticOptions));
 
 
 // Initialize Handlebars view engine and register partial components
@@ -75,6 +77,10 @@ app.use('/api/export', excelExportIER);
 const excelExportCAR = require('./routes/excelExportCAR');
 app.use('/api/export', excelExportCAR);
 
+// Export functionality for Vacant Positions (VER)
+const excelExportVER = require('./routes/excelExportVER');
+app.use('/api/export', excelExportVER);
+
 async function ensureRequirementColumns() {
     const [columns] = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'applicants'`, [process.env.DB_NAME || 'rsp_db']);
     const existingColumns = new Set(columns.map((column) => column.COLUMN_NAME));
@@ -84,9 +90,16 @@ async function ensureRequirementColumns() {
     if (!existingColumns.has('ccDesignation')) await db.query(`ALTER TABLE applicants ADD COLUMN ccDesignation VARCHAR(255) DEFAULT NULL`);
 }
 
+async function ensureExperienceColumns() {
+    const [columns] = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'applicant_experience'`, [process.env.DB_NAME || 'rsp_db']);
+    const existingColumns = new Set(columns.map((column) => column.COLUMN_NAME));
+    if (!existingColumns.has('months')) await db.query(`ALTER TABLE applicant_experience ADD COLUMN months INT DEFAULT 0 AFTER years`);
+}
+
 async function startServer() {
     try {
         await ensureRequirementColumns();
+        await ensureExperienceColumns();
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });

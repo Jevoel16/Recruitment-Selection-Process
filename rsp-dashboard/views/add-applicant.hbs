@@ -252,13 +252,17 @@
                                 <small class="text-muted">Enter most relevant experience</small>
                             </div>
                             <div class="row g-3 align-items-end">
-                                <div class="col-md-6">
+                                <div class="col-md-5">
                                     <label class="form-label fw-semibold">Experience Details (Company & Role)</label>
                                     <input type="text" class="form-control" id="exp_details" placeholder="e.g. Software Engineer at Tech Corp">
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Number of Years</label>
-                                    <input type="text" class="form-control" id="exp_years" placeholder="e.g. 2.5" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">Years</label>
+                                    <input type="number" class="form-control" id="exp_years" placeholder="e.g. 2" min="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Months</label>
+                                    <input type="number" class="form-control" id="exp_months" placeholder="e.g. 5" min="0" max="11">
                                 </div>
                                 <div class="col-md-2">
                                     <button type="button" class="btn btn-success w-100" id="btn-add-exp">Add Entry <i class="bi bi-plus-circle ms-1"></i></button>

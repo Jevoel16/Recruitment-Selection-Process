@@ -111,7 +111,13 @@
                 let text = '';
                 if (type === 'education') text = `<strong>${item.degree}</strong> (${item.year})`;
                 if (type === 'training') text = `<strong>${item.title}</strong> (${item.hours} hrs)`;
-                if (type === 'experience') text = `<strong>${item.details}</strong> (${item.years} yrs)`;
+                if (type === 'experience') {
+                    let parts = [];
+                    if (item.years > 0) parts.push(item.years + (item.years == 1 ? " year" : " years"));
+                    if (item.months > 0) parts.push(item.months + (item.months == 1 ? " month" : " months"));
+                    let dur = parts.length > 0 ? parts.join(" & ") : "0 years";
+                    text = `<strong>${item.details}</strong> (${dur})`;
+                }
                 if (type === 'eligibility') text = `<strong>${item.details}</strong> (Rating: ${item.rating})`;
                 
                 let linkHtml = item.link ? `<br><a href="${item.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : '';
@@ -163,16 +169,18 @@
 
     document.getElementById('btn-add-exp')?.addEventListener('click', () => {
         const details = document.getElementById('exp_details').value;
-        const years = document.getElementById('exp_years').value;
+        const years = document.getElementById('exp_years').value || 0;
+        const months = document.getElementById('exp_months').value || 0;
         const link = document.getElementById('exp_link')?.value || '';
-        if (details && years) {
-            wizardData.experience.push({ details, years, link });
+        if (details && (years > 0 || months > 0 || years === 0)) {
+            wizardData.experience.push({ details, years, months, link });
             document.getElementById('exp_details').value = '';
             document.getElementById('exp_years').value = '';
+            document.getElementById('exp_months').value = '';
             if (document.getElementById('exp_link')) document.getElementById('exp_link').value = '';
             renderWizardList('experience');
             saveDraft();
-        } else alert("Please provide both details and years.");
+        } else alert("Please provide details and years/months.");
     });
 
     document.getElementById('btn-add-elig')?.addEventListener('click', () => {

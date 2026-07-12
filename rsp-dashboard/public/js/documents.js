@@ -35,6 +35,10 @@ async function prepareUpdateRecord(type, recordId, applicantId, currentTitle, se
         form.elements[secInputName].value = secondaryVal;
     }
     
+    if (modalType === 'exp' && form.elements['months'] && secondaryKey !== undefined && secondaryKey !== 'undefined' && secondaryKey !== null) {
+        form.elements['months'].value = secondaryKey;
+    }
+    
     // Store update state
     form.dataset.mode = 'update';
     form.dataset.recordId = recordId;
@@ -256,14 +260,19 @@ async function openExpModal(id, isWizard = false) {
         if(exp.length) {
             exp.forEach(e => {
                 const docLink = e.digitalCopyLink || e.link;
+                let parts = [];
+                if (e.years > 0) parts.push(e.years + (e.years == 1 ? " year" : " years"));
+                if (e.months > 0) parts.push(e.months + (e.months == 1 ? " month" : " months"));
+                let dur = parts.length > 0 ? parts.join(" & ") : "0 years";
+
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${e.details}</strong> (${e.years} years)
+                    <span><strong>${e.details}</strong> (${dur})
                     <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
                     </span>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('experience', ${e.id}, ${id}, '${e.details.replace(/'/g, "\\'")}', '${e.years}', 'Years', 'exp')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('experience', ${e.id}, ${id}, '${e.details.replace(/'/g, "\\'")}', '${e.years}', '${e.months || 0}', 'exp')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('experience', ${e.id}, ${id}, 'exp')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -274,7 +283,8 @@ async function openExpModal(id, isWizard = false) {
             <form id="addExp-${id}" class="mb-3">
                 <div class="d-flex gap-2 w-100">
                     <input type="text" class="form-control" name="details" placeholder="Details" style="flex: 4;" required>
-                    <input type="number" class="form-control" name="years" placeholder="Yrs" style="flex: 1;" required>
+                    <input type="number" class="form-control" name="years" placeholder="Yrs" style="flex: 1;" required min="0">
+                    <input type="number" class="form-control" name="months" placeholder="Mos" style="flex: 1;" min="0" max="11">
                 </div>
                 <button type="submit" class="btn btn-success w-100 mt-2">Add Experience</button>
             </form>
@@ -295,13 +305,13 @@ async function openExpModal(id, isWizard = false) {
                     res = await fetch(`/api/experience/${recordId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ details: form.details.value, years: parseInt(form.years.value) })
+                        body: JSON.stringify({ details: form.details.value, years: parseInt(form.years.value), months: parseInt(form.months.value) || 0 })
                     });
                 } else {
                     res = await fetch(`/api/applicants/${id}/experience`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ details: form.details.value, years: form.years.value })
+                        body: JSON.stringify({ details: form.details.value, years: parseInt(form.years.value), months: parseInt(form.months.value) || 0 })
                     });
                 }
                 if(res.ok) {

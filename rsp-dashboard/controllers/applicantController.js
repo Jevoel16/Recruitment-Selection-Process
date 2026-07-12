@@ -83,7 +83,7 @@ exports.createApplicant = async (req, res) => {
         for (let t of trainArray) await db.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, t.title, t.hours, t.link || '']);
 
         const expArray = experience ? JSON.parse(experience) : [];
-        for (let ex of expArray) await db.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, ex.details, ex.years, ex.link || '']);
+        for (let ex of expArray) await db.query('INSERT INTO applicant_experience (applicant_id, details, years, months, digitalCopyLink) VALUES (?, ?, ?, ?, ?)', [applicantId, ex.details, ex.years, ex.months || 0, ex.link || '']);
 
         const eligArray = eligibility ? JSON.parse(eligibility) : [];
         for (let el of eligArray) await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, el.details, el.rating, el.link || '']);
@@ -305,7 +305,7 @@ exports.deleteTraining = async (req, res) => {
 
 exports.addExperience = async (req, res) => {
     try {
-        await db.query('INSERT INTO applicant_experience (applicant_id, details, years, digitalCopyLink) VALUES (?, ?, ?, ?)', [req.params.id, req.body.details, req.body.years, '']);
+        await db.query('INSERT INTO applicant_experience (applicant_id, details, years, months, digitalCopyLink) VALUES (?, ?, ?, ?, ?)', [req.params.id, req.body.details, req.body.years, req.body.months || 0, '']);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
 };
@@ -512,8 +512,8 @@ exports.updateTraining = async (req, res) => {
 
 exports.updateExperience = async (req, res) => {
     try {
-        const { details, years } = req.body;
-        await db.query('UPDATE applicant_experience SET details = ?, years = ? WHERE id = ?', [details, years, req.params.id]);
+        const { details, years, months } = req.body;
+        await db.query('UPDATE applicant_experience SET details = ?, years = ?, months = ? WHERE id = ?', [details, years, months || 0, req.params.id]);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: "Internal server error" }); }
 };
