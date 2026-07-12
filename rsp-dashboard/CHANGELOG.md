@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-13 03:26 (v1.1.7-Release+202607130326)
+### ADDED
+- Implemented outer perimeter border functionality inside the Comparative Assessment Result (CAR) Excel generation to maintain sleek official layout designs without applying heavy inner grids.
+- Set a global configuration for default row height logic ensuring untargeted structural rows maintain a strict standard of 22 pixels mathematically.
+
+### CHANGED
+- Completely overhauled the Request for Publication of Vacant Positions (VER) template to mathematically match official raw files 1:1, strictly aligning all exact column widths and font layouts.
+- Split the monolithic instructional notes footer block in the VER templates into distinct, dynamically scaled row-by-row elements to eradicate wrapped-cell layout breaking.
+- Adjusted CAR explicit signature padding block, dynamically shifting line heights from pixel measurements to explicit layout points (`.points`) to strictly map to raw dimensions.
+
 ## 2026-07-12 01:36 (v1.1.6-Release+202607120136)
 ### ADDED
 - Decoupled database initialization into `seedPositions.js` and `seedApplicants.js` for modular data seeding, allowing focused generation of positions and targeted applicant generation.
