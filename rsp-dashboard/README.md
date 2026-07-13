@@ -17,7 +17,7 @@ A web-based platform to digitize the recruitment selection process.
 - **Dynamic Seeding & Setup:** Dedicated scripts to safely initialize the database and dynamically map raw text-based qualification standards, including a high-concurrency 1000-applicant seeder with fully randomized, realistic JSON metadata.
 
 ### Applicant & Vacancy Management
-- **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades and fully editable text-based qualification standards.
+- **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades, accurate monthly salary mapping (Step 1), and fully editable text-based qualification standards.
 - **Automated Assessment Scaling:** Fully synchronized Level Increment configurations dynamically bridge the Qualification Standards in Vacancy Setup with the Step 2 Assessment Calculators, automatically allocating predefined levels to accelerate accurate scoring.
 - **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values.
 - **Masterlist & Vacancy Dashboard:** Centralized dashboard for managing applicant masterlists alongside dynamic vacancy toggles and slot monitoring.

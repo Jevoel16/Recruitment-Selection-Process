@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-07-13 15:40 (v1.1.9-Release+202607131540)
+### ADDED
+- Populated all seeded positions with accurate monthly salaries dynamically mapped from their corresponding Salary Grades based on standard Step 1 conversion rates.
+
 ## 2026-07-13 14:26 (v1.1.8-Release+202607131426)
 ### ADDED
 - Implemented a robust three-tier Role-Based Access Control (RBAC) system supporting `superadmin`, `admin`, and `evaluator` roles.
