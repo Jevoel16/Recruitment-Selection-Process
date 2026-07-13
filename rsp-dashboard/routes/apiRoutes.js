@@ -62,4 +62,37 @@ router.put('/eligibility/:id', applicantController.updateEligibility);
 
 
 
+// JSON Database Backup Endpoint
+router.get('/export/backup', async (req, res) => {
+    try {
+        const [applicants] = await db.query('SELECT * FROM applicants');
+        const [education] = await db.query('SELECT * FROM applicant_education');
+        const [experience] = await db.query('SELECT * FROM applicant_experience');
+        const [training] = await db.query('SELECT * FROM applicant_training');
+        const [eligibility] = await db.query('SELECT * FROM applicant_eligibility');
+        
+        const backupData = {
+            metadata: {
+                timestamp: new Date().toISOString(),
+                totalApplicants: applicants.length
+            },
+            data: {
+                applicants,
+                education,
+                experience,
+                training,
+                eligibility
+            }
+        };
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="RSP-Backup-${dateStr}.json"`);
+        res.send(JSON.stringify(backupData, null, 2));
+    } catch (error) {
+        console.error('Backup Export Error:', error);
+        res.status(500).send('Failed to generate backup');
+    }
+});
+
 module.exports = router;

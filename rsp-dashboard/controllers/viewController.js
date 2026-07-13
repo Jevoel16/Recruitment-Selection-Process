@@ -113,6 +113,7 @@ exports.getDashboard = async (req, res) => {
         const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
         const showMasterlist = req.query.tab === 'masterlist';
+        const showBackup = req.query.tab === 'backup';
         const showCategories = req.query.tab === 'categories';
 
         const pagination = [];
@@ -145,6 +146,7 @@ exports.getDashboard = async (req, res) => {
             stepFilter,
             pagination: cleanPagination,
             showMasterlist,
+            showBackup,
             showCategories
         });
     } catch (err) {
@@ -224,6 +226,7 @@ exports.getDashboardPosition = async (req, res, next) => {
         const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
         const showMasterlist = req.query.tab === 'masterlist';
+        const showBackup = req.query.tab === 'backup';
 
         const pagination = [];
         for (let i = 1; i <= totalPages; i++) {
@@ -254,7 +257,8 @@ exports.getDashboardPosition = async (req, res, next) => {
             positionFilter,
             positionList: Array.from(new Set(positionList)).sort(),
             pagination: cleanPagination,
-            showMasterlist
+            showMasterlist,
+            showBackup
         });
     } catch (e) {
         console.error(e);

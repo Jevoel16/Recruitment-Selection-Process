@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { generateVERHtml } = require('../utils/excelGenerator');
+
 
 router.get('/ver', async (req, res) => {
     try {

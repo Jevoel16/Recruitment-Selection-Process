@@ -15,6 +15,9 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-bold px-4 py-2 rounded-pill shadow-sm {{#if showMasterlist}}active{{/if}}" id="masterlist-tab" data-bs-toggle="pill" data-bs-target="#masterlist" type="button" role="tab"><i class="bi bi-people-fill me-2"></i> Masterlist</button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold px-4 py-2 rounded-pill shadow-sm {{#if showBackup}}active{{/if}}" id="backup-tab" data-bs-toggle="pill" data-bs-target="#backup" type="button" role="tab"><i class="bi bi-cloud-arrow-down-fill me-2"></i> Backup</button>
+            </li>
         </ul>
     </div>
     
@@ -24,6 +27,8 @@
         {{> dashboard_categories}}
 
         {{> dashboard_masterlist}}
+
+        {{> dashboard_backup}}
     </div>
 </div> <!-- End container-fluid -->
 

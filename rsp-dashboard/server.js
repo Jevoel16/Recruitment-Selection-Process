@@ -88,6 +88,7 @@ async function ensureRequirementColumns() {
     for (const column of missingColumns) await db.query(`ALTER TABLE applicants ADD COLUMN ${column} BOOLEAN DEFAULT FALSE AFTER contactNo`);
     if (!existingColumns.has('cc')) await db.query(`ALTER TABLE applicants ADD COLUMN cc VARCHAR(255) DEFAULT NULL`);
     if (!existingColumns.has('ccDesignation')) await db.query(`ALTER TABLE applicants ADD COLUMN ccDesignation VARCHAR(255) DEFAULT NULL`);
+    if (!existingColumns.has('remarks')) await db.query(`ALTER TABLE applicants ADD COLUMN remarks TEXT DEFAULT NULL`);
 }
 
 async function ensureExperienceColumns() {

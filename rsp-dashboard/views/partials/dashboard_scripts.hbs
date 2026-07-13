@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = new URL(window.location);
             if (e.target.id === 'masterlist-tab') url.searchParams.set('tab', 'masterlist');
             else if (e.target.id === 'categories-tab') url.searchParams.set('tab', 'categories');
+            else if (e.target.id === 'backup-tab') url.searchParams.set('tab', 'backup');
             else url.searchParams.delete('tab');
             window.history.replaceState({}, '', url);
         });

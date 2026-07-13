@@ -26,9 +26,9 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
     workbook.created = new Date();
 
     const sheet = workbook.addWorksheet('IER', {
-        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 99, horizontalCentered: true },
-        pageMargins: { left: 0.3, right: 0.3, top: 1.4, bottom: 0.4, header: 0.3, footer: 0.3 }
+        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 99, horizontalCentered: true }
     });
+    sheet.pageSetup.margins = { left: 0.1181, right: 0.1181, top: 0.1575, bottom: 0.1575, header: 0, footer: 0 };
 
     const vAnnounce = posData?.vacancyAnnouncement || '';
     const pItem = posData?.plantillaItem || '';

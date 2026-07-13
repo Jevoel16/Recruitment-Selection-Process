@@ -30,7 +30,7 @@ async function seed() {
 
         console.log('🧹 Dropping existing tables...');
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants');
+        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants, positions');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         // 1. Run database.sql
