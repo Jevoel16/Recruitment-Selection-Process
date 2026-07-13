@@ -83,6 +83,8 @@ async function openAssessmentModal(id, name) {
             });
         }
         
+        document.getElementById('assessmentRemarks').value = app.remarks || '';
+        
         if (typeof calculateAssessmentTotal === 'function') {
             calculateAssessmentTotal();
         }

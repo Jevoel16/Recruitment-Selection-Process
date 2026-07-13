@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS applicants (
     scorePotential DOUBLE DEFAULT NULL,
     assessmentTotal DOUBLE DEFAULT NULL,
     assessmentRemarks ENUM('Assessed', 'In-Prog', 'Pending') DEFAULT 'Pending',
+    remarks TEXT DEFAULT NULL,
 
     assignedOffice VARCHAR(255) DEFAULT NULL,
     cc VARCHAR(255) DEFAULT NULL,
@@ -103,6 +104,7 @@ CREATE TABLE IF NOT EXISTS applicant_experience (
     applicant_id INT NOT NULL,
     details TEXT NOT NULL,
     years INT NOT NULL,
+    months INT DEFAULT 0,
     digitalCopyLink TEXT NOT NULL,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

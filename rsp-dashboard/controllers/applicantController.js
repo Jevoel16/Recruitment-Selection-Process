@@ -180,7 +180,7 @@ exports.updateRequirement = async (req, res) => {
 // This calculates and stores points across multiple criteria (Education, Training, Experience, etc.) critical for the Step 3 comparative leaderboard.
 exports.assessApplicant = async (req, res) => {
     try {
-        const { education, training, experience, performance, outstandingAccomplishments, applicationOfEducation, applicationOfLD, potential, isComplete } = req.body;
+        const { education, training, experience, performance, outstandingAccomplishments, applicationOfEducation, applicationOfLD, potential, isComplete, remarks: customRemarks } = req.body;
         const edu = (education !== null && education !== '') ? parseFloat(education) : null;
         const trn = (training !== null && training !== '') ? parseFloat(training) : null;
         const exp = (experience !== null && experience !== '') ? parseFloat(experience) : null;
@@ -193,14 +193,14 @@ exports.assessApplicant = async (req, res) => {
         let total = 0; let anyScore = false;
         [edu, trn, exp, prf, oac, aoe, ald, pot].forEach(val => { if (val !== null) { total += val; anyScore = true; } });
         let finalTotal = anyScore ? parseFloat(total.toFixed(2)) : null;
-        let remarks = 'Pending';
-        if (anyScore) remarks = isComplete ? 'Assessed' : 'In-Prog';
+        let assessmentRemarks = 'Pending';
+        if (anyScore) assessmentRemarks = isComplete ? 'Assessed' : 'In-Prog';
 
         await db.query(`
             UPDATE applicants 
-            SET scoreEducation = ?, scoreTraining = ?, scoreExperience = ?, scorePerformance = ?, scoreOutstandingAccomplishments = ?, scoreApplicationOfEducation = ?, scoreApplicationOfLD = ?, scorePotential = ?, assessmentTotal = ?, assessmentRemarks = ?
+            SET scoreEducation = ?, scoreTraining = ?, scoreExperience = ?, scorePerformance = ?, scoreOutstandingAccomplishments = ?, scoreApplicationOfEducation = ?, scoreApplicationOfLD = ?, scorePotential = ?, assessmentTotal = ?, assessmentRemarks = ?, remarks = ?
             WHERE id = ?`, 
-            [edu, trn, exp, prf, oac, aoe, ald, pot, finalTotal, remarks, req.params.id]
+            [edu, trn, exp, prf, oac, aoe, ald, pot, finalTotal, assessmentRemarks, customRemarks, req.params.id]
         );
         res.json({ success: true });
     } catch (error) {

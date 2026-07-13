@@ -11,13 +11,22 @@ async function seedPositionsOnly() {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_NAME || 'rsp_db'
+            database: process.env.DB_NAME || 'rsp_db',
+            multipleStatements: true
         });
 
         console.log('🧹 Clearing existing positions...');
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-        await connection.query('TRUNCATE TABLE positions');
+        await connection.query('DROP TABLE IF EXISTS positions');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+
+        const fs = require('fs');
+        const path = require('path');
+        const sqlFilePath = path.join(__dirname, 'database.sql');
+        const sqlQuery = fs.readFileSync(sqlFilePath, 'utf8');
+        
+        console.log('📦 Executing database.sql to rebuild positions table...');
+        await connection.query(sqlQuery);
 
         console.log(`📦 Seeding positions into the positions table...`);
         let insertedCount = 0;

@@ -294,9 +294,12 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         if (app.middleName) appName += ` ${app.middleName}`;
         appName = appName.replace(/^,\s*/, '').trim();
         
-        let remarks = '';
-        if (app.status === 'NO_APPEARANCE') remarks = 'No Appearance';
-        else if (app.status === 'NEWLY_PROMOTED') remarks = 'Newly Promoted';
+        let remarks = app.remarks || '';
+        if (app.status === 'NO_APPEARANCE' && !remarks.toLowerCase().includes('no appearance')) {
+            remarks = remarks ? `No Appearance; ${remarks}` : 'No Appearance';
+        } else if (app.status === 'NEWLY_PROMOTED' && !remarks.toLowerCase().includes('newly promoted')) {
+            remarks = remarks ? `Newly Promoted; ${remarks}` : 'Newly Promoted';
+        }
 
         let extraDetails = '';
         if (!hideNameColumn && exportType === 'withDetails') {
