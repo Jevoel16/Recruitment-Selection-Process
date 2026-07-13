@@ -1,7 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const viewController = require('../controllers/viewController');
-const { step2AuthMiddleware } = require('../middleware/authMiddleware');
+const authController = require('../controllers/authController');
+const { step2AuthMiddleware, requireAuth } = require('../middleware/authMiddleware');
+
+router.get('/login', (req, res) => res.render('login', { error: req.query.error }));
+router.post('/login', authController.postLogin);
+router.get('/logout', authController.getLogout);
+
+// All routes below require authentication
+router.use(requireAuth);
+
+router.use((req, res, next) => {
+    res.locals.user = req.user;
+    next();
+});
 
 router.get('/', (req, res) => res.redirect('/dashboard'));
 router.get('/api/dashboard/metrics', viewController.getMetrics);

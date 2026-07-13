@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
@@ -10,34 +9,41 @@ exports.identityMiddleware = (req, res, next) => {
     if (token) {
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
-            req.userId = decoded.userId;
-            return next();
+            req.user = decoded; // { id, username, role, can_access_step2, name }
         } catch (e) {
-            // Token is invalid/expired, generate a new one
+            // Invalid token
         }
     }
-    
-    // Generate new identity
-    const newUserId = uuidv4();
-    const newToken = jwt.sign({ userId: newUserId }, JWT_SECRET, { expiresIn: '7d' });
-    
-    res.cookie('auth', newToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-    
-    req.userId = newUserId;
     next();
 };
 
+exports.requireAuth = (req, res, next) => {
+    if (req.user) return next();
+    if (req.originalUrl.startsWith('/api')) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    res.redirect('/login');
+};
+
+exports.requireAdmin = (req, res, next) => {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'superadmin')) return next();
+    if (req.originalUrl.startsWith('/api')) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    res.redirect('/dashboard');
+};
+
 exports.step2AuthMiddleware = (req, res, next) => {
+    // If the user has global permission to access step 2, let them through
+    if (req.user && req.user.can_access_step2) {
+        return next();
+    }
+
     let token = req.cookies && req.cookies.step2Auth;
     if (token) {
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
             
-            // Verify fingerprint to prevent session spoofing/hijacking on standard HTTP
             const clientIp = req.ip || req.connection.remoteAddress || '';
             const userAgent = req.headers['user-agent'] || '';
             const currentFingerprint = crypto.createHash('sha256').update(clientIp + userAgent).digest('hex');
@@ -51,7 +57,7 @@ exports.step2AuthMiddleware = (req, res, next) => {
             // Token is invalid/expired
         }
     }
-    // Only redirect if accessing via GET, maybe return 401 for API
+    
     if (req.originalUrl.startsWith('/api')) {
         return res.status(401).json({ error: 'Unauthorized for Step 2' });
     }

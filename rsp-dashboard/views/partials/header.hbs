@@ -19,7 +19,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.css">
     <!-- Choices.js CSS -->
-    <link rel="stylesheet" href="/vendor/choices.js/choices.min.css" />
+    <link rel="stylesheet" href="/choices.js/styles/choices.min.css" />
     <style>
         .choices__inner {
             background-color: #fff;
@@ -55,6 +55,7 @@
                         <i class="bi bi-speedometer2 fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Dashboard</span>
                     </a>
                 </li>
+                {{#unless (eq user.role "superadmin")}}
                 <li class="nav-item">
                     <a href="/add-applicant" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if addApplicantActive}}active{{/if}}" title="Add Applicant">
                         <i class="bi bi-person-plus-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Add Applicant</span>
@@ -65,11 +66,13 @@
                         <i class="bi bi-person-vcard fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Step 1: Evaluation</span>
                     </a>
                 </li>
+                {{#if user.can_access_step2}}
                 <li class="nav-item">
                     <a href="/step2/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step2Active}}active{{/if}}" title="Step 2: Deliberation">
                         <i class="bi bi-chat-square-text fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Step 2: Deliberation</span>
                     </a>
                 </li>
+                {{/if}}
                 <li class="nav-item">
                     <a href="/step3/1" class="nav-link text-white w-100 text-start p-3 rounded-3 {{#if step3Active}}active{{/if}}" title="Step 3: Assessments">
                         <i class="bi bi-bar-chart-steps fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Step 3: Assessments</span>
@@ -85,14 +88,21 @@
                         <i class="bi bi-envelope-paper fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Step 5: Assignments</span>
                     </a>
                 </li>
+                {{/unless}}
             </ul>
 
-            <div class="mt-auto pt-4 text-light opacity-75 overflow-hidden" style="font-size: 0.8rem; border-top: 1px solid color-mix(in srgb, var(--white) 10%, transparent); white-space: nowrap;">
-                <div class="sidebar-text">
-                    Recruitment Selection and Placement<br>Digitized & Optimized (2026)
+            <div class="mt-auto pt-4 text-light overflow-hidden" style="border-top: 1px solid color-mix(in srgb, var(--white) 10%, transparent); white-space: nowrap;">
+                <div class="sidebar-text d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold">{{user.name}}</div>
+                        <div class="opacity-75 small">@{{user.username}} ({{user.role}})</div>
+                    </div>
+                    <a href="/logout" class="btn btn-sm btn-outline-light border-0" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
                 </div>
                 <div class="sidebar-collapsed-text d-none text-center">
-                    <i class="bi bi-info-circle fs-5"></i>
+                    <a href="/logout" class="text-white text-decoration-none" title="Logout"><i class="bi bi-box-arrow-right fs-5"></i></a>
                 </div>
             </div>
         </nav>

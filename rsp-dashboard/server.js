@@ -39,8 +39,8 @@ app.use('/docxtemplater', express.static(path.join(__dirname, 'node_modules/docx
 app.use('/file-saver', express.static(path.join(__dirname, 'node_modules/file-saver/dist'), staticOptions));
 app.use('/chartjs', express.static(path.join(__dirname, 'node_modules/chart.js/dist'), staticOptions));
 app.use('/fontsource-inter', express.static(path.join(__dirname, 'node_modules/@fontsource/inter'), staticOptions));
-
-
+app.use('/choices.js', express.static(path.join(__dirname, 'node_modules/choices.js/public/assets'), staticOptions));
+app.use('/html-docx-js', express.static(path.join(__dirname, 'node_modules/html-docx-js/dist'), staticOptions));
 // Initialize Handlebars view engine and register partial components
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -97,10 +97,58 @@ async function ensureExperienceColumns() {
     if (!existingColumns.has('months')) await db.query(`ALTER TABLE applicant_experience ADD COLUMN months INT DEFAULT 0 AFTER years`);
 }
 
+async function ensureAdminSystem() {
+    await db.query(`CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        role ENUM('admin', 'evaluator', 'superadmin') DEFAULT 'evaluator',
+        can_access_step2 BOOLEAN DEFAULT FALSE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // Ensure the ENUM contains 'superadmin' in case the table already existed
+    try {
+        await db.query(`ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'evaluator', 'superadmin') DEFAULT 'evaluator'`);
+    } catch (e) { console.warn('Could not modify users role ENUM', e.message); }
+
+    await db.query(`CREATE TABLE IF NOT EXISTS logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        action VARCHAR(255) NOT NULL,
+        target VARCHAR(255) DEFAULT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )`);
+
+    const crypto = require('crypto');
+    
+    // Seed default admin if missing
+    const [adminRows] = await db.query(`SELECT id FROM users WHERE username = 'admin'`);
+    if (adminRows.length === 0) {
+        const hash = crypto.createHash('sha256').update('admin123').digest('hex');
+        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES ('admin', ?, 'Administrator', 'admin', true)`, [hash]);
+    }
+
+    // Seed/Update superadmin from .env
+    const superUser = process.env.SUPERADMIN_USERNAME || 'superadmin';
+    const superPass = process.env.SUPERADMIN_PASSWORD || 'superadmin123';
+    const superHash = crypto.createHash('sha256').update(superPass).digest('hex');
+    
+    const [superRows] = await db.query(`SELECT id FROM users WHERE username = ?`, [superUser]);
+    if (superRows.length === 0) {
+        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES (?, ?, 'Super Administrator', 'superadmin', true)`, [superUser, superHash]);
+    } else {
+        await db.query(`UPDATE users SET password = ?, role = 'superadmin', can_access_step2 = true WHERE username = ?`, [superHash, superUser]);
+    }
+}
+
 async function startServer() {
     try {
         await ensureRequirementColumns();
         await ensureExperienceColumns();
+        await ensureAdminSystem();
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });

@@ -465,15 +465,29 @@ exports.getStep2Login = (req, res) => {
     res.render('step2-login', { error: req.query.error, step2Active: true });
 };
 
-exports.postStep2Login = (req, res) => {
-    const { username, password } = req.body;
-    const validUsername = process.env.STEP2_USERNAME || 'admin';
-    const validPassword = process.env.STEP2_PASSWORD || 'password';
-
-    if (username === validUsername && password === validPassword) {
-        const jwt = require('jsonwebtoken');
+exports.postStep2Login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const db = require('../db');
         const crypto = require('crypto');
-        
+        const jwt = require('jsonwebtoken');
+
+        const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (rows.length === 0) {
+            return res.redirect('/step2-login?error=Invalid credentials');
+        }
+
+        const user = rows[0];
+        const hash = crypto.createHash('sha256').update(password).digest('hex');
+
+        if (user.password !== hash) {
+            return res.redirect('/step2-login?error=Invalid credentials');
+        }
+
+        if (!user.can_access_step2) {
+            return res.redirect('/step2-login?error=You do not have permission to access Step 2');
+        }
+
         // Create a fingerprint using IP and User-Agent to prevent cookie theft/spoofing on HTTP
         const clientIp = req.ip || req.connection.remoteAddress || '';
         const userAgent = req.headers['user-agent'] || '';
@@ -490,8 +504,13 @@ exports.postStep2Login = (req, res) => {
             sameSite: 'lax',
             maxAge: 12 * 60 * 60 * 1000 // 12 hours
         });
+        
+        const authController = require('./authController');
+        authController.logAction(user.id, 'Unlocked Step 2');
+
         res.redirect('/step2/1');
-    } else {
-        res.redirect('/step2-login?error=Invalid credentials');
+    } catch (e) {
+        console.error(e);
+        res.redirect('/step2-login?error=Server error');
     }
 };

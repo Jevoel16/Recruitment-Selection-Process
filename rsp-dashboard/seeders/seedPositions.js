@@ -34,11 +34,21 @@ async function seedPositionsOnly() {
         for (let groupObj of positionsData) {
             const posList = groupObj.positions ? groupObj.positions : [groupObj];
             for (let pos of posList) {
+                let groupName = groupObj.group || pos.title;
+                if (!groupObj.group && pos.title) {
+                    // Extract base name by removing Roman Numerals (e.g., "Accountant I" -> "Accountant", "Teacher II (Elementary)" -> "Teacher (Elementary)")
+                    const regex = /^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX|X)(?:\s+(.*))?$/i;
+                    const match = pos.title.match(regex);
+                    if (match) {
+                        groupName = match[1] + (match[3] ? " " + match[3] : "");
+                    }
+                }
+
                 await connection.query(
                     'INSERT INTO positions (category, groupName, title, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility, qsEducationLevel, qsTrainingLevel, qsExperienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     [
                         pos.category || '', 
-                        groupObj.group || pos.title,
+                        groupName,
                         pos.title || '', 
                         pos.salaryGrade || '', 
                         pos.in_vacancy || 0, 

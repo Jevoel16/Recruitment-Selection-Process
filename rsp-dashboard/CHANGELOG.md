@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-13 14:26 (v1.1.8-Release+202607131426)
+### ADDED
+- Implemented a robust three-tier Role-Based Access Control (RBAC) system supporting `superadmin`, `admin`, and `evaluator` roles.
+- Introduced a dynamic `can_access_step2` permission framework preventing unauthorized accounts from interacting with Step 2 (Deliberation).
+- Built a comprehensive user audit logging mechanism that silently records `save`, `update`, `delete`, `proceed`, and `download` actions for standard users and admins.
+
+### CHANGED
+- Overhauled the dashboard architecture to conditionally hide/reveal administrative tabs ("Manage Users" and "Logs") entirely based on strictly defined RBAC permissions.
+- Upgraded the "Manage Users" Create/Edit/Delete modals to universally match the system's "glass-modal" design aesthetics and native Bootstrap ESC-to-close features via `getOrCreateInstance()`.
+- Fortified backend routes for the user management API to strictly prevent standard admins from managing other admins or the superadmin.
+- Refactored frontend package routing (`choices.js`, `html-docx-js`) to securely load from internal Node modules (`express.static`) rather than relying on unmanaged manually dropped local scripts.
+- Overhauled database seeder and unseeder scripts (`unseed.js`, `seedApplicants.js`) to gracefully navigate the RBAC walls via auto-generated backend JWTs and properly truncate audit logs.
+
 ## 2026-07-13 03:26 (v1.1.7-Release+202607130326)
 ### ADDED
 - Implemented outer perimeter border functionality inside the Comparative Assessment Result (CAR) Excel generation to maintain sleek official layout designs without applying heavy inner grids.
@@ -320,3 +333,4 @@
 
 ### FIXED
 - N/A
+

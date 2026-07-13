@@ -28,9 +28,9 @@ async function seed() {
         await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || 'rsp_db'}`);
         await connection.query(`USE ${process.env.DB_NAME || 'rsp_db'}`);
 
-        console.log('🧹 Dropping existing tables...');
+        console.log('🧹 Dropping existing applicant tables...');
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants, positions');
+        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         // 1. Run database.sql
@@ -71,6 +71,21 @@ async function seed() {
         console.log(`🚀 Sending API requests to create ${TOTAL_APPLICANTS} applicants (this will take time)...`);
         
         let allApplicantIds = [];
+
+        // Generate a valid JWT token to bypass authentication
+        const jwt = require('jsonwebtoken');
+        const token = jwt.sign({ 
+            id: 1, 
+            username: 'superadmin', 
+            role: 'superadmin', 
+            can_access_step2: true, 
+            name: 'Seeder' 
+        }, process.env.JWT_SECRET || 'fallback-secret-for-dev', { expiresIn: '1h' });
+        
+        const authHeaders = { 
+            'Content-Type': 'application/json',
+            'Cookie': `auth=${token}`
+        };
 
         // Batch generation to avoid socket exhaustion
         const BATCH_SIZE = 50;
@@ -121,7 +136,7 @@ async function seed() {
                 try {
                     const res = await fetch(`${API_BASE}/applicants`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: authHeaders,
                         body: JSON.stringify(payload)
                     });
                     const data = await res.json();
@@ -150,13 +165,13 @@ async function seed() {
         for (let i = 0; i < step2Ids.length; i += BATCH_SIZE) {
             const batch = step2Ids.slice(i, i + BATCH_SIZE);
             const batchPromises = batch.map(async id => {
-                const details = await fetch(`${API_BASE}/applicants/${id}/details`).then(r => r.json());
+                const details = await fetch(`${API_BASE}/applicants/${id}/details`, { headers: authHeaders }).then(r => r.json());
                 const qualifyDoc = async (type, docs) => {
                     if (docs && docs.length > 0) {
                         for (let doc of docs) {
                             await fetch(`${API_BASE}/applicants/${id}/${type}/${doc.id}/status`, {
                                 method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: authHeaders,
                                 body: JSON.stringify({ status: 'QUALIFIED' })
                             });
                         }
@@ -167,8 +182,8 @@ async function seed() {
                 await qualifyDoc('experience', details.experience);
                 await qualifyDoc('eligibility', details.eligibility);
 
-                await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST' });
-                await fetch(`${API_BASE}/applicants/${id}/proceed-step2`, { method: 'POST' });
+                await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST', headers: authHeaders });
+                await fetch(`${API_BASE}/applicants/${id}/proceed-step2`, { method: 'POST', headers: authHeaders });
             });
             await Promise.all(batchPromises);
             await delay(100);
@@ -191,12 +206,12 @@ async function seed() {
                 };
                 await fetch(`${API_BASE}/applicants/${id}/assess`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify(scorePayload)
                 });
                 await fetch(`${API_BASE}/applicants/${id}/status`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({ status: 'ASSESSED' })
                 });
             });
@@ -208,7 +223,7 @@ async function seed() {
         for (let i = 0; i < step4Ids.length; i += BATCH_SIZE) {
             const batch = step4Ids.slice(i, i + BATCH_SIZE);
             const batchPromises = batch.map(id => 
-                fetch(`${API_BASE}/applicants/${id}/proceed-requirements`, { method: 'POST' })
+                fetch(`${API_BASE}/applicants/${id}/proceed-requirements`, { method: 'POST', headers: authHeaders })
             );
             await Promise.all(batchPromises);
             await delay(100);
@@ -221,17 +236,17 @@ async function seed() {
             const batchPromises = batch.map(async id => {
                 await fetch(`${API_BASE}/applicants/${id}/requirements/all`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({ value: true })
                 });
                 await fetch(`${API_BASE}/applicants/${id}/toggle-assignment-req`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({ status: 'COMPLETE' })
                 });
                 await fetch(`${API_BASE}/applicants/${id}/assign`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({ 
                         office: offices[Math.floor(Math.random() * offices.length)],
                         cc: 'Juan Dela Cruz',
