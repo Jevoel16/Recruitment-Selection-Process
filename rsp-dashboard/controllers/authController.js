@@ -84,9 +84,10 @@ exports.updateUser = async (req, res) => {
         const { id } = req.params;
         const { role, can_access_step2, password } = req.body;
 
-        const [targetRows] = await db.query('SELECT role FROM users WHERE id = ?', [id]);
+        const [targetRows] = await db.query('SELECT username, role, can_access_step2 FROM users WHERE id = ?', [id]);
         if (targetRows.length === 0) return res.status(404).json({ error: 'User not found' });
         const targetRole = targetRows[0].role;
+        const targetUsername = targetRows[0].username;
 
         if (req.user.role === 'admin') {
             if (targetRole === 'admin' || targetRole === 'superadmin') {
@@ -97,6 +98,17 @@ exports.updateUser = async (req, res) => {
             }
         }
         
+        let actionMsg = `Edited user ${targetUsername}`;
+        let updates = [];
+        if (password) updates.push('changed password');
+        if (role !== targetRole) updates.push(`changed role to ${role}`);
+        if ((can_access_step2 ? 1 : 0) !== targetRows[0].can_access_step2) {
+            updates.push(`${can_access_step2 ? 'granted' : 'revoked'} step 2 access`);
+        }
+        if (updates.length > 0) {
+            actionMsg += ` (${updates.join(', ')})`;
+        }
+
         if (password) {
             await db.query(`UPDATE users SET role = ?, can_access_step2 = ?, password = ? WHERE id = ?`, 
                 [role, can_access_step2 ? 1 : 0, hashPassword(password), id]);
@@ -104,6 +116,11 @@ exports.updateUser = async (req, res) => {
             await db.query(`UPDATE users SET role = ?, can_access_step2 = ? WHERE id = ?`, 
                 [role, can_access_step2 ? 1 : 0, id]);
         }
+
+        if (updates.length > 0) {
+            exports.logAction(req.user.id, actionMsg, null);
+        }
+
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: 'Server error' });
@@ -115,15 +132,17 @@ exports.deleteUser = async (req, res) => {
         const { id } = req.params;
         if (id == req.user.id) return res.status(400).json({ error: 'Cannot delete yourself' });
 
-        const [targetRows] = await db.query('SELECT role FROM users WHERE id = ?', [id]);
+        const [targetRows] = await db.query('SELECT username, role FROM users WHERE id = ?', [id]);
         if (targetRows.length === 0) return res.status(404).json({ error: 'User not found' });
         const targetRole = targetRows[0].role;
+        const targetUsername = targetRows[0].username;
 
         if (req.user.role === 'admin' && (targetRole === 'admin' || targetRole === 'superadmin')) {
             return res.status(403).json({ error: 'You do not have permission to delete this user.' });
         }
 
         await db.query(`DELETE FROM users WHERE id = ?`, [id]);
+        exports.logAction(req.user.id, `Deleted user ${targetUsername}`, null);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: 'Server error' });
@@ -133,7 +152,7 @@ exports.deleteUser = async (req, res) => {
 exports.getLogs = async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT l.id, l.action, l.target, l.createdAt, u.username, u.name 
+            SELECT l.id, l.action, l.createdAt, u.username, u.name 
             FROM logs l 
             JOIN users u ON l.user_id = u.id 
             ORDER BY l.createdAt DESC LIMIT 500
@@ -147,9 +166,7 @@ exports.getLogs = async (req, res) => {
 exports.logAction = async (userId, action, target = null) => {
     try {
         if (!userId) return;
-        const [rows] = await db.query('SELECT role FROM users WHERE id = ?', [userId]);
-        if (rows.length > 0 && rows[0].role === 'superadmin') return; // Do not log superadmin
-
+        // Superadmin actions are now logged as requested
         await db.query(`INSERT INTO logs (user_id, action, target) VALUES (?, ?, ?)`, [userId, action, target]);
     } catch (e) {
         console.error('Log error:', e);

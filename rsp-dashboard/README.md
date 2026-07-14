@@ -18,7 +18,11 @@ A web-based platform to digitize the recruitment selection process.
 
 ### Applicant & Vacancy Management
 - **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades, accurate monthly salary mapping (Step 1), and fully editable text-based qualification standards.
-- **Automated Assessment Scaling:** Fully synchronized Level Increment configurations dynamically bridge the Qualification Standards in Vacancy Setup with the Step 2 Assessment Calculators, automatically allocating predefined levels to accelerate accurate scoring.
+- **Vacancy Publishing & Toggles:** Dynamic checkboxes automatically trigger modal updates inside `Vacancy_Endorsement.docx` parsing, integrated with a global "Off Vacancy" feature to wipe all public positions securely, including bulk toggling for mass status updates.
+
+### Document Generation & Workflows
+- **Pixel-Perfect VER Templates:** Precisely engineered the Request for Publication of Vacant Positions (VER.xlsx) template to natively match official raw files 1:1, explicitly aligning all exact row heights, dynamic dates, font stylings, and exact rich text segmentations via ExcelJS.
+- **Vacancy Endorsement Integration:** Native mapping of `Vacancy_Endorsement.docx` populated via Docxtemplater, combining multi-item iteration with dynamically scaling data modules.
 - **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values.
 - **Masterlist & Vacancy Dashboard:** Centralized dashboard for managing applicant masterlists alongside dynamic vacancy toggles and slot monitoring.
 - **Multi-Step Applicant Wizard:** Seamless data entry flow for applicant information ranging from Personal details to Education, Training, Experience, and Eligibility (now featuring real-time inline editing capabilities and robust active keystroke validation).

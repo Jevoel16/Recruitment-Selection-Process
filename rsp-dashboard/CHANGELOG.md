@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-14 08:20 (v1.2.0-Release+202607140820)
+### ADDED
+- Developed a new feature to globally toggle all vacant positions off through an "Off Vacancy" modal natively styled with Bootstrap toasts.
+- Updated VER.xlsx to dynamically fetch and embed the actual real-time date strings during document extraction.
+
+### CHANGED
+- Overhauled the VER.xlsx rendering logic to rigorously match the precise pixel row heights, alignments, font stylings, and exact rich text segmentations strictly requested for the official DepEd format template.
+- Narrowed the Superadmin system logs to accurately track ONLY specific edits/changes regarding user management (e.g. tracking who changed passwords or granted access to whom) and cleaned up target rendering in the UI.
+- Standardized modal input heights within the "Add New Position" modal to aesthetically align perfectly with corresponding Choices.js fields.
+
 ## 2026-07-13 15:40 (v1.1.9-Release+202607131540)
 ### ADDED
 - Populated all seeded positions with accurate monthly salaries dynamically mapped from their corresponding Salary Grades based on standard Step 1 conversion rates.

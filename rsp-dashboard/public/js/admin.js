@@ -66,6 +66,7 @@ async function createUser(e) {
             bootstrap.Modal.getInstance(document.getElementById('createUserModal')).hide();
             e.target.reset();
             fetchUsers();
+            showToast('User successfully created!', 'success');
         } else {
             const err = await res.json();
             alert('Error: ' + err.error);
@@ -145,7 +146,6 @@ async function fetchLogs() {
                     <td><small class="text-muted">${date}</small></td>
                     <td><strong>${log.name}</strong> <br><small class="text-muted">@${log.username}</small></td>
                     <td>${log.action}</td>
-                    <td><small style="max-width: 200px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title='${log.target || ''}'>${log.target || '-'}</small></td>
                 </tr>
             `;
         });

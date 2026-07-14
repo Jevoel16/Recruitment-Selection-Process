@@ -8,46 +8,10 @@ const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
 
 router.use(requireAuth);
 
-router.use((req, res, next) => {
-    if (req.user && req.user.role !== 'superadmin') {
-        const method = req.method;
-        const url = req.originalUrl.split('?')[0];
+// Removed automatic logging middleware.
         
-        let shouldLog = false;
-        let actionCategory = '';
-
-        // Determine if it's a target action
-        if (method === 'DELETE') {
-            shouldLog = true;
-            actionCategory = 'Deleted Record';
-        } else if (method === 'PUT') {
-            shouldLog = true;
-            actionCategory = 'Updated Record';
-        } else if (method === 'POST') {
-            if (url.includes('/proceed')) {
-                shouldLog = true;
-                actionCategory = 'Proceeded Applicant';
-            } else if (url.includes('/login')) {
-                shouldLog = false; // Usually not part of save/update/delete
-            } else if (url.includes('/lock') || url.includes('/unlock') || url.includes('/toggle')) {
-                shouldLog = true;
-                actionCategory = 'Updated State';
-            } else {
-                shouldLog = true;
-                actionCategory = 'Saved Record';
-            }
-        } else if (method === 'GET' && url.includes('/export')) {
-            shouldLog = true;
-            actionCategory = 'Downloaded Data';
-        }
-
-        if (shouldLog) {
-            let actionName = `${actionCategory}: ${url}`;
-            authController.logAction(req.user.id, actionName, JSON.stringify(req.body || {}).substring(0, 200));
-        }
-    }
-    next();
-});
+// Removed automatic logging middleware.
+// We will explicitly log specific events.
 
 router.get('/users', requireAdmin, authController.getUsers);
 router.post('/users', requireAdmin, authController.createUser);
@@ -56,7 +20,9 @@ router.delete('/users/:id', requireAdmin, authController.deleteUser);
 router.get('/logs', requireAdmin, authController.getLogs);
 
 // Endpoints for managing positions and fetching dynamic plantilla assignments
+router.post('/positions', positionController.createPosition);
 router.post('/positions/update', positionController.updatePosition);
+router.post('/positions/vacancy-off-all', positionController.turnOffAllVacancies);
 router.post('/positions/:id/vacancy', positionController.togglePositionVacancy);
 router.post('/positions/:id/plantilla', positionController.updatePlantilla);
 router.get('/positions/export/doc', positionController.exportDoc);

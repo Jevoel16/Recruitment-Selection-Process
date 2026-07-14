@@ -21,7 +21,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="glass-panel h-100 px-2 py-1">
                                 <select id="vacancyStatus" class="form-select bg-transparent border-0 shadow-none" onchange="filterVacancyTable()">
                                     <option value="">All Statuses</option>
@@ -30,9 +30,12 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-primary h-100 w-100 fw-bold shadow-sm rounded-3" data-bs-toggle="modal" data-bs-target="#addPositionModal">
-                                <i class="bi bi-plus-circle-fill me-2"></i> Add Position
+                        <div class="col-md-4 d-flex gap-2">
+                            <button type="button" class="btn btn-primary h-100 w-50 fw-bold shadow-sm rounded-3" data-bs-toggle="modal" data-bs-target="#addPositionModal">
+                                <i class="bi bi-plus-circle-fill me-1"></i> Add Position
+                            </button>
+                            <button type="button" id="offAllVacancyBtn" class="btn btn-danger h-100 w-50 fw-bold shadow-sm rounded-3">
+                                <i class="bi bi-power me-1"></i> Off Vacancy
                             </button>
                         </div>
                     </form>

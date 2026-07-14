@@ -1,5 +1,18 @@
 const db = require('../db');
 
+exports.createPosition = async (req, res) => {
+    try {
+        const { title, category, salaryGrade, monthlySalary } = req.body;
+        if (!title || !category) return res.status(400).json({ error: "Missing required fields" });
+
+        await db.query(`INSERT INTO positions (title, category, salaryGrade, monthlySalary, groupName) VALUES (?, ?, ?, ?, ?)`, 
+            [title, category, salaryGrade || null, monthlySalary || null, 'Other']); // Defaulting groupName to 'Other' as it is required but not in form
+        res.json({ success: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
 // Commits modifications to a position's core qualification standards and salary metrics.
 // This ensures that the dynamic vacancy dashboard accurately reflects real-time Civil Service criteria.
 exports.updatePosition = async (req, res) => {
@@ -16,6 +29,17 @@ exports.updatePosition = async (req, res) => {
 
         await db.query(`UPDATE positions SET vacancyAnnouncement=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsEducationLevel=?, qsTraining=?, qsTrainingLevel=?, qsExperience=?, qsExperienceLevel=?, qsEligibility=? WHERE id=?`, 
             [vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, id]);
+        res.json({ success: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// Turns off vacancy status for all positions
+exports.turnOffAllVacancies = async (req, res) => {
+    try {
+        await db.query(`UPDATE positions SET in_vacancy = 0`);
         res.json({ success: true });
     } catch (e) {
         console.error(e);

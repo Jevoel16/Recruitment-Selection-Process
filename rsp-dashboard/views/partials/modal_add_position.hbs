@@ -11,7 +11,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="newPositionTitle" class="form-label">Position Title</label>
-                            <input type="text" class="form-control" id="newPositionTitle" name="title" required placeholder="e.g. Teacher I">
+                            <input type="text" class="form-control" id="newPositionTitle" name="title" required placeholder="e.g. Teacher I" style="height: 44px;">
                         </div>
                         <div class="col-md-6">
                             <label for="newPositionCategory" class="form-label">Category</label>
@@ -24,11 +24,11 @@
                         </div>
                         <div class="col-md-6">
                             <label for="newPositionSalary" class="form-label">Salary Grade</label>
-                            <input type="number" class="form-control" id="newPositionSalary" name="salaryGrade" placeholder="e.g. 11">
+                            <input type="number" class="form-control" id="newPositionSalary" name="salaryGrade" placeholder="e.g. 11" style="height: 44px;">
                         </div>
                         <div class="col-md-6">
                             <label for="newPositionMonthly" class="form-label">Monthly Salary</label>
-                            <input type="number" step="0.01" class="form-control" id="newPositionMonthly" name="monthlySalary" placeholder="e.g. 27000">
+                            <input type="number" step="0.01" class="form-control" id="newPositionMonthly" name="monthlySalary" placeholder="e.g. 27000" style="height: 44px;">
                         </div>
                     </div>
                 </form>
@@ -44,10 +44,35 @@
 </div>
 
 <script>
-    function submitNewPosition() {
-        // Implement save logic here
-        alert("Save position functionality will be implemented here.");
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addPositionModal'));
-        if (modal) modal.hide();
+    async function submitNewPosition() {
+        const form = document.getElementById('addPositionForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/positions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const res = await response.json();
+            if (res.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addPositionModal'));
+                if (modal) modal.hide();
+                form.reset();
+                showToast('Position successfully created!', 'success', true);
+            } else {
+                alert('Error: ' + res.error);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error creating position');
+        }
     }
 </script>

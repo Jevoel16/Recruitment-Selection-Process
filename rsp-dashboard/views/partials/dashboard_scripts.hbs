@@ -81,6 +81,36 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('DOMContentLoaded', function() {
         initDashboard();
 
+        const offAllBtn = document.getElementById('offAllVacancyBtn');
+        if (offAllBtn) {
+            offAllBtn.addEventListener('click', function() {
+                const offAllModal = new bootstrap.Modal(document.getElementById('offAllVacanciesModal'));
+                offAllModal.show();
+            });
+        }
+
+        const confirmOffAllBtn = document.getElementById('confirmOffAllVacanciesBtn');
+        if (confirmOffAllBtn) {
+            confirmOffAllBtn.addEventListener('click', async function() {
+                try {
+                    const response = await fetch('/api/positions/vacancy-off-all', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const res = await response.json();
+                    if (!res.success) throw new Error('Failed to turn off all vacancies');
+                    
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('offAllVacanciesModal'));
+                    if (modal) modal.hide();
+                    
+                    showToast('All vacancy positions turned off successfully!', 'success', true);
+                } catch(e) {
+                    console.error(e);
+                    alert('Error turning off all vacancies');
+                }
+            });
+        }
+
         document.querySelectorAll('.vacancy-toggle').forEach(toggle => {
             toggle.addEventListener('change', async function() {
                 const id = this.getAttribute('data-id');
