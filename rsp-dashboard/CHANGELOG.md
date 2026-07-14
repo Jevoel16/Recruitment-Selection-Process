@@ -10,6 +10,9 @@
 - Narrowed the Superadmin system logs to accurately track ONLY specific edits/changes regarding user management (e.g. tracking who changed passwords or granted access to whom) and cleaned up target rendering in the UI.
 - Standardized modal input heights within the "Add New Position" modal to aesthetically align perfectly with corresponding Choices.js fields.
 
+### REMOVED
+- Purged deprecated log outputs (`git.txt`) and obsolete one-off seeder patch scripts (`update_script.js`) from the directories to maintain a lean production environment.
+
 ## 2026-07-13 15:40 (v1.1.9-Release+202607131540)
 ### ADDED
 - Populated all seeded positions with accurate monthly salaries dynamically mapped from their corresponding Salary Grades based on standard Step 1 conversion rates.
