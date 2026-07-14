@@ -40,7 +40,7 @@ router.get('/:step', (req, res, next) => {
     }
 });
 router.get('/:step/:page', (req, res, next) => {
-    if (req.params.step === 'step2') {
+    if (req.params.step === 'step2' || req.params.step === 'step3') {
         return step2AuthMiddleware(req, res, next);
     }
     next();
