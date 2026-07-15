@@ -7,36 +7,90 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
+                    <div class="alert alert-info small border-0 mb-3" id="potCriteriaMaxAlert"><strong>Note:</strong> The total max points for this criteria is <span id="potCriteriaMaxLabel">20</span>. Ensure your max points distribution equates to this.</div>
+                    
                     <div id="potentialGeneralDiv" class="d-none">
-                        <div class="alert alert-info small border-0">
-                            <strong>General Services Detected.</strong> According to guidelines, General Services uses alternative evaluative assessments designed by the HRMPSB. Enter the raw total score directly (Max 55 points).
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            <label class="form-label fw-bold small text-dark mb-2">a. Potential Assessment</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white">Max Pts</span>
+                                        <input type="number" class="form-control" id="potGenPAMax" value="35" min="0" step="0.01" oninput="document.getElementById('potGenPAInput').max = this.value; calculatePotentialPoints();">
+                                    </div>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="potGenPAInput" step="0.01" placeholder="Raw score" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Total Potential Score</label>
-                            <input type="number" class="form-control" id="potGeneralInput" step="0.01" max="55" placeholder="e.g. 50" oninput="calculatePotentialPoints()">
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            <label class="form-label fw-bold small text-dark mb-2">b. Psycho-Social Assessment</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white">Max Pts</span>
+                                        <input type="number" class="form-control" id="potGenPSAMax" value="20" min="0" step="0.01" oninput="document.getElementById('potGenPSAInput').max = this.value; calculatePotentialPoints();">
+                                    </div>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="potGenPSAInput" step="0.01" placeholder="Raw score" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div id="potentialOtherDiv">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">a. Written Examinations (WE) - Max 5 pts</label>
-                            <input type="number" class="form-control form-control-sm mb-1" id="potWEInput" step="0.01" max="5" placeholder="Raw points (0-5)" oninput="if(parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
-                            <div class="form-text mt-0">Enter cumulative raw points given.</div>
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            <label class="form-label fw-bold small text-dark mb-2">a. Written Examinations (WE)</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white">Max Pts</span>
+                                        <input type="number" class="form-control" id="potWEMax" value="5" min="0" step="0.01" oninput="document.getElementById('potWEInput').max = this.value; calculatePotentialPoints();">
+                                    </div>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="potWEInput" step="0.01" placeholder="Raw score" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">b. Skills or Work Sample Test (S/WST) - Max 10 pts</label>
-                            <input type="number" class="form-control form-control-sm mb-1" id="potSWSTInput" step="0.01" max="10" placeholder="Raw points (0-10)" oninput="if(parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
-                            <div class="form-text mt-0">Enter cumulative raw points given.</div>
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            <label class="form-label fw-bold small text-dark mb-2">b. Skills or Work Sample Test (S/WST)</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white">Max Pts</span>
+                                        <input type="number" class="form-control" id="potSWSTMax" value="10" min="0" step="0.01" oninput="document.getElementById('potSWSTInput').max = this.value; calculatePotentialPoints();">
+                                    </div>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="potSWSTInput" step="0.01" placeholder="Raw score" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">c. Behavioural Events Interview (BEI) - Max 5 pts</label>
-                            <input type="number" class="form-control form-control-sm mb-1" id="potBEIInput" step="0.01" max="5" placeholder="Raw BEI points (0-5)" oninput="if(parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
-                            <div class="form-text mt-0">Enter cumulative raw points given.</div>
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            <label class="form-label fw-bold small text-dark mb-2">c. Behavioural Events Interview (BEI)</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white">Max Pts</span>
+                                        <input type="number" class="form-control" id="potBEIMax" value="5" min="0" step="0.01" oninput="document.getElementById('potBEIInput').max = this.value; calculatePotentialPoints();">
+                                    </div>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" class="form-control form-control-sm" id="potBEIInput" step="0.01" placeholder="Raw score" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculatePotentialPoints();">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <hr class="my-4 border-secondary border-opacity-25">
+                    <hr class="my-3 border-secondary border-opacity-25">
 
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted fw-bold small">Sum of Max Points:</span>
+                        <span class="fs-6 fw-bold text-secondary" id="potentialSumMax">0 / 20</span>
+                    </div>
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <span class="text-muted fw-bold">Total Potential Points:</span>
                         <span class="fs-4 fw-bold text-success" id="calculatedPotentialPoints">0</span>

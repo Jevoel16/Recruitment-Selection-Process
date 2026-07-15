@@ -180,27 +180,42 @@ exports.updateRequirement = async (req, res) => {
 // This calculates and stores points across multiple criteria (Education, Training, Experience, etc.) critical for the Step 3 comparative leaderboard.
 exports.assessApplicant = async (req, res) => {
     try {
-        const { education, training, experience, performance, outstandingAccomplishments, applicationOfEducation, applicationOfLD, potential, isComplete, remarks: customRemarks } = req.body;
-        const edu = (education !== null && education !== '') ? parseFloat(education) : null;
-        const trn = (training !== null && training !== '') ? parseFloat(training) : null;
-        const exp = (experience !== null && experience !== '') ? parseFloat(experience) : null;
-        const prf = (performance !== null && performance !== '') ? parseFloat(performance) : null;
-        const oac = (outstandingAccomplishments !== null && outstandingAccomplishments !== '') ? parseFloat(outstandingAccomplishments) : null;
-        const aoe = (applicationOfEducation !== null && applicationOfEducation !== '') ? parseFloat(applicationOfEducation) : null;
-        const ald = (applicationOfLD !== null && applicationOfLD !== '') ? parseFloat(applicationOfLD) : null;
-        const pot = (potential !== null && potential !== '') ? parseFloat(potential) : null;
+        const { education, training, experience, performance, outstandingAccomplishments, applicationOfEducation, applicationOfLD, potential, pbet, ppst_coi, ppst_ncoi, scoreWe, scoreSwst, scoreBei, scorePotPa, scorePotPsa, maxWe, maxSwst, maxBei, maxPotPa, maxPotPsa, isComplete, remarks: customRemarks } = req.body;
+        const edu = (education !== undefined && education !== null && education !== '') ? parseFloat(education) : null;
+        const trn = (training !== undefined && training !== null && training !== '') ? parseFloat(training) : null;
+        const exp = (experience !== undefined && experience !== null && experience !== '') ? parseFloat(experience) : null;
+        const prf = (performance !== undefined && performance !== null && performance !== '') ? parseFloat(performance) : null;
+        const oac = (outstandingAccomplishments !== undefined && outstandingAccomplishments !== null && outstandingAccomplishments !== '') ? parseFloat(outstandingAccomplishments) : null;
+        const aoe = (applicationOfEducation !== undefined && applicationOfEducation !== null && applicationOfEducation !== '') ? parseFloat(applicationOfEducation) : null;
+        const ald = (applicationOfLD !== undefined && applicationOfLD !== null && applicationOfLD !== '') ? parseFloat(applicationOfLD) : null;
+        const pot = (potential !== undefined && potential !== null && potential !== '') ? parseFloat(potential) : null;
+        const pb = (pbet !== undefined && pbet !== null && pbet !== '') ? parseFloat(pbet) : null;
+        const ppc = (ppst_coi !== undefined && ppst_coi !== null && ppst_coi !== '') ? parseFloat(ppst_coi) : null;
+        const ppnc = (ppst_ncoi !== undefined && ppst_ncoi !== null && ppst_ncoi !== '') ? parseFloat(ppst_ncoi) : null;
+        
+        const sWe = (scoreWe !== undefined && scoreWe !== null && scoreWe !== '') ? parseFloat(scoreWe) : null;
+        const sSwst = (scoreSwst !== undefined && scoreSwst !== null && scoreSwst !== '') ? parseFloat(scoreSwst) : null;
+        const sBei = (scoreBei !== undefined && scoreBei !== null && scoreBei !== '') ? parseFloat(scoreBei) : null;
+        const sPotPa = (scorePotPa !== undefined && scorePotPa !== null && scorePotPa !== '') ? parseFloat(scorePotPa) : null;
+        const sPotPsa = (scorePotPsa !== undefined && scorePotPsa !== null && scorePotPsa !== '') ? parseFloat(scorePotPsa) : null;
+        
+        const mWe = (maxWe !== undefined && maxWe !== null && maxWe !== '') ? parseFloat(maxWe) : null;
+        const mSwst = (maxSwst !== undefined && maxSwst !== null && maxSwst !== '') ? parseFloat(maxSwst) : null;
+        const mBei = (maxBei !== undefined && maxBei !== null && maxBei !== '') ? parseFloat(maxBei) : null;
+        const mPotPa = (maxPotPa !== undefined && maxPotPa !== null && maxPotPa !== '') ? parseFloat(maxPotPa) : null;
+        const mPotPsa = (maxPotPsa !== undefined && maxPotPsa !== null && maxPotPsa !== '') ? parseFloat(maxPotPsa) : null;
         
         let total = 0; let anyScore = false;
-        [edu, trn, exp, prf, oac, aoe, ald, pot].forEach(val => { if (val !== null) { total += val; anyScore = true; } });
+        [edu, trn, exp, prf, oac, aoe, ald, pot, pb, ppc, ppnc].forEach(val => { if (val !== null) { total += val; anyScore = true; } });
         let finalTotal = anyScore ? parseFloat(total.toFixed(2)) : null;
         let assessmentRemarks = 'Pending';
         if (anyScore) assessmentRemarks = isComplete ? 'Assessed' : 'In-Prog';
 
         await db.query(`
             UPDATE applicants 
-            SET scoreEducation = ?, scoreTraining = ?, scoreExperience = ?, scorePerformance = ?, scoreOutstandingAccomplishments = ?, scoreApplicationOfEducation = ?, scoreApplicationOfLD = ?, scorePotential = ?, assessmentTotal = ?, assessmentRemarks = ?, remarks = ?
+            SET scoreEducation = ?, scoreTraining = ?, scoreExperience = ?, scorePerformance = ?, scoreOutstandingAccomplishments = ?, scoreApplicationOfEducation = ?, scoreApplicationOfLD = ?, scorePotential = ?, scorePbet = ?, scorePpstCoi = ?, scorePpstNcoi = ?, scoreWe = ?, scoreSwst = ?, scoreBei = ?, scorePotPa = ?, scorePotPsa = ?, maxWe = ?, maxSwst = ?, maxBei = ?, maxPotPa = ?, maxPotPsa = ?, assessmentTotal = ?, assessmentRemarks = ?, remarks = ?
             WHERE id = ?`, 
-            [edu, trn, exp, prf, oac, aoe, ald, pot, finalTotal, assessmentRemarks, customRemarks, req.params.id]
+            [edu, trn, exp, prf, oac, aoe, ald, pot, pb, ppc, ppnc, sWe, sSwst, sBei, sPotPa, sPotPsa, mWe, mSwst, mBei, mPotPa, mPotPsa, finalTotal, assessmentRemarks, customRemarks, req.params.id]
         );
         res.json({ success: true });
     } catch (error) {
@@ -349,6 +364,9 @@ exports.getApplicantDetails = async (req, res) => {
             applicationOfEducation: app.scoreApplicationOfEducation,
             applicationOfLD: app.scoreApplicationOfLD,
             potential: app.scorePotential,
+            pbet: app.scorePbet,
+            ppst_coi: app.scorePpstCoi,
+            ppst_ncoi: app.scorePpstNcoi,
             total: app.assessmentTotal
         };
 
@@ -528,7 +546,7 @@ exports.updateEligibility = async (req, res) => {
 
 exports.noAppearanceApplicant = async (req, res) => {
     try {
-        await db.query(`UPDATE applicants SET status = 'NO_APPEARANCE', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
+        await db.query(`UPDATE applicants SET status = 'NO_APPEARANCE', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, scorePbet = 0, scorePpstCoi = 0, scorePpstNcoi = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -538,7 +556,7 @@ exports.noAppearanceApplicant = async (req, res) => {
 
 exports.newlyPromotedApplicant = async (req, res) => {
     try {
-        await db.query(`UPDATE applicants SET status = 'NEWLY_PROMOTED', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
+        await db.query(`UPDATE applicants SET status = 'NEWLY_PROMOTED', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, scorePbet = 0, scorePpstCoi = 0, scorePpstNcoi = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (error) {
         console.error(error);

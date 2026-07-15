@@ -202,6 +202,19 @@ async function seed() {
                     applicationOfEducation: Math.floor(Math.random() * 5) + 5,
                     applicationOfLD: Math.floor(Math.random() * 5) + 5,
                     potential: Math.floor(Math.random() * 10) + 5,
+                    pbet: Math.floor(Math.random() * 5) + 5,
+                    ppst_coi: Math.floor(Math.random() * 20) + 15,
+                    ppst_ncoi: Math.floor(Math.random() * 15) + 10,
+                    scoreWe: Math.floor(Math.random() * 5),
+                    scoreSwst: Math.floor(Math.random() * 10),
+                    scoreBei: Math.floor(Math.random() * 5),
+                    maxWe: 5,
+                    maxSwst: 10,
+                    maxBei: 5,
+                    scorePotPa: Math.floor(Math.random() * 20) + 5,
+                    scorePotPsa: Math.floor(Math.random() * 10) + 5,
+                    maxPotPa: 35,
+                    maxPotPsa: 20,
                     isComplete: true
                 };
                 await fetch(`${API_BASE}/applicants/${id}/assess`, {

@@ -5,6 +5,95 @@
 let currentAssessmentId = null;
 let currentPositionStandards = null;
 
+const criteriaConfig = {
+    'Teacher I': [
+        { key: 'education', label: 'a. Education', max: 10, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 10, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 10, calcFn: 'openExpCalcModal()' },
+        { key: 'pbet', label: 'd. PBET/LET/LEPT Rating', max: 10, calcFn: 'openPbetCalcModal()' },
+        { key: 'ppst_coi', label: 'e. PPST COIs (Classroom Observation/Demonstration Teaching)', max: 35, calcFn: 'openCoiCalcModal()' },
+        { key: 'ppst_ncoi', label: 'f. PPST NCOIs (Teacher Reflection)', max: 25, calcFn: 'openNcoiCalcModal()' }
+    ],
+    'School Administration': [
+        { key: 'education', label: 'a. Education', max: 10, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 10, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 10, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 25, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 10, calcFn: 'openOutAccCalcModal()' },
+        { key: 'applicationOfEducation', label: 'f. Application of Education', max: 10, calcFn: 'openAppEduCalcModal()' },
+        { key: 'applicationOfLD', label: 'g. Application of L&D', max: 10, calcFn: 'openAppLNDCalcModal()' },
+        { key: 'potential', label: 'h. Potential (Written Exam, BEI)', max: 15, calcFn: 'openPotentialCalcModal()' }
+    ],
+    'General': [
+        { key: 'education', label: 'a. Education', max: 5, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 5, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 20, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 10, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 5, calcFn: 'openOutAccCalcModal()' },
+        { key: 'potential', label: 'f. Potential', max: 55, calcFn: 'openPotentialCalcModal()' }
+    ],
+    'SG 1-9': [
+        { key: 'education', label: 'a. Education', max: 5, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 5, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 20, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 20, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 10, calcFn: 'openOutAccCalcModal()' },
+        { key: 'applicationOfEducation', label: 'f. Application of Education', max: 10, calcFn: 'openAppEduCalcModal()' },
+        { key: 'applicationOfLD', label: 'g. Application of L&D', max: 10, calcFn: 'openAppLNDCalcModal()' },
+        { key: 'potential', label: 'h. Potential', max: 20, calcFn: 'openPotentialCalcModal()' }
+    ],
+    'SG 10-22': [
+        { key: 'education', label: 'a. Education', max: 5, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 10, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 15, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 20, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 10, calcFn: 'openOutAccCalcModal()' },
+        { key: 'applicationOfEducation', label: 'f. Application of Education', max: 10, calcFn: 'openAppEduCalcModal()' },
+        { key: 'applicationOfLD', label: 'g. Application of L&D', max: 10, calcFn: 'openAppLNDCalcModal()' },
+        { key: 'potential', label: 'h. Potential', max: 20, calcFn: 'openPotentialCalcModal()' }
+    ],
+    'SG 24': [
+        { key: 'education', label: 'a. Education', max: 10, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 5, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 15, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 20, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 10, calcFn: 'openOutAccCalcModal()' },
+        { key: 'applicationOfEducation', label: 'f. Application of Education', max: 10, calcFn: 'openAppEduCalcModal()' },
+        { key: 'applicationOfLD', label: 'g. Application of L&D', max: 10, calcFn: 'openAppLNDCalcModal()' },
+        { key: 'potential', label: 'h. Potential', max: 20, calcFn: 'openPotentialCalcModal()' }
+    ],
+    'RT SG 11-15': [
+        { key: 'education', label: 'a. Education', max: 10, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 10, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 10, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 20, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 10, calcFn: 'openOutAccCalcModal()' },
+        { key: 'applicationOfEducation', label: 'f. Application of Education', max: 10, calcFn: 'openAppEduCalcModal()' },
+        { key: 'applicationOfLD', label: 'g. Application of L&D', max: 10, calcFn: 'openAppLNDCalcModal()' },
+        { key: 'potential', label: 'h. Potential', max: 20, calcFn: 'openPotentialCalcModal()' }
+    ],
+    'RT SG 16-23': [
+        { key: 'education', label: 'a. Education', max: 10, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 10, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 10, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 20, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 5, calcFn: 'openOutAccCalcModal()' },
+        { key: 'applicationOfEducation', label: 'f. Application of Education', max: 15, calcFn: 'openAppEduCalcModal()' },
+        { key: 'applicationOfLD', label: 'g. Application of L&D', max: 10, calcFn: 'openAppLNDCalcModal()' },
+        { key: 'potential', label: 'h. Potential', max: 20, calcFn: 'openPotentialCalcModal()' }
+    ],
+    'RT SG 24': [
+        { key: 'education', label: 'a. Education', max: 10, calcFn: 'openEduCalcModal()' },
+        { key: 'training', label: 'b. Training', max: 10, calcFn: 'openTrainCalcModal()' },
+        { key: 'experience', label: 'c. Experience', max: 10, calcFn: 'openExpCalcModal()' },
+        { key: 'performance', label: 'd. Performance', max: 25, calcFn: 'openPerfCalcModal()' },
+        { key: 'outstandingAccomplishments', label: 'e. Outstanding Accomplishments', max: 10, calcFn: 'openOutAccCalcModal()' },
+        { key: 'applicationOfEducation', label: 'f. Application of Education', max: 10, calcFn: 'openAppEduCalcModal()' },
+        { key: 'applicationOfLD', label: 'g. Application of L&D', max: 10, calcFn: 'openAppLNDCalcModal()' },
+        { key: 'potential', label: 'h. Potential', max: 15, calcFn: 'openPotentialCalcModal()' }
+    ]
+};
+
 async function openAssessmentModal(id, name) {
     if (!(await window.acquireLock(id))) return;
     currentAssessmentId = id;
@@ -26,12 +115,42 @@ async function openAssessmentModal(id, name) {
         document.getElementById('assessmentSG').innerText = `${sg}`;
         document.getElementById('assessmentPosition').innerText = position;
         
-        // Determine Category Key
         let categoryKey = 'SG 1-9';
         const sgNum = parseInt(sg.toString().replace('SG', '').trim()) || 1;
-        if (category.toLowerCase().includes('general services') || sg.toString().toLowerCase().includes('general services')) {
+        const catLower = category.toLowerCase();
+        const posLower = position.toLowerCase();
+        
+        const isGeneral = catLower.includes('general services') || 
+                          sg.toString().toLowerCase().includes('general services') ||
+                          posLower.includes('aide') || 
+                          posLower.includes('guard') || 
+                          posLower.includes('watchman') || 
+                          posLower.includes('worker') || 
+                          posLower.includes('driver') || 
+                          posLower.includes('cook') || 
+                          posLower.includes('mechanic') || 
+                          posLower.includes('operator') ||
+                          posLower.includes('fisherman') ||
+                          posLower.includes('clerk') ||
+                          posLower.includes('maintenance');
+
+        if (catLower.includes('teacher') || catLower === 'teaching') {
+            categoryKey = 'Teacher I';
+        } else if (catLower.includes('school administration') || catLower.includes('school admin')) {
+            categoryKey = 'School Administration';
+        } else if (catLower.includes('related teaching') || catLower.includes('related-teaching')) {
+            if (sgNum >= 11 && sgNum <= 15) {
+                categoryKey = 'RT SG 11-15';
+            } else if ((sgNum >= 16 && sgNum <= 23) || sgNum === 27) {
+                categoryKey = 'RT SG 16-23';
+            } else if (sgNum >= 24) {
+                categoryKey = 'RT SG 24';
+            } else {
+                categoryKey = 'RT SG 11-15'; // Default fallback
+            }
+        } else if (isGeneral) {
             categoryKey = 'General';
-        } else if (sgNum === 24) {
+        } else if (sgNum >= 24) {
             categoryKey = 'SG 24';
         } else if ((sgNum >= 10 && sgNum <= 22) || sgNum === 27) {
             categoryKey = 'SG 10-22';
@@ -39,49 +158,73 @@ async function openAssessmentModal(id, name) {
             categoryKey = 'SG 1-9';
         }
 
-        const maxPointsConfig = {
-            'General': { education: 5, training: 5, experience: 20, performance: 10, outstandingAccomplishments: 5, applicationOfEducation: 0, applicationOfLD: 0, potential: 55 },
-            'SG 1-9': { education: 5, training: 5, experience: 20, performance: 20, outstandingAccomplishments: 10, applicationOfEducation: 10, applicationOfLD: 10, potential: 20 },
-            'SG 10-22': { education: 5, training: 10, experience: 15, performance: 20, outstandingAccomplishments: 10, applicationOfEducation: 10, applicationOfLD: 10, potential: 20 },
-            'SG 24': { education: 10, training: 5, experience: 15, performance: 20, outstandingAccomplishments: 10, applicationOfEducation: 10, applicationOfLD: 10, potential: 20 }
-        };
+        const criteriaList = criteriaConfig[categoryKey];
+        const tbody = document.getElementById('assessmentCriteriaBody');
+        tbody.innerHTML = '';
+        let maxTotal = 0;
 
-        const maxPoints = maxPointsConfig[categoryKey];
-        const criteriaList = ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'];
-        
-        criteriaList.forEach(key => {
-            const inputEl = document.querySelector(`[name="${key}"]`);
-            const maxEl = document.getElementById(`max-${key}`);
-            if (inputEl) {
-                inputEl.max = maxPoints[key];
-                if (maxPoints[key] === 0) {
-                    inputEl.disabled = true;
-                } else {
-                    inputEl.disabled = false;
-                }
+        criteriaList.forEach(criteria => {
+            const tr = document.createElement('tr');
+            
+            const tdLabel = document.createElement('td');
+            const dFlex = document.createElement('div');
+            dFlex.className = 'd-flex justify-content-between align-items-center';
+            const spanLabel = document.createElement('span');
+            spanLabel.innerText = criteria.label;
+            dFlex.appendChild(spanLabel);
+            
+            if (criteria.calcFn) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-info';
+                btn.setAttribute('onclick', criteria.calcFn);
+                btn.innerHTML = '<i class="bi bi-calculator"></i> Calculate';
+                dFlex.appendChild(btn);
             }
-            if (maxEl) {
-                maxEl.innerText = maxPoints[key];
+            tdLabel.appendChild(dFlex);
+
+            const tdInput = document.createElement('td');
+            tdInput.style.width = '150px';
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.className = 'form-control score-input';
+            input.name = criteria.key;
+            input.id = criteria.key + 'Input';
+            input.max = criteria.max;
+            if (criteria.max === 0) {
+                input.disabled = true;
             }
+            
+            // Set existing score if any
+            if (app.scores && app.scores[criteria.key] !== undefined && app.scores[criteria.key] !== null) {
+                input.value = app.scores[criteria.key];
+            } else if (criteria.max === 0) {
+                input.value = 0;
+            } else {
+                input.value = '';
+            }
+
+            input.oninput = function() {
+                if (parseFloat(this.value) > parseFloat(this.max)) this.value = this.max;
+                if(typeof calculateAssessmentTotal === 'function') calculateAssessmentTotal();
+            };
+            tdInput.appendChild(input);
+
+            const tdMax = document.createElement('td');
+            tdMax.className = 'text-center fw-bold text-muted align-middle';
+            tdMax.id = `max-${criteria.key}`;
+            tdMax.innerText = criteria.max;
+
+            tr.appendChild(tdLabel);
+            tr.appendChild(tdInput);
+            tr.appendChild(tdMax);
+
+            tbody.appendChild(tr);
+            maxTotal += criteria.max;
         });
 
-        // If there are existing scores, populate them
-        if (app.scores && app.scores.total !== null) {
-            document.getElementById('educationInput').value = app.scores.education !== null ? app.scores.education : '';
-            document.querySelector('[name="training"]').value = app.scores.training !== null ? app.scores.training : '';
-            document.querySelector('[name="experience"]').value = app.scores.experience !== null ? app.scores.experience : '';
-            document.querySelector('[name="performance"]').value = app.scores.performance !== null ? app.scores.performance : '';
-            document.querySelector('[name="outstandingAccomplishments"]').value = app.scores.outstandingAccomplishments !== null ? app.scores.outstandingAccomplishments : '';
-            document.querySelector('[name="applicationOfEducation"]').value = app.scores.applicationOfEducation !== null ? app.scores.applicationOfEducation : '';
-            document.querySelector('[name="applicationOfLD"]').value = app.scores.applicationOfLD !== null ? app.scores.applicationOfLD : '';
-            document.querySelector('[name="potential"]').value = app.scores.potential !== null ? app.scores.potential : '';
-        } else {
-            criteriaList.forEach(key => {
-                const inputEl = document.querySelector(`[name="${key}"]`);
-                if (inputEl && !inputEl.disabled) inputEl.value = '';
-                if (inputEl && inputEl.disabled) inputEl.value = 0;
-            });
-        }
+        document.getElementById('assessmentMaxTotal').innerText = maxTotal;
         
         document.getElementById('assessmentRemarks').value = app.remarks || '';
         
@@ -104,15 +247,15 @@ if (assessmentForm) {
         const data = Object.fromEntries(formData.entries());
         
         let isComplete = true;
-        const criteriaList = ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'];
-        criteriaList.forEach(key => {
-            const inputEl = document.querySelector(`[name="${key}"]`);
-            if (inputEl && !inputEl.disabled && !data[key]) {
+        const inputs = document.querySelectorAll('.score-input');
+        inputs.forEach(input => {
+            if (!input.disabled && !input.value) {
                 isComplete = false;
             }
         });
         
         data.isComplete = isComplete;
+        data.total = document.getElementById('assessmentTotalScore').innerText;
         
         try {
             const res = await fetch(`/api/applicants/${id}/assess`, {
@@ -132,11 +275,10 @@ if (assessmentForm) {
     // Add dynamic calculation for inputs
     const calculateAssessmentTotal = () => {
         let total = 0;
-        const criteriaList = ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'];
-        criteriaList.forEach(key => {
-            const inputEl = document.querySelector(`[name="${key}"]`);
-            if (inputEl && !inputEl.disabled) {
-                const val = parseFloat(inputEl.value);
+        const inputs = document.querySelectorAll('.score-input');
+        inputs.forEach(input => {
+            if (!input.disabled) {
+                const val = parseFloat(input.value);
                 if (!isNaN(val)) total += val;
             }
         });
@@ -144,12 +286,7 @@ if (assessmentForm) {
         if (totalEl) totalEl.innerText = total > 0 ? parseFloat(total.toFixed(2)) : 0;
     };
 
-    const assessmentInputs = document.querySelectorAll('#assessmentForm input[type="number"]');
-    assessmentInputs.forEach(input => {
-        input.addEventListener('input', calculateAssessmentTotal);
-    });
-    
-    // Make calculateAssessmentTotal globally available if needed
+    // Make calculateAssessmentTotal globally available
     window.calculateAssessmentTotal = calculateAssessmentTotal;
 }
 
@@ -178,7 +315,9 @@ function calculateEduPoints() {
     const categoryText = document.getElementById('assessmentCategory').innerText;
     
     let categoryKey = 'SG 1-9'; // Default
-    if (categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services')) {
+    if (categoryText === 'Related-Teaching') {
+        categoryKey = 'Related-Teaching';
+    } else if (categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services')) {
         categoryKey = 'General';
     } else if (sgNum === 24) {
         categoryKey = 'SG 24';
@@ -197,26 +336,19 @@ function calculateEduPoints() {
         else if (finalInc === 2) points = 2;
         else if (finalInc === 1) points = 1;
         else points = 0;
-    } else if (categoryKey === 'SG 1-9') {
-        if (finalInc >= 10) points = 5;
-        else if (finalInc >= 8) points = 4;
-        else if (finalInc >= 6) points = 3;
-        else if (finalInc >= 4) points = 2;
-        else if (finalInc >= 1) points = 1;
-        else points = 0;
-    } else if (categoryKey === 'SG 10-22') {
+    } else if (categoryKey === 'SG 1-9' || categoryKey === 'SG 10-22') {
         if (finalInc >= 10) points = 5;
         else if (finalInc >= 8) points = 4;
         else if (finalInc >= 6) points = 3;
         else if (finalInc >= 4) points = 2;
         else if (finalInc >= 2) points = 1;
         else points = 0; 
-    } else if (categoryKey === 'SG 24') {
+    } else if (categoryKey === 'SG 24' || categoryKey === 'Related-Teaching') {
         if (finalInc >= 10) points = 10;
-        else if (finalInc === 9) points = 8;
-        else if (finalInc === 8) points = 6;
-        else if (finalInc >= 6) points = 4;
-        else if (finalInc >= 4) points = 2;
+        else if (finalInc >= 8) points = 8;
+        else if (finalInc >= 6) points = 6;
+        else if (finalInc >= 4) points = 4;
+        else if (finalInc >= 2) points = 2;
         else points = 0;
     }
 
@@ -254,7 +386,9 @@ function calculateTrainPoints() {
     const categoryText = document.getElementById('assessmentCategory').innerText;
     
     let categoryKey = 'SG 1-9'; // Default
-    if (categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services')) {
+    if (categoryText === 'Related-Teaching') {
+        categoryKey = 'Related-Teaching';
+    } else if (categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services')) {
         categoryKey = 'General';
     } else if (sgNum === 24) {
         categoryKey = 'SG 24';
@@ -273,12 +407,12 @@ function calculateTrainPoints() {
         else if (finalInc === 2) points = 2;
         else if (finalInc === 1) points = 1;
         else points = 0;
-    } else if (categoryKey === 'SG 10-22') {
-        if (finalInc >= 5) points = 10;
-        else if (finalInc === 4) points = 8;
-        else if (finalInc === 3) points = 6;
-        else if (finalInc === 2) points = 4;
-        else if (finalInc === 1) points = 2;
+    } else if (categoryKey === 'SG 10-22' || categoryKey === 'Related-Teaching') {
+        if (finalInc >= 10) points = 10;
+        else if (finalInc >= 8) points = 8;
+        else if (finalInc >= 6) points = 6;
+        else if (finalInc >= 4) points = 4;
+        else if (finalInc >= 2) points = 2;
         else points = 0;
     }
 
@@ -316,7 +450,9 @@ function calculateExpPoints() {
     const categoryText = document.getElementById('assessmentCategory').innerText;
     
     let categoryKey = 'SG 1-9'; // Default
-    if (categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services')) {
+    if (categoryText === 'Related-Teaching') {
+        categoryKey = 'Related-Teaching';
+    } else if (categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services')) {
         categoryKey = 'General';
     } else if (sgNum === 24) {
         categoryKey = 'SG 24';
@@ -341,6 +477,13 @@ function calculateExpPoints() {
         else if (finalInc >= 6) points = 9;
         else if (finalInc >= 4) points = 6;
         else if (finalInc >= 2) points = 3;
+        else points = 0;
+    } else if (categoryKey === 'Related-Teaching') {
+        if (finalInc >= 10) points = 10;
+        else if (finalInc >= 8) points = 8;
+        else if (finalInc >= 6) points = 6;
+        else if (finalInc >= 4) points = 4;
+        else if (finalInc >= 2) points = 2;
         else points = 0;
     }
 
@@ -409,9 +552,27 @@ function calculatePerfPoints() {
     const method = document.getElementById('perfEvalMethod').value;
     const categoryText = document.getElementById('assessmentCategory').innerText;
     const sgText = document.getElementById('assessmentSG').innerText.replace('SG', '').trim();
-    const isGeneral = categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services');
+    const positionText = document.getElementById('assessmentPosition') ? document.getElementById('assessmentPosition').innerText : '';
+    const sgNum = parseInt(sgText);
+    const catLower = categoryText.toLowerCase();
+    const posLower = positionText.toLowerCase();
+
+    const isGeneral = catLower.includes('general services') || 
+                      sgText.toLowerCase().includes('general services') ||
+                      posLower.includes('aide') || 
+                      posLower.includes('guard') || 
+                      posLower.includes('watchman') || 
+                      posLower.includes('worker') || 
+                      posLower.includes('driver') || 
+                      posLower.includes('cook') || 
+                      posLower.includes('mechanic') || 
+                      posLower.includes('operator') ||
+                      posLower.includes('fisherman') ||
+                      posLower.includes('clerk') ||
+                      posLower.includes('maintenance');
     
-    const wa = isGeneral ? 10 : 20;
+    let wa = isGeneral ? 10 : 20;
+    if ((catLower.includes('related teaching') || catLower.includes('related-teaching')) && sgNum >= 24) wa = 25;
     document.getElementById('perfWA').innerText = wa;
     
     let points = 0;
@@ -459,10 +620,28 @@ function openOutAccCalcModal() {
 function calculateOutAccPoints() {
     const categoryText = document.getElementById('assessmentCategory').innerText;
     const sgText = document.getElementById('assessmentSG').innerText.replace('SG', '').trim();
-    const isGeneral = categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services');
+    const positionText = document.getElementById('assessmentPosition') ? document.getElementById('assessmentPosition').innerText : '';
+    const sgNum = parseInt(sgText);
+    const catLower = categoryText.toLowerCase();
+    const posLower = positionText.toLowerCase();
+
+    const isGeneral = catLower.includes('general services') || 
+                      sgText.toLowerCase().includes('general services') ||
+                      posLower.includes('aide') || 
+                      posLower.includes('guard') || 
+                      posLower.includes('watchman') || 
+                      posLower.includes('worker') || 
+                      posLower.includes('driver') || 
+                      posLower.includes('cook') || 
+                      posLower.includes('mechanic') || 
+                      posLower.includes('operator') ||
+                      posLower.includes('fisherman') ||
+                      posLower.includes('clerk') ||
+                      posLower.includes('maintenance');
     
-    // "five (5) points for General Services positions and 10 points for other groups"
-    const maxPoints = isGeneral ? 5 : 10;
+    let maxPoints = isGeneral ? 5 : 10;
+    if ((catLower.includes('related teaching') || catLower.includes('related-teaching')) && sgNum >= 16 && sgNum <= 23) maxPoints = 5;
+    
     document.getElementById('outAccMax').innerText = maxPoints;
 
     const compDiv = document.getElementById('outAccComponentsDiv');
@@ -526,8 +705,14 @@ function calculateAppEduPoints() {
         else if (movs === 'A') points = 1;
     } else if (method === 'no_exp') {
         const x = parseFloat(document.getElementById('appEduGWAInput').value) || 0;
-        // As per docs: Weight allocation for Application of Education is usually 10 points
-        const wa = 10; 
+        const categoryText = document.getElementById('assessmentCategory').innerText;
+        const sgText = document.getElementById('assessmentSG').innerText.replace('SG', '').trim();
+        const sgNum = parseInt(sgText);
+        let wa = 10; 
+        const catLower = categoryText.toLowerCase();
+        if ((catLower.includes('related teaching') || catLower.includes('related-teaching')) && ((sgNum >= 16 && sgNum <= 23) || sgNum === 27)) {
+            wa = 15;
+        }
         points = (x / 100) * wa;
     }
     
@@ -580,14 +765,42 @@ function openPotentialCalcModal() {
     
     const categoryText = document.getElementById('assessmentCategory').innerText;
     const sgText = document.getElementById('assessmentSG').innerText.replace('SG', '').trim();
-    const isGeneral = categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services');
+    const positionText = document.getElementById('assessmentPosition') ? document.getElementById('assessmentPosition').innerText : '';
+    const catLower = categoryText.toLowerCase();
+    const posLower = positionText.toLowerCase();
+
+    const isGeneral = catLower.includes('general services') || 
+                      sgText.toLowerCase().includes('general services') ||
+                      posLower.includes('aide') || 
+                      posLower.includes('guard') || 
+                      posLower.includes('watchman') || 
+                      posLower.includes('worker') || 
+                      posLower.includes('driver') || 
+                      posLower.includes('cook') || 
+                      posLower.includes('mechanic') || 
+                      posLower.includes('operator') ||
+                      posLower.includes('fisherman') ||
+                      posLower.includes('clerk') ||
+                      posLower.includes('maintenance');
     
+    const maxEl = document.getElementById('max-potential');
+    const criteriaMax = maxEl ? parseFloat(maxEl.innerText) : 20;
+    
+    document.getElementById('potCriteriaMaxLabel').innerText = criteriaMax;
+
     if (isGeneral) {
         document.getElementById('potentialGeneralDiv').classList.remove('d-none');
         document.getElementById('potentialOtherDiv').classList.add('d-none');
+        
+        if (!document.getElementById('potGenPAMax').value) document.getElementById('potGenPAMax').value = criteriaMax > 20 ? 35 : (criteriaMax / 2);
+        if (!document.getElementById('potGenPSAMax').value) document.getElementById('potGenPSAMax').value = criteriaMax > 20 ? 20 : (criteriaMax / 2);
     } else {
         document.getElementById('potentialGeneralDiv').classList.add('d-none');
         document.getElementById('potentialOtherDiv').classList.remove('d-none');
+        
+        if (!document.getElementById('potWEMax').value) document.getElementById('potWEMax').value = (criteriaMax >= 20 ? 5 : 5);
+        if (!document.getElementById('potSWSTMax').value) document.getElementById('potSWSTMax').value = (criteriaMax >= 20 ? 10 : 5);
+        if (!document.getElementById('potBEIMax').value) document.getElementById('potBEIMax').value = 5;
     }
     
     calculatePotentialPoints();
@@ -596,24 +809,65 @@ function openPotentialCalcModal() {
 function calculatePotentialPoints() {
     const categoryText = document.getElementById('assessmentCategory').innerText;
     const sgText = document.getElementById('assessmentSG').innerText.replace('SG', '').trim();
-    const isGeneral = categoryText.toLowerCase().includes('general services') || sgText.toLowerCase().includes('general services');
+    const positionText = document.getElementById('assessmentPosition') ? document.getElementById('assessmentPosition').innerText : '';
+    const catLower = categoryText.toLowerCase();
+    const posLower = positionText.toLowerCase();
+
+    const isGeneral = catLower.includes('general services') || 
+                      sgText.toLowerCase().includes('general services') ||
+                      posLower.includes('aide') || 
+                      posLower.includes('guard') || 
+                      posLower.includes('watchman') || 
+                      posLower.includes('worker') || 
+                      posLower.includes('driver') || 
+                      posLower.includes('cook') || 
+                      posLower.includes('mechanic') || 
+                      posLower.includes('operator') ||
+                      posLower.includes('fisherman') ||
+                      posLower.includes('clerk') ||
+                      posLower.includes('maintenance');
     
+    const maxEl = document.getElementById('max-potential');
+    const criteriaMax = maxEl ? parseFloat(maxEl.innerText) : 20;
+
     let totalPoints = 0;
+    let sumMax = 0;
     
     if (isGeneral) {
-        totalPoints = parseFloat(document.getElementById('potGeneralInput').value) || 0;
-        if (totalPoints > 55) totalPoints = 55;
+        const paMax = parseFloat(document.getElementById('potGenPAMax').value) || 0;
+        const psaMax = parseFloat(document.getElementById('potGenPSAMax').value) || 0;
+        sumMax = paMax + psaMax;
+        
+        document.getElementById('potGenPAInput').max = paMax;
+        document.getElementById('potGenPSAInput').max = psaMax;
+        
+        const pa = Math.min(parseFloat(document.getElementById('potGenPAInput').value) || 0, paMax);
+        const psa = Math.min(parseFloat(document.getElementById('potGenPSAInput').value) || 0, psaMax);
+        totalPoints = pa + psa;
     } else {
-        const weVal = parseFloat(document.getElementById('potWEInput').value) || 0;
-        const swstVal = parseFloat(document.getElementById('potSWSTInput').value) || 0;
-        const beiVal = parseFloat(document.getElementById('potBEIInput').value) || 0;
+        const weMax = parseFloat(document.getElementById('potWEMax').value) || 0;
+        const swMax = parseFloat(document.getElementById('potSWSTMax').value) || 0;
+        const beiMax = parseFloat(document.getElementById('potBEIMax').value) || 0;
+        sumMax = weMax + swMax + beiMax;
         
-        const wePts = weVal > 5 ? 5 : weVal;
-        const swstPts = swstVal > 10 ? 10 : swstVal;
-        let finalBeiPts = beiVal > 5 ? 5 : beiVal;
+        document.getElementById('potWEInput').max = weMax;
+        document.getElementById('potSWSTInput').max = swMax;
+        document.getElementById('potBEIInput').max = beiMax;
         
-        totalPoints = wePts + swstPts + finalBeiPts;
-        if (totalPoints > 20) totalPoints = 20;
+        const we = Math.min(parseFloat(document.getElementById('potWEInput').value) || 0, weMax);
+        const sw = Math.min(parseFloat(document.getElementById('potSWSTInput').value) || 0, swMax);
+        const bei = Math.min(parseFloat(document.getElementById('potBEIInput').value) || 0, beiMax);
+        totalPoints = we + sw + bei;
+    }
+    
+    if (totalPoints > criteriaMax) totalPoints = criteriaMax;
+    
+    const sumMaxEl = document.getElementById('potentialSumMax');
+    sumMaxEl.innerText = `${Math.round(sumMax * 1000) / 1000} / ${criteriaMax}`;
+    if (Math.round(sumMax * 1000) / 1000 !== criteriaMax) {
+        sumMaxEl.className = "fs-6 fw-bold text-danger";
+    } else {
+        sumMaxEl.className = "fs-6 fw-bold text-success";
     }
     
     totalPoints = Math.round(totalPoints * 1000) / 1000;
@@ -652,6 +906,58 @@ async function openStep2SummaryModal(id, name, isReadOnly = false) {
         const app = data.applicant;
         const posStandards = data.positionStandards || {};
         
+        const category = app.category || 'Non-Teaching';
+        const sg = posStandards.salaryGrade || '1';
+        let categoryKey = 'SG 1-9';
+        const sgNum = parseInt(sg.toString().replace('SG', '').trim()) || 1;
+        const catLower = category.toLowerCase();
+        const posLower = (app.position || '').toLowerCase();
+        
+        const isGeneral = catLower.includes('general services') || 
+                          sg.toString().toLowerCase().includes('general services') ||
+                          posLower.includes('aide') || 
+                          posLower.includes('guard') || 
+                          posLower.includes('watchman') || 
+                          posLower.includes('worker') || 
+                          posLower.includes('driver') || 
+                          posLower.includes('cook') || 
+                          posLower.includes('mechanic') || 
+                          posLower.includes('operator') ||
+                          posLower.includes('fisherman') ||
+                          posLower.includes('clerk') ||
+                          posLower.includes('maintenance');
+
+        if (catLower.includes('teacher') || catLower === 'teaching') {
+            categoryKey = 'Teacher I';
+        } else if (catLower.includes('school administration') || catLower.includes('school admin')) {
+            categoryKey = 'School Administration';
+        } else if (catLower.includes('related teaching') || catLower.includes('related-teaching')) {
+            if (sgNum >= 11 && sgNum <= 15) {
+                categoryKey = 'RT SG 11-15';
+            } else if ((sgNum >= 16 && sgNum <= 23) || sgNum === 27) {
+                categoryKey = 'RT SG 16-23';
+            } else if (sgNum >= 24) {
+                categoryKey = 'RT SG 24';
+            } else {
+                categoryKey = 'RT SG 11-15'; // Default fallback
+            }
+        } else if (isGeneral) {
+            categoryKey = 'General';
+        } else if (sgNum >= 24) {
+            categoryKey = 'SG 24';
+        } else if ((sgNum >= 10 && sgNum <= 22) || sgNum === 27) {
+            categoryKey = 'SG 10-22';
+        } else {
+            categoryKey = 'SG 1-9';
+        }
+        
+        const criteriaList = criteriaConfig[categoryKey];
+        let trs = '';
+        criteriaList.forEach(criteria => {
+            const score = (app.scores && app.scores[criteria.key] != null) ? app.scores[criteria.key] : '-';
+            trs += `<tr><td>${criteria.label}</td><td class="text-center">${score}</td></tr>`;
+        });
+        
         let html = `
             <div class="row g-3 text-center mb-4">
                 <div class="col-md-4"><strong>Category:</strong><br>${app.category || 'N/A'}</div>
@@ -668,14 +974,7 @@ async function openStep2SummaryModal(id, name, isReadOnly = false) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>a. Education</td><td class="text-center">${app.scores?.education != null ? app.scores.education : '-'}</td></tr>
-                        <tr><td>b. Training</td><td class="text-center">${app.scores?.training != null ? app.scores.training : '-'}</td></tr>
-                        <tr><td>c. Experience</td><td class="text-center">${app.scores?.experience != null ? app.scores.experience : '-'}</td></tr>
-                        <tr><td>d. Performance</td><td class="text-center">${app.scores?.performance != null ? app.scores.performance : '-'}</td></tr>
-                        <tr><td>e. Outstanding Accomplishments</td><td class="text-center">${app.scores?.outstandingAccomplishments != null ? app.scores.outstandingAccomplishments : '-'}</td></tr>
-                        <tr><td>f. Application of Education</td><td class="text-center">${app.scores?.applicationOfEducation != null ? app.scores.applicationOfEducation : '-'}</td></tr>
-                        <tr><td>g. Application of L&D</td><td class="text-center">${app.scores?.applicationOfLD != null ? app.scores.applicationOfLD : '-'}</td></tr>
-                        <tr><td>h. Potential</td><td class="text-center">${app.scores?.potential != null ? app.scores.potential : '-'}</td></tr>
+                        ${trs}
                         <tr class="table-active fw-bold"><td>Evaluation Assessment Total</td><td class="text-center text-primary fs-5">${app.scores?.total != null ? app.scores.total : '-'}</td></tr>
                     </tbody>
                 </table>
@@ -749,3 +1048,73 @@ window.markNewlyPromoted = markNewlyPromoted;
 
 // Move modals to body to fix stacking context issues
 document.addEventListener('DOMContentLoaded', function() { document.querySelectorAll('.modal').forEach(function(m) { document.body.appendChild(m); }); });
+
+// Teacher I Specfic Calculators
+window.openPbetCalcModal = function() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('pbetCalcModal')).show();
+    window.calculatePbetPoints();
+}
+
+window.calculatePbetPoints = function() {
+    let x = parseFloat(document.getElementById('pbetRatingInput').value) || 0;
+    if (x > 100) x = 100;
+    let points = (x / 100) * 10;
+    points = Math.round(points * 1000) / 1000;
+    document.getElementById('calculatedPbetPoints').innerText = points;
+}
+
+window.applyPbetPoints = function() {
+    const points = document.getElementById('calculatedPbetPoints').innerText;
+    const input = document.querySelector('input[name="pbet"]');
+    if(input) {
+        input.value = points;
+        if(typeof calculateAssessmentTotal === 'function') calculateAssessmentTotal();
+    }
+    bootstrap.Modal.getInstance(document.getElementById('pbetCalcModal')).hide();
+}
+
+window.openCoiCalcModal = function() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('coiCalcModal')).show();
+    window.calculateCoiPoints();
+}
+
+window.calculateCoiPoints = function() {
+    let x = parseFloat(document.getElementById('coiRatingInput').value) || 0;
+    if (x > 30) x = 30;
+    let points = (x / 30) * 35;
+    points = Math.round(points * 1000) / 1000;
+    document.getElementById('calculatedCoiPoints').innerText = points;
+}
+
+window.applyCoiPoints = function() {
+    const points = document.getElementById('calculatedCoiPoints').innerText;
+    const input = document.querySelector('input[name="ppst_coi"]');
+    if(input) {
+        input.value = points;
+        if(typeof calculateAssessmentTotal === 'function') calculateAssessmentTotal();
+    }
+    bootstrap.Modal.getInstance(document.getElementById('coiCalcModal')).hide();
+}
+
+window.openNcoiCalcModal = function() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('ncoiCalcModal')).show();
+    window.calculateNcoiPoints();
+}
+
+window.calculateNcoiPoints = function() {
+    let x = parseFloat(document.getElementById('ncoiRatingInput').value) || 0;
+    if (x > 20) x = 20;
+    let points = (x / 20) * 25;
+    points = Math.round(points * 1000) / 1000;
+    document.getElementById('calculatedNcoiPoints').innerText = points;
+}
+
+window.applyNcoiPoints = function() {
+    const points = document.getElementById('calculatedNcoiPoints').innerText;
+    const input = document.querySelector('input[name="ppst_ncoi"]');
+    if(input) {
+        input.value = points;
+        if(typeof calculateAssessmentTotal === 'function') calculateAssessmentTotal();
+    }
+    bootstrap.Modal.getInstance(document.getElementById('ncoiCalcModal')).hide();
+}
