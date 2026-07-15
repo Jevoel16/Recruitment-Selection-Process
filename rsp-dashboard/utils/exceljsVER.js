@@ -13,7 +13,7 @@ async function generateVERExcelJS(items) {
     const dateStrHeader = dateStrFooter.toUpperCase();
 
     const sheet = workbook.addWorksheet('VER', {
-        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 99 },
+        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '1:17' },
         pageMargins: {
             left: 0.1 / 2.54,
             right: 0.1 / 2.54,

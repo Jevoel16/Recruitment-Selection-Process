@@ -14,7 +14,8 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
             orientation: 'landscape', 
             fitToPage: true, 
             fitToWidth: 1, 
-            fitToHeight: 99,
+            fitToHeight: 0,
+            printTitlesRow: '1:9',
             margins: {
                 left: 0.315,
                 right: 0.315,
