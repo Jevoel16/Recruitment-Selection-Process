@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+### ADDED
+- **Vacancy Announcement Tracking**: Added `vacancyAnnouncementNo` to `applicants` and `positions` database tables and integrated it into the application.
+- **Vacancy Filter**: Implemented an "All Vacancies" dropdown filter across dashboard steps (Step 1, Step 2, Step 3) to allow filtering applicants by vacancy announcement numbers.
+- **Plantilla Updates**: Enhanced Plantilla Location UI to support multiple assignments in `modal_plantilla.hbs`.
+- **UI Elements**: Added logo in the login modal.
+
+### CHANGED
+- **Excel Exports**: Updated CAR, IER, and VER excel export utilities and routes to incorporate vacancy announcement details.
+- **Controllers & Views**: Modified controllers and view components to handle and display vacancy announcement data.
+- **Seeders**: Updated database seeders to populate mock `vacancyAnnouncementNo` values.
+- **Assessment Modals**: Updated the logic and design of evaluative assessment modals.
+- **Access Control**: Restrict access to Step 3 when Step 2 Access is turned off.
+
+### FIXED
+- **Dashboard Prints:** Fixed an issue where `.xlsx` print exports (CAR, IER, VER) would overcrowd on a single page by adjusting `exceljs` page setup properties (`fitToHeight` and `printTitlesRow`).
+- **Dashboard UI:** Fixed a bug where the Metrics tab would incorrectly show as active when refreshing while on the Backup tab.
+- **Seeding Script:** Fixed a `401 Unauthorized` token expiration bug during massive local database seeding processes in `seedApplicants.js` by extending the JWT `expiresIn` from `1h` to `24h`.
+
 ## 2026-07-14 08:20 (v1.2.0-Release+202607140820)
 ### ADDED
 - Developed a new feature to globally toggle all vacant positions off through an "Off Vacancy" modal natively styled with Bootstrap toasts.

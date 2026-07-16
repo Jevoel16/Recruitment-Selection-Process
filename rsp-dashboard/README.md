@@ -15,21 +15,25 @@ A web-based platform to digitize the recruitment selection process.
 - **Audit Logging:** Implemented professional audit trailing (tracking `save`, `update`, `delete`, `proceed`, and `download` actions) filtered by role, explicitly keeping high-level superadmin traffic out of the audit logs for clean reporting.
 - **Concurrency Locks (SSE & JWT):** Robust anti-deadlock mechanisms using JWT tracking cookies alongside continuous Server-Sent Events (SSE) background streams that drop locks instantly upon browser tab closure.
 - **Dynamic Seeding & Setup:** Dedicated scripts to safely initialize the database and dynamically map raw text-based qualification standards, including a high-concurrency 1000-applicant seeder with fully randomized, realistic JSON metadata.
+- **Seeding Authentication:** Extended JWT expiration handling to ensure smooth, uninterrupted massive local database seeding.
 
 ### Applicant & Vacancy Management
 - **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades, accurate monthly salary mapping (Step 1), and fully editable text-based qualification standards.
 - **Vacancy Publishing & Toggles:** Dynamic checkboxes automatically trigger modal updates inside `Vacancy_Endorsement.docx` parsing, integrated with a global "Off Vacancy" feature to wipe all public positions securely, including bulk toggling for mass status updates.
+- **Vacancy Announcement Tracking:** Advanced filtering capabilities that allow filtering applicants specifically by their vacancy announcement numbers across all Dashboard tabs.
 
 ### Document Generation & Workflows
 - **Pixel-Perfect VER Templates:** Precisely engineered the Request for Publication of Vacant Positions (VER.xlsx) template to natively match official raw files 1:1, explicitly aligning all exact row heights, dynamic dates, font stylings, and exact rich text segmentations via ExcelJS.
 - **Vacancy Endorsement Integration:** Native mapping of `Vacancy_Endorsement.docx` populated via Docxtemplater, combining multi-item iteration with dynamically scaling data modules.
-- **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values.
+- **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values and multi-location assignments.
+- **Enhanced Export Printing:** Adjusted ExcelJS page setup configurations to fix print overcrowding and ensure correct scaling for multi-page CAR, IER, and VER documents.
 - **Masterlist & Vacancy Dashboard:** Centralized dashboard for managing applicant masterlists alongside dynamic vacancy toggles and slot monitoring.
 - **Multi-Step Applicant Wizard:** Seamless data entry flow for applicant information ranging from Personal details to Education, Training, Experience, and Eligibility (now featuring real-time inline editing capabilities and robust active keystroke validation).
 
 ### Evaluation & Workflow System (Steps 1-5)
+- **Strict Access Control:** Dynamically restricts access to Step 3 conditionally when Step 2 access is disabled to enforce strict procedural integrity.
 - **Step 1:** Initial Evaluation (Qualify/Disqualify Applicants & Generate Official Word (.docx) Evaluation forms)
-- **Step 2:** Deliberation Sheet (Assess & Input Interview Scores; support for "No Appearance", "Newly Promoted" overrides, and robust multi-scale calculators including RPMS 10-point scale)
+- **Step 2:** Deliberation Sheet (Assess & Input Interview Scores; support for "No Appearance", "Newly Promoted" overrides, robust multi-scale calculators including RPMS 10-point scale, and upgraded evaluative assessment modals)
 - **Step 3:** Comparative Assessments (Leaderboard based on Scores with seamless Excel exports handling privacy masking for CAR and comprehensive position formatting for VER)
 - **Step 4:** Requirements Collection & Tracking (Monitor missing requirements and qualify for Assignment)
 - **Step 5:** Assignment Orders (Generate A4 Word Document (.docx) Assignment Letters with advanced formatting and CC support)
