@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## 2026-07-16 13:13 (v1.3.0-Release+202607161313)
 
 ### Added
 - **Vacancy Announcement Tracking**: Added `vacancyAnnouncementNo` to `applicants` and `positions` database tables and integrated it into the application.

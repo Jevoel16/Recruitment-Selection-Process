@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## 2026-07-16 13:13 (v1.3.0-Release+202607161313)
 ### ADDED
 - **Vacancy Announcement Tracking**: Added `vacancyAnnouncementNo` to `applicants` and `positions` database tables and integrated it into the application.
 - **Vacancy Filter**: Implemented an "All Vacancies" dropdown filter across dashboard steps (Step 1, Step 2, Step 3) to allow filtering applicants by vacancy announcement numbers.
