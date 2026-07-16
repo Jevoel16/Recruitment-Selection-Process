@@ -26,9 +26,10 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
     workbook.created = new Date();
 
     const sheet = workbook.addWorksheet('IER', {
-        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true }
+        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true },
+        headerFooter: { oddFooter: '&RPage &P', evenFooter: '&RPage &P' }
     });
-    sheet.pageSetup.margins = { left: 0.1181, right: 0.1181, top: 0.1575, bottom: 0.1575, header: 0, footer: 0 };
+    sheet.pageSetup.margins = { left: 0.1181, right: 0.1181, top: 0.1575, bottom: 0.5, header: 0, footer: 0.2 };
 
     const vAnnounce = posData?.vacancyAnnouncement || '';
     const pItem = posData?.plantillaItem || '';
@@ -209,7 +210,6 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
     const hr2 = r+1;
     sheet.getRow(hr1).height = 18;
     sheet.getRow(hr2).height = 52.2;
-    sheet.pageSetup.printTitlesRow = '1:' + hr2;
     
     let c = 2; // Start from B
     applyHeader(`${sheet.getColumn(c).letter}${hr1}:${sheet.getColumn(c).letter}${hr2}`, 'No.'); c++;
@@ -342,6 +342,19 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
 
         r++;
         count++;
+    }
+
+    // Widow/Orphan estimation logic to prevent lonely footers
+    const estimatedRowsPerPage = 32;
+    const footerRows = 20;
+    const rowsOnLastPage = r % estimatedRowsPerPage;
+    const remainingSpace = estimatedRowsPerPage - rowsOnLastPage;
+
+    if (remainingSpace < footerRows && applicants.length >= 3) {
+        const breakRow = r - 3;
+        if (breakRow > hr2) {
+            sheet.getRow(breakRow).addPageBreak();
+        }
     }
 
     const d = new Date();

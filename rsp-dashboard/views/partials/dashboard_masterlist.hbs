@@ -46,6 +46,7 @@
                                 <th class="ps-4 pe-3 text-nowrap">Application Code</th>
                                 <th class="px-3 w-100">Applicant Name</th>
                                 <th class="px-4 text-nowrap">Category</th>
+                                <th class="px-4 text-nowrap">Vacancy</th>
                                 <th class="px-4 text-nowrap">Current Step</th>
                                 <th class="text-center px-4 text-nowrap">Applicant Details</th>
                                 <th class="text-center pe-4 ps-3 text-nowrap">Action</th>
@@ -57,6 +58,7 @@
                                 <td class="ps-4 pe-3 text-nowrap"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                                 <td class="fw-medium px-3 applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                                 <td class="px-4 text-nowrap">{{this.category}}</td>
+                                <td class="px-4 text-nowrap"><small>{{this.vacancyAnnouncementNo}}</small></td>
                                 <td class="px-4 text-nowrap">
                                     {{#if (eq this.status 'PENDING')}}<span class="badge bg-warning text-dark">Step 1: Pending</span>{{/if}}
                                     {{#if (eq this.status 'QUALIFIED')}}<span class="badge bg-success">Step 1: Qualified</span>{{/if}}

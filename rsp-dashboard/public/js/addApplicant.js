@@ -24,7 +24,7 @@
         
         let filtered = currentPositions;
         if (searchQuery) {
-            filtered = currentPositions.filter(p => p.toLowerCase().includes(searchQuery));
+            filtered = currentPositions.filter(p => p.title.toLowerCase().includes(searchQuery) || (p.vacancyAnnouncementNo && String(p.vacancyAnnouncementNo).includes(searchQuery)));
         }
 
         if (typeof PaginationHelper !== 'undefined') {
@@ -39,7 +39,7 @@
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 border-bottom bg-transparent fw-medium';
-                        btn.innerHTML = `<span>${pos}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
+                        btn.innerHTML = `<span>${pos.title} <small class="text-muted ms-2">${pos.vacancyAnnouncementNo ? '(Vacancy #' + pos.vacancyAnnouncementNo + ')' : ''}</small></span> <i class="bi bi-chevron-right text-muted small"></i>`;
                         btn.onclick = () => handlePositionSelection(pos);
                         list.appendChild(btn);
                     });
@@ -76,8 +76,9 @@
 
     function handleWizardPositionSelection(cat, pos) {
         document.getElementById('wizardCategory').value = cat;
-        document.getElementById('wizardPosition').value = pos;
-        document.getElementById('selectedPositionText').innerText = `${cat} > ${pos}`;
+        document.getElementById('wizardPosition').value = pos.title;
+        document.getElementById('wizardVacancyAnnouncementNo').value = pos.vacancyAnnouncementNo || '';
+        document.getElementById('selectedPositionText').innerHTML = `${cat} > ${pos.title} <small class="text-muted">${pos.vacancyAnnouncementNo ? '(Vacancy #' + pos.vacancyAnnouncementNo + ')' : ''}</small>`;
         document.getElementById('addApplicantTitle').innerHTML = '<i class="bi bi-person-vcard me-2"></i>Applicant Information';
         document.getElementById('wizardStep0').classList.add('d-none');
         document.getElementById('wizardStep1').classList.remove('d-none');
@@ -276,7 +277,7 @@
 
                     // If a category/position was already selected, move directly to step 1
                     if (draft.formData.category && draft.formData.position) {
-                        selectPosition(draft.formData.category, draft.formData.position);
+                        handleWizardPositionSelection(draft.formData.category, { title: draft.formData.position, vacancyAnnouncementNo: draft.formData.vacancyAnnouncementNo || null });
                     }
                 } catch(err) {
                     console.error("Failed to restore draft", err);

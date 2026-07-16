@@ -32,14 +32,35 @@ router.get('/ver', async (req, res) => {
         };
 
         for (const pos of positions) {
-            let items = [];
+            let itemsObj = [];
             if (pos.plantillaItem && pos.plantillaItem.trim() !== "") {
-                items = pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== '');
-            } else {
-                for (let i=0; i<(pos.vacancyCount || 1); i++) items.push('');
+                try {
+                    const parsed = JSON.parse(pos.plantillaItem);
+                    parsed.forEach(loc => {
+                        if (loc.items && loc.items.trim() !== "") {
+                            let locItems = loc.items.split(',').map(s => s.trim()).filter(s => s !== '');
+                            locItems.forEach(item => {
+                                itemsObj.push({ itemNo: item, assignment: loc.location || (pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City') });
+                            });
+                        }
+                    });
+                } catch (e) {
+                    let locItems = pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== '');
+                    let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
+                    locItems.forEach(item => {
+                        itemsObj.push({ itemNo: item, assignment: defAssignment });
+                    });
+                }
             }
             
-            for (const item of items) {
+            if (itemsObj.length === 0) {
+                let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
+                for (let i=0; i<(pos.vacancyCount || 1); i++) {
+                    itemsObj.push({ itemNo: '', assignment: defAssignment });
+                }
+            }
+            
+            for (const obj of itemsObj) {
                 let salary = pos.monthlySalary;
                 if (!salary) {
                     salary = sgMap[pos.salaryGrade] || '';
@@ -48,7 +69,7 @@ router.get('/ver', async (req, res) => {
                 allItems.push({
                     no: count++,
                     title: pos.title || '',
-                    itemNo: item,
+                    itemNo: obj.itemNo,
                     sg: pos.salaryGrade || '',
                     salary: salary,
                     edu: pos.qsEducation || 'None required',
@@ -56,7 +77,7 @@ router.get('/ver', async (req, res) => {
                     exp: pos.qsExperience || 'None required',
                     elig: pos.qsEligibility || 'None required',
                     comp: pos.qsCompetency || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation',
-                    assignment: pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City'
+                    assignment: obj.assignment
                 });
             }
         }

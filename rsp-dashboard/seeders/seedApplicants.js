@@ -44,11 +44,12 @@ async function seed() {
         console.log('🔓 Opening specific vacancies...');
         
         const mandatoryPositions = ['Administrative Officer I', 'Project Development Officer II'];
-        await connection.query('UPDATE positions SET in_vacancy = 0'); // Reset all just in case
-        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5 WHERE title IN (?)', [mandatoryPositions]);
+        await connection.query('UPDATE positions SET in_vacancy = 0, vacancyAnnouncementNo = NULL'); // Reset all just in case
+        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5, vacancyAnnouncementNo = 1 WHERE title = ?', ['Administrative Officer I']);
+        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5, vacancyAnnouncementNo = 2 WHERE title = ?', ['Project Development Officer II']);
 
         // Fetch the open positions to assign to applicants
-        const [openPositions] = await connection.query('SELECT title, category FROM positions WHERE in_vacancy = 1');
+        const [openPositions] = await connection.query('SELECT title, category, vacancyAnnouncementNo FROM positions WHERE in_vacancy = 1');
         console.log(`Open Positions: ${openPositions.map(p => p.title).join(', ')}`);
 
         // Close DB connection, shift to API simulation
@@ -127,6 +128,7 @@ async function seed() {
                     pdsLink: 'http://example.com/pds',
                     category: positionObj.category,
                     position: positionObj.title,
+                    vacancyAnnouncementNo: positionObj.vacancyAnnouncementNo || null,
                     education: JSON.stringify([{ degree: degrees[Math.floor(Math.random() * degrees.length)], year: Math.floor(Math.random() * (2022 - 2010 + 1)) + 2010, link: 'http://link' }]),
                     training: JSON.stringify([{ title: trainings[Math.floor(Math.random() * trainings.length)], hours: Math.floor(Math.random() * 80) + 8, link: 'http://link' }]),
                     experience: JSON.stringify([{ details: experiences[Math.floor(Math.random() * experiences.length)], years: (Math.random() * 10).toFixed(1), link: 'http://link' }]),

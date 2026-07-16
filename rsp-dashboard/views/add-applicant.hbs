@@ -8,6 +8,7 @@
     <form id="addApplicantStandaloneForm" novalidate>
         <input type="hidden" id="wizardCategory" name="category">
         <input type="hidden" id="wizardPosition" name="position">
+        <input type="hidden" id="wizardVacancyAnnouncementNo" name="vacancyAnnouncementNo">
                 <!-- Step 0: Category & Position -->
                 <div id="wizardStep0">
                     <div id="categorySelectionContainer">
@@ -281,15 +282,7 @@
 
 <script>
     // Make positions map available to frontend
-    window.dynamicPositionsByCategory = {
-        {{#each groupedPositions}}
-        "{{this.categoryName}}": [
-            {{#each this.positions}}
-            "{{this.title}}",
-            {{/each}}
-        ]{{#unless @last}},{{/unless}}
-        {{/each}}
-    };
+    window.dynamicPositionsByCategory = {{{dynamicPositionsJSON}}};
 </script>
 <script src="/js/paginationHelper.js"></script>
 <script src="/js/addApplicant.js?v=5"></script>

@@ -15,16 +15,16 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
             fitToPage: true, 
             fitToWidth: 1, 
             fitToHeight: 0,
-            printTitlesRow: '1:9',
             margins: {
                 left: 0.315,
                 right: 0.315,
                 top: 0.512,
-                bottom: 0.512,
+                bottom: 0.6,
                 header: 0.3,
-                footer: 0.3
+                footer: 0.315
             }
         },
+        headerFooter: { oddFooter: '&RPage &P', evenFooter: '&RPage &P' },
         properties: {
             defaultRowHeight: 16.5
         }
@@ -98,6 +98,7 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
     const formattedPlantilla = numItems > 0 ? `${numItems} ${getPositionCode(positionFilter)} Vacant Items` : '0 Vacant Items';
 
     const maxCol = hideNameColumn ? 'Q' : 'S';
+    const borderEndCol = hideNameColumn ? 'R' : 'T';
     const annexCol = hideNameColumn ? 'Q' : 'R';
 
     sheet.getRow(1).height = 16.5; // 22 pixels
@@ -367,6 +368,18 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         }
         currentRow++;
     }
+    // Widow/Orphan estimation logic to prevent lonely footers
+    const estimatedRowsPerPage = 32;
+    const footerRows = 15;
+    const rowsOnLastPage = currentRow % estimatedRowsPerPage;
+    const remainingSpace = estimatedRowsPerPage - rowsOnLastPage;
+
+    if (remainingSpace < footerRows && applicants.length >= 3) {
+        const breakRow = currentRow - 3;
+        if (breakRow > 10) {
+            sheet.getRow(breakRow).addPageBreak();
+        }
+    }
 
     currentRow += 2;
     const noteStartCol = hideNameColumn ? 'B' : 'D';
@@ -382,50 +395,15 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
     sheet.getRow(currentRow).getCell(conferringCol).value = 'Appointment conferred by:';
     sheet.getRow(currentRow).getCell(conferringCol).font = { ...baseFont, size: 11 };
     
-    currentRow += 5;
+    currentRow++;
     
-    const sigNames = ['AZOR B. QUIJANO', 'CELSO C. AFABLE, JR.', 'REX L. RAZO', 'MYRA P. MEBATO, CESO VI', 'JONATHAN S. DELA PEÑA, PhD, CESO V'];
-    const sigTitles = ['Administrative Officer IV', 'Administrative Officer V', 'Chief Education Supervisor', 'Assistant Schools Division Superintendent', 'Schools Division Superintendent'];
-    const sigOffices = ['Personnel', 'Administrative Services', 'SGOD', 'HRMPSB Chairperson', 'Appointing Authority'];
-    const sigMembers = ['HRMPSB Member', 'HRMPSB Member', 'HRMPSB Member', '', ''];
-
-    const sigCols = hideNameColumn ? ['B', 'E', 'H', 'K', 'O'] : ['B', 'F', 'J', 'N', 'R'];
-    
-    for (let i = 0; i < 5; i++) {
-        const col = sigCols[i];
-        
-        // We merge 3 columns for each signature to give it enough width
-        const colIdx = sheet.getColumn(col).number;
-        const mergeRange = `${col}${currentRow}:${sheet.getColumn(colIdx + 2).letter}${currentRow}`;
-        sheet.mergeCells(mergeRange);
-        sheet.mergeCells(`${col}${currentRow+1}:${sheet.getColumn(colIdx + 2).letter}${currentRow+1}`);
-        sheet.mergeCells(`${col}${currentRow+2}:${sheet.getColumn(colIdx + 2).letter}${currentRow+2}`);
-        sheet.mergeCells(`${col}${currentRow+3}:${sheet.getColumn(colIdx + 2).letter}${currentRow+3}`);
-
-        const cellName = sheet.getCell(`${col}${currentRow}`);
-        cellName.value = sigNames[i];
-        cellName.font = { ...baseFont, size: 10, bold: true, underline: true };
-        cellName.alignment = { horizontal: 'center' };
-        
-        const cellTitle = sheet.getCell(`${col}${currentRow+1}`);
-        cellTitle.value = sigTitles[i];
-        cellTitle.font = { ...baseFont, size: 10 };
-        cellTitle.alignment = { horizontal: 'center' };
-
-        const cellOffice = sheet.getCell(`${col}${currentRow+2}`);
-        cellOffice.value = sigOffices[i];
-        cellOffice.font = { ...baseFont, size: 10 };
-        cellOffice.alignment = { horizontal: 'center' };
-
-        const cellMember = sheet.getCell(`${col}${currentRow+3}`);
-        cellMember.value = sigMembers[i];
-        cellMember.font = { ...baseFont, size: 10 };
-        cellMember.alignment = { horizontal: 'center' };
-    }
+    // Create a giant empty box for signatures spanning the entire width
+    sheet.getRow(currentRow).height = 120; // 120 points is approximately 160 pixels
+    sheet.mergeCells(`B${currentRow}:${maxCol}${currentRow}`);
     
     // Apply outer perimeter border from Row 1 to the end of the signature block
-    const gridEndRow = currentRow + 3;
-    const gridEndCol = sheet.getColumn(maxCol).number;
+    const gridEndRow = currentRow;
+    const gridEndCol = sheet.getColumn(borderEndCol).number;
     for (let r = 1; r <= gridEndRow; r++) {
         for (let c = 1; c <= gridEndCol; c++) {
             const cell = sheet.getRow(r).getCell(c);
@@ -440,18 +418,23 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         }
     }
 
-    currentRow += 6;
+    currentRow += 2;
+    
+    // Row above Notes: 33 pixels (24.75 points)
+    sheet.getRow(currentRow - 1).height = 24.75;
+    // Notes row: 22 pixels (16.5 points)
+    sheet.getRow(currentRow).height = 16.5;
 
     const notesFont = { ...baseFont, size: 11 };
     const notesFontBoldItalic = { ...baseFont, size: 11, bold: true, italic: true };
 
-    sheet.mergeCells(`${noteStartCol}${currentRow}:${noteEndCol}${currentRow}`);
-    sheet.getCell(`${noteStartCol}${currentRow}`).value = 'Notes and Instructions for the HRMO:';
-    sheet.getCell(`${noteStartCol}${currentRow}`).font = { ...notesFont, bold: true };
+    sheet.mergeCells(`B${currentRow}:${maxCol}${currentRow}`);
+    sheet.getCell(`B${currentRow}`).value = 'Notes and Instructions for the HRMO:';
+    sheet.getCell(`B${currentRow}`).font = { ...notesFont, bold: true };
     currentRow++;
     
-    sheet.mergeCells(`${noteStartCol}${currentRow}:${noteEndCol}${currentRow}`);
-    sheet.getCell(`${noteStartCol}${currentRow}`).value = {
+    sheet.mergeCells(`B${currentRow}:${maxCol}${currentRow}`);
+    sheet.getCell(`B${currentRow}`).value = {
         richText: [
             { font: notesFont, text: 'a) For the purpose of posting the CAR, Column ' },
             { font: notesFontBoldItalic, text: 'C (Name of the applicant) and Columns N to R (Remarks to Probation status)' },
@@ -460,24 +443,24 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
     };
     currentRow++;
 
-    sheet.mergeCells(`${noteStartCol}${currentRow}:${noteEndCol}${currentRow}`);
-    sheet.getCell(`${noteStartCol}${currentRow}`).value = 'The only information that shall be made public are the Application Code, Comparative Assessment Results (Component from Education to Potential) and the total scores of the applicants.';
-    sheet.getCell(`${noteStartCol}${currentRow}`).font = notesFont;
+    sheet.mergeCells(`B${currentRow}:${maxCol}${currentRow}`);
+    sheet.getCell(`B${currentRow}`).value = 'The only information that shall be made public are the Application Code, Comparative Assessment Results (Component from Education to Potential) and the total scores of the applicants.';
+    sheet.getCell(`B${currentRow}`).font = notesFont;
     currentRow++;
 
-    sheet.mergeCells(`${noteStartCol}${currentRow}:${noteEndCol}${currentRow}`);
-    sheet.getCell(`${noteStartCol}${currentRow}`).value = 'b) If the information does not apply to the applicant, please put N/A.';
-    sheet.getCell(`${noteStartCol}${currentRow}`).font = notesFont;
+    sheet.mergeCells(`B${currentRow}:${maxCol}${currentRow}`);
+    sheet.getCell(`B${currentRow}`).value = 'b) If the information does not apply to the applicant, please put N/A.';
+    sheet.getCell(`B${currentRow}`).font = notesFont;
     currentRow++;
 
-    sheet.mergeCells(`${noteStartCol}${currentRow}:${noteEndCol}${currentRow}`);
-    sheet.getCell(`${noteStartCol}${currentRow}`).value = 'c) Applicants who failed to appear in any phase of the Open Ranking process and other evaluative assessments, and/or have withdrawn their application';
-    sheet.getCell(`${noteStartCol}${currentRow}`).font = notesFont;
+    sheet.mergeCells(`B${currentRow}:${maxCol}${currentRow}`);
+    sheet.getCell(`B${currentRow}`).value = 'c) Applicants who failed to appear in any phase of the Open Ranking process and other evaluative assessments, and/or have withdrawn their application';
+    sheet.getCell(`B${currentRow}`).font = notesFont;
     currentRow++;
 
-    sheet.mergeCells(`${noteStartCol}${currentRow}:${noteEndCol}${currentRow}`);
-    sheet.getCell(`${noteStartCol}${currentRow}`).value = 'shall be provided with a notation beside the application code (e.g., withdrawn application, etc.)';
-    sheet.getCell(`${noteStartCol}${currentRow}`).font = notesFont;
+    sheet.mergeCells(`B${currentRow}:${maxCol}${currentRow}`);
+    sheet.getCell(`B${currentRow}`).value = 'shall be provided with a notation beside the application code (e.g., withdrawn application, etc.)';
+    sheet.getCell(`B${currentRow}`).font = notesFont;
 
     return await workbook.xlsx.writeBuffer();
 }

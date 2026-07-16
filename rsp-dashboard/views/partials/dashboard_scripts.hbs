@@ -161,16 +161,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 const pList = document.getElementById('modalPosPlantillaList');
                 if(pList) {
                     pList.innerHTML = '';
-                    const items = plantillaStr.split(',').map(s => s.trim()).filter(s => s);
-                    if (items.length > 0) {
+                    let itemsObj = [];
+                    try {
+                        const parsed = JSON.parse(plantillaStr);
+                        parsed.forEach(loc => {
+                            if (loc.items && loc.items.trim() !== '') {
+                                let locItems = loc.items.split(',').map(s => s.trim()).filter(s => s);
+                                locItems.forEach(item => itemsObj.push({item: item, loc: loc.location}));
+                            }
+                        });
+                    } catch (e) {
+                        itemsObj = plantillaStr.split(',').map(s => s.trim()).filter(s => s).map(s => ({item: s, loc: 'Default'}));
+                    }
+                    
+                    if (itemsObj.length > 0) {
                         const ul = document.createElement('ul');
                         ul.className = 'mb-0 ps-3';
                         ul.style.columnCount = '2';
                         ul.style.columnGap = '0.5rem';
                         ul.style.fontSize = '0.75rem';
-                        items.forEach(item => {
+                        itemsObj.forEach(obj => {
                             const li = document.createElement('li');
-                            li.textContent = item;
+                            li.textContent = obj.loc && obj.loc !== 'Default' ? `${obj.item} (${obj.loc})` : obj.item;
                             ul.appendChild(li);
                         });
                         pList.appendChild(ul);
@@ -199,7 +211,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('plantillaPosId').value = this.getAttribute('data-id');
                 
                 const plantillaStr = this.getAttribute('data-plantilla') || '';
-                document.getElementById('plantillaItemNumbers').value = plantillaStr;
+                try {
+                    const parsed = JSON.parse(plantillaStr);
+                    document.getElementById('plantillaLoc1').value = parsed[0] ? parsed[0].location : '';
+                    document.getElementById('plantillaItems1').value = parsed[0] ? parsed[0].items : '';
+                    document.getElementById('plantillaLoc2').value = parsed[1] ? parsed[1].location : '';
+                    document.getElementById('plantillaItems2').value = parsed[1] ? parsed[1].items : '';
+                    document.getElementById('plantillaLoc3').value = parsed[2] ? parsed[2].location : '';
+                    document.getElementById('plantillaItems3').value = parsed[2] ? parsed[2].items : '';
+                } catch (e) {
+                    // Fallback for old comma-separated strings
+                    document.getElementById('plantillaLoc1').value = '';
+                    document.getElementById('plantillaItems1').value = plantillaStr;
+                    document.getElementById('plantillaLoc2').value = '';
+                    document.getElementById('plantillaItems2').value = '';
+                    document.getElementById('plantillaLoc3').value = '';
+                    document.getElementById('plantillaItems3').value = '';
+                }
             });
         });
 
@@ -213,18 +241,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.disabled = true;
 
                 const id = document.getElementById('plantillaPosId').value;
-                const rawPlantillaStr = document.getElementById('plantillaItemNumbers').value;
+                const rawPlantillaStr1 = document.getElementById('plantillaItems1').value;
+                const locName1 = document.getElementById('plantillaLoc1').value;
+                const rawPlantillaStr2 = document.getElementById('plantillaItems2').value;
+                const locName2 = document.getElementById('plantillaLoc2').value;
+                const rawPlantillaStr3 = document.getElementById('plantillaItems3').value;
+                const locName3 = document.getElementById('plantillaLoc3').value;
                 
-                const items = rawPlantillaStr.split(',').map(s => s.trim()).filter(s => s !== '');
-                if (items.length === 0) {
+                let dataArr = [];
+                let vacancyCount = 0;
+                
+                if (locName1 || rawPlantillaStr1.trim()) {
+                    const items1 = rawPlantillaStr1.split(',').map(s => s.trim()).filter(s => s !== '');
+                    vacancyCount += items1.length;
+                    dataArr.push({ location: locName1, items: items1.join(', ') });
+                }
+                if (locName2 || rawPlantillaStr2.trim()) {
+                    const items2 = rawPlantillaStr2.split(',').map(s => s.trim()).filter(s => s !== '');
+                    vacancyCount += items2.length;
+                    dataArr.push({ location: locName2, items: items2.join(', ') });
+                }
+                if (locName3 || rawPlantillaStr3.trim()) {
+                    const items3 = rawPlantillaStr3.split(',').map(s => s.trim()).filter(s => s !== '');
+                    vacancyCount += items3.length;
+                    dataArr.push({ location: locName3, items: items3.join(', ') });
+                }
+
+                if (vacancyCount === 0) {
                     alert('Please enter at least one Plantilla Item number.');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
                 }
                 
-                const vacancyCount = items.length;
-                const plantillaItem = items.join(', ');
+                const plantillaItem = JSON.stringify(dataArr);
 
                 try {
                     const response = await fetch(`/api/positions/${id}/plantilla`, {

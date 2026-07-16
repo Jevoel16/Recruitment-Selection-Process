@@ -96,8 +96,19 @@ exports.exportDoc = async (req, res) => {
             
             let items = [];
             if (pos.plantillaItem && pos.plantillaItem.trim() !== "") {
-                items = pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== '');
-            } else {
+                try {
+                    const parsed = JSON.parse(pos.plantillaItem);
+                    parsed.forEach(loc => {
+                        if (loc.items && loc.items.trim() !== "") {
+                            items.push(...loc.items.split(',').map(s => s.trim()).filter(s => s !== ''));
+                        }
+                    });
+                } catch (e) {
+                    items = pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== '');
+                }
+            }
+            
+            if (items.length === 0) {
                 items = [""]; 
             }
             grouped[title].push(...items);

@@ -13,14 +13,15 @@ async function generateVERExcelJS(items) {
     const dateStrHeader = dateStrFooter.toUpperCase();
 
     const sheet = workbook.addWorksheet('VER', {
-        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '1:17' },
+        pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+        headerFooter: { oddFooter: '&RPage &P', evenFooter: '&RPage &P' },
         pageMargins: {
             left: 0.1 / 2.54,
             right: 0.1 / 2.54,
             top: 0.9 / 2.54,
-            bottom: 0.4 / 2.54,
+            bottom: 1.0 / 2.54,
             header: 0,
-            footer: 0
+            footer: 0.3 / 2.54
         }
     });
 
@@ -192,6 +193,18 @@ async function generateVERExcelJS(items) {
             c++;
         }
         r++;
+    }
+    // Widow/Orphan estimation logic to prevent lonely footers
+    const estimatedRowsPerPage = 32;
+    const footerRows = 25;
+    const rowsOnLastPage = r % estimatedRowsPerPage;
+    const remainingSpace = estimatedRowsPerPage - rowsOnLastPage;
+
+    if (remainingSpace < footerRows && items.length >= 3) {
+        const breakRow = r - 3;
+        if (breakRow > 17) {
+            sheet.getRow(breakRow).addPageBreak();
+        }
     }
 
     // Directly append the footer text

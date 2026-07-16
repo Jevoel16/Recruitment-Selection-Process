@@ -5,7 +5,7 @@ const db = require('../db');
 function getShortenedPosition(position) {
     if (!position) return 'APP';
     let cleanPos = position.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-    const match = cleanPos.match(/\\s([IVX]+)$/i);
+    const match = cleanPos.match(/\s([IVX]+)$/i);
     let numberSuffix = '';
     if (match) {
         const roman = match[1].toUpperCase();
@@ -36,17 +36,14 @@ const requirementFields = [
     'req_orderSeparation', 'req_saln', 'req_folders'
 ];
 
-// Deprecated: assignmentReqStatus is now toggled when the DOC is downloaded, not automatically via checkboxes.
-async function syncAssignmentRequirementStatus(applicantId) {
-    // No-op
-}
+
 
 // Initializes a new applicant record, processes their baseline information, and inserts it into the database.
 // Automatically prefixes the application code with the district abbreviation and shortened position title for easy tracking.
 exports.createApplicant = async (req, res) => {
     try {
         const { 
-            firstName, lastName, middleName, nameExtension, applicationType, district, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position,
+            firstName, lastName, middleName, nameExtension, applicationType, district, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position, vacancyAnnouncementNo,
             education, training, experience, eligibility
         } = req.body;
         
@@ -56,15 +53,17 @@ exports.createApplicant = async (req, res) => {
         const currentYear = new Date().getFullYear();
 
         const [result] = await db.query(
-            'INSERT INTO applicants (firstName, lastName, middleName, nameExtension, applicationType, district, category, position, applicationCode, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-            [firstName, lastName, middleName || '', nameExtension || '', applicationType || 'Walk-in', district || null, category || null, position || null, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
+            'INSERT INTO applicants (firstName, lastName, middleName, nameExtension, applicationType, district, category, position, vacancyAnnouncementNo, applicationCode, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            [firstName, lastName, middleName || '', nameExtension || '', applicationType || 'Walk-in', district || null, category || null, position || null, vacancyAnnouncementNo || null, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
         );
         
         const applicantId = result.insertId;
         
+        const vacNoStr = vacancyAnnouncementNo ? String(vacancyAnnouncementNo).padStart(3, '0') : '000';
+        
         const [rows] = await db.query(
             "SELECT applicationCode FROM applicants WHERE applicationCode LIKE ? AND id != ? ORDER BY id DESC LIMIT 1",
-            [`${positionCode}-${currentYear}-%`, applicantId]
+            [`${positionCode}-${vacNoStr}-${currentYear}-%`, applicantId]
         );
         let increment = 1;
         if (rows.length > 0 && rows[0].applicationCode) {
@@ -73,7 +72,8 @@ exports.createApplicant = async (req, res) => {
             if (!isNaN(lastIncrement)) increment = lastIncrement + 1;
         }
         
-        const newCode = `${positionCode}-${currentYear}-${increment}`;
+        const incrementStr = String(increment).padStart(4, '0');
+        const newCode = `${positionCode}-${vacNoStr}-${currentYear}-${incrementStr}`;
         await db.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
 
         const eduArray = education ? JSON.parse(education) : [];
@@ -154,7 +154,6 @@ exports.toggleAllRequirements = async (req, res) => {
         const { value } = req.body;
         const assignments = requirementFields.map((field) => `${field} = ?`).join(', ');
         await db.query(`UPDATE applicants SET ${assignments} WHERE id = ?`, [...Array(requirementFields.length).fill(Boolean(value)), req.params.id]);
-        await syncAssignmentRequirementStatus(req.params.id);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -167,7 +166,6 @@ exports.updateRequirement = async (req, res) => {
         const { field, value } = req.body;
         if (!requirementFields.includes(field)) return res.status(400).json({ success: false, error: 'Invalid field' });
         await db.query(`UPDATE applicants SET ${field} = ? WHERE id = ?`, [value, req.params.id]);
-        await syncAssignmentRequirementStatus(req.params.id);
         res.json({ success: true });
     } catch (error) {
         console.error(error);

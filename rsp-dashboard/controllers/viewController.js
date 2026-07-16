@@ -84,9 +84,9 @@ exports.getDashboard = async (req, res) => {
         const queryParams = [];
 
         if (searchQuery) {
-            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR position LIKE ?)`;
+            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR position LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
             const searchPattern = `%${searchQuery}%`;
-            queryParams.push(searchPattern, searchPattern, searchPattern);
+            queryParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
         }
 
         if (categoryFilter) {
@@ -209,9 +209,9 @@ exports.getDashboardPosition = async (req, res, next) => {
         const queryParams = [];
 
         if (searchQuery) {
-            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
             const searchPattern = `%${searchQuery}%`;
-            queryParams.push(searchPattern, searchPattern);
+            queryParams.push(searchPattern, searchPattern, searchPattern);
         }
 
         if (positionFilter) {
@@ -272,13 +272,20 @@ exports.getAddApplicant = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM positions WHERE in_vacancy = true ORDER BY category ASC, title ASC');
         const groupedPositions = {};
+        const frontendMap = {};
         for (const row of rows) {
             if (!groupedPositions[row.category]) {
                 groupedPositions[row.category] = { categoryName: row.category, positions: [] };
+                frontendMap[row.category] = [];
             }
             groupedPositions[row.category].positions.push(row);
+            frontendMap[row.category].push({
+                title: row.title,
+                vacancyAnnouncementNo: row.vacancyAnnouncementNo || null
+            });
         }
-        res.render('add-applicant', { addApplicantActive: true, groupedPositions });
+        const dynamicPositionsJSON = JSON.stringify(frontendMap).replace(/</g, '\\u003c');
+        res.render('add-applicant', { addApplicantActive: true, groupedPositions, dynamicPositionsJSON });
     } catch (err) {
         console.error(err);
         res.status(500).send('Database error');
@@ -291,19 +298,25 @@ exports.getMasterlist = async (req, res) => {
     const offset = (page - 1) * limit;
     const searchQuery = req.query.q || '';
     const positionFilter = req.query.position || '';
+    const vacancyFilter = req.query.vacancy || '';
 
     let baseQuery = `FROM applicants WHERE 1=1`;
     const queryParams = [];
 
     if (searchQuery) {
-        baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+        baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
         const searchPattern = `%${searchQuery}%`;
-        queryParams.push(searchPattern, searchPattern);
+        queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
     if (positionFilter) {
         baseQuery += ` AND position = ?`;
         queryParams.push(positionFilter);
+    }
+    
+    if (vacancyFilter) {
+        baseQuery += ` AND vacancyAnnouncementNo = ?`;
+        queryParams.push(vacancyFilter);
     }
 
     try {
@@ -315,6 +328,9 @@ exports.getMasterlist = async (req, res) => {
 
         const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
         const positionList = positions.map(p => p.position);
+        
+        const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
+        const vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
 
         res.render('masterlist', {
             masterlistActive: true,
@@ -324,6 +340,8 @@ exports.getMasterlist = async (req, res) => {
             searchQuery,
             positionFilter,
             positionList,
+            vacancyFilter,
+            vacancyList,
             paginationArray: Array.from({ length: totalPages }, (_, i) => i + 1)
         });
     } catch (err) {
@@ -348,6 +366,7 @@ exports.getStepPage = async (req, res, next) => {
     if (!stepsConfig[step]) return next();
 
     const positionFilter = req.query.position || '';
+    const vacancyFilter = req.query.vacancy || '';
     const page = parseInt(req.params.page) || 1;
     const limit = 10;
     const offset = (page - 1) * limit;
@@ -370,6 +389,11 @@ exports.getStepPage = async (req, res, next) => {
         queryParams.push(positionFilter);
     }
     
+    if (vacancyFilter) {
+        baseQuery += ` AND vacancyAnnouncementNo = ?`;
+        queryParams.push(vacancyFilter);
+    }
+    
     if (statusFilter && step === 'step3') {
         baseQuery += ` AND status = ?`;
         queryParams.push(statusFilter);
@@ -388,9 +412,13 @@ exports.getStepPage = async (req, res, next) => {
         const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY ${config.orderBy} LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
         let positionList = [];
+        let vacancyList = [];
         if (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5') {
             const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
             positionList = positions.map(p => p.position);
+            
+            const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
+            vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
         }
         
         let officeList = [];
@@ -438,6 +466,7 @@ exports.getStepPage = async (req, res, next) => {
                 let pUrl = `/${step}/${i}?`;
                 if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
                 if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
+                if (vacancyFilter) pUrl += `vacancy=${encodeURIComponent(vacancyFilter)}&`;
                 if (statusFilter) pUrl += `status=${encodeURIComponent(statusFilter)}&`;
                 pagination.push({ page: i, isCurrent: i === page, url: pUrl.replace(/&$/, '') });
             } else if (i === page - 3 || i === page + 3) {
@@ -451,7 +480,7 @@ exports.getStepPage = async (req, res, next) => {
         });
 
         res.render('index', {
-            currentStep: step, [step]: mappedRows, searchQuery, positionFilter, positionList, officeFilter, officeList, statusFilter,
+            currentStep: step, [step]: mappedRows, searchQuery, positionFilter, positionList, vacancyFilter, vacancyList, officeFilter, officeList, statusFilter,
             pagination: cleanPagination, step1Active: step === 'step1', step2Active: step === 'step2', step3Active: step === 'step3',
             step4Active: step === 'step4', step5Active: step === 'step5', offset
         });

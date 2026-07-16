@@ -45,11 +45,12 @@ async function seedPositionsOnly() {
                 }
 
                 await connection.query(
-                    'INSERT INTO positions (category, groupName, title, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility, qsEducationLevel, qsTrainingLevel, qsExperienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    'INSERT INTO positions (category, groupName, title, vacancyAnnouncementNo, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility, qsEducationLevel, qsTrainingLevel, qsExperienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     [
                         pos.category || '', 
                         groupName,
                         pos.title || '', 
+                        pos.vacancyAnnouncementNo || null,
                         pos.salaryGrade || '', 
                         pos.in_vacancy || 0, 
                         pos.monthlySalary || '', 

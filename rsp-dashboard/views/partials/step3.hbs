@@ -6,13 +6,13 @@
             <div class="mb-3">
                 
                 <form method="GET" action="/step3/1" class="row g-2">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="input-group glass-panel h-100">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
                             <input type="text" name="q" class="form-control bg-transparent border-0 shadow-none" placeholder="Search by name or code..." value="{{searchQuery}}">
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="glass-panel h-100 px-2 py-1">
                             <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
                                 <option value="">All Positions</option>
@@ -22,7 +22,17 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                                <option value="">All Vacancies</option>
+                                {{#each vacancyList}}
+                                    <option value="{{this}}" {{#if (eq this ../vacancyFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
                         <div class="glass-panel h-100 px-2 py-1">
                             <select name="status" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
                                 <option value="">All Status</option>

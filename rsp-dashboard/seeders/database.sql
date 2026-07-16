@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS applicants (
     district VARCHAR(50) DEFAULT NULL,
     category VARCHAR(50) DEFAULT NULL,
     position VARCHAR(100) DEFAULT NULL,
+    vacancyAnnouncementNo INT DEFAULT NULL,
     status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED', 'WAITING_FOR_ASSESSMENT', 'ASSESSED', 'NO_APPEARANCE', 'NEWLY_PROMOTED', 'WAITING', 'ASSIGNED', 'COMPLETED') DEFAULT 'PENDING',
     interviewScore INT DEFAULT NULL,
     
@@ -142,7 +143,7 @@ CREATE TABLE IF NOT EXISTS positions (
     category VARCHAR(100) NOT NULL,
     groupName VARCHAR(255) DEFAULT NULL,
     title VARCHAR(255) NOT NULL,
-    vacancyAnnouncement TEXT DEFAULT NULL,
+    vacancyAnnouncementNo INT DEFAULT NULL,
     plantillaItem TEXT DEFAULT NULL,
     salaryGrade TEXT DEFAULT NULL,
     monthlySalary TEXT DEFAULT NULL,
