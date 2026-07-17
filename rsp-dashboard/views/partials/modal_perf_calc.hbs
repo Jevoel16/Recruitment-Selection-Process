@@ -9,7 +9,7 @@
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Evaluation Method</label>
-                        <select class="form-select mb-2" id="perfEvalMethod" onchange="togglePerfInputs(); calculatePerfPoints()">
+                        <select class="form-select mb-2 searchable-select" id="perfEvalMethod" onchange="togglePerfInputs(); calculatePerfPoints()">
                             <option value="rpms">Performance Rating (RPMS 5-point scale)</option>
                             <option value="rpms10">Performance Rating (RPMS 10-point scale)</option>
                             <option value="gwa">CS Eligibility / Board Exam / GWA (100-point scale)</option>
@@ -25,7 +25,7 @@
                         <div class="form-text" id="perfRatingHelp">Enter RPMS rating (0-5) or midpoint value.</div>
                         <div class="mt-2" id="midpointHelperDiv">
                             <label class="form-label small text-muted">Midpoint Helper (External Applicants)</label>
-                            <select class="form-select form-select-sm" id="perfMidpointHelper" onchange="applyMidpoint()">
+                            <select class="form-select form-select-sm searchable-select" id="perfMidpointHelper" onchange="applyMidpoint()">
                                 <option value="">-- Select Adjectival Rating --</option>
                                 <option value="4.75">Outstanding (4.500 - 5.000)</option>
                                 <option value="3.995">Very Satisfactory (3.500 - 4.499)</option>

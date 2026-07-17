@@ -12,7 +12,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
-                                <select name="category" class="form-select border-0 shadow-none bg-transparent" onchange="this.form.submit()">
+                                <select name="category" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="this.form.submit()">
                                     <option value="">All Categories</option>
                                     <option value="Non-Teaching" {{#if (eq categoryFilter 'Non-Teaching')}}selected{{/if}}>Non-Teaching</option>
                                     <option value="Related Teaching" {{#if (eq categoryFilter 'Related Teaching')}}selected{{/if}}>Related Teaching</option>
@@ -22,7 +22,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
-                                <select name="step" class="form-select border-0 shadow-none bg-transparent" onchange="this.form.submit()">
+                                <select name="step" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="this.form.submit()">
                                     <option value="">All Steps & Statuses</option>
                                     <option value="step1_pending" {{#if (eq stepFilter 'step1_pending')}}selected{{/if}}>Step 1: Pending</option>
                                     <option value="step1_qualified" {{#if (eq stepFilter 'step1_qualified')}}selected{{/if}}>Step 1: Qualified</option>

@@ -9,7 +9,7 @@
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Intervention Relevance</label>
-                        <select class="form-select mb-2" id="appLNDRelevance" onchange="calculateAppLNDPoints()">
+                        <select class="form-select mb-2 searchable-select" id="appLNDRelevance" onchange="calculateAppLNDPoints()">
                             <option value="relevant">Relevant Intervention</option>
                             <option value="not_relevant">Not Relevant Intervention</option>
                         </select>
@@ -17,7 +17,7 @@
 
                     <div class="mb-3" id="appLNDMOVsDiv">
                         <label class="form-label fw-bold">MOVs Submitted</label>
-                        <select class="form-select" id="appLNDMOVs" onchange="calculateAppLNDPoints()">
+                        <select class="form-select searchable-select" id="appLNDMOVs" onchange="calculateAppLNDPoints()">
                             <option value="0">None (0 pts)</option>
                             <option value="AB">Only A & B (Cert. of Training + Action Plan)</option>
                             <option value="ABC">Only A, B & C (+ Local Adoption Cert.)</option>

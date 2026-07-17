@@ -10,8 +10,8 @@
                     <input type="hidden" id="modalPosId" name="id">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Vacancy Announcement (URL / Reference)</label>
-                            <input type="text" class="form-control" id="modalPosVacancy" name="vacancyAnnouncement">
+                            <label class="form-label fw-semibold">Vacancy Announcement No.</label>
+                            <input type="number" class="form-control" id="modalPosVacancy" name="vacancyAnnouncementNo" min="1">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Salary Grade</label>
@@ -33,7 +33,7 @@
     <div class="d-flex justify-content-between align-items-center mb-1">
         <label class="form-label fw-semibold mb-0">QS: Education</label>
     </div>
-    <select class="form-select mb-2" id="modalPosEduLevel" name="qsEducationLevel">
+    <select class="form-select mb-2 custom-ui-select" id="modalPosEduLevel" name="qsEducationLevel">
         <option value="">Select Level Increment</option>
 <option value="1">Level 1: Can Read and Write / Elem Level</option>
                             <option value="2">Level 2: Elementary Graduate</option>
@@ -73,7 +73,7 @@
     <div class="d-flex justify-content-between align-items-center mb-1">
         <label class="form-label fw-semibold mb-0">QS: Training</label>
     </div>
-    <select class="form-select mb-2" id="modalPosTrainLevel" name="qsTrainingLevel">
+    <select class="form-select mb-2 custom-ui-select" id="modalPosTrainLevel" name="qsTrainingLevel">
         <option value="">Select Level Increment</option>
 <option value="1">Level 1: 0 - <8 hours</option>
                             <option value="2">Level 2: 8 - <16 hours</option>
@@ -113,7 +113,7 @@
     <div class="d-flex justify-content-between align-items-center mb-1">
         <label class="form-label fw-semibold mb-0">QS: Experience</label>
     </div>
-    <select class="form-select mb-2" id="modalPosExpLevel" name="qsExperienceLevel">
+    <select class="form-select mb-2 custom-ui-select" id="modalPosExpLevel" name="qsExperienceLevel">
         <option value="">Select Level Increment</option>
 <option value="0">Level 0: No experience</option>
                             <option value="1">Level 1: Less than 6 months</option>

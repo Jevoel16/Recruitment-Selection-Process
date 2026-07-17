@@ -39,7 +39,7 @@
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 border-bottom bg-transparent fw-medium';
-                        btn.innerHTML = `<span>${pos.title} <small class="text-muted ms-2">${pos.vacancyAnnouncementNo ? '(Vacancy #' + pos.vacancyAnnouncementNo + ')' : ''}</small></span> <i class="bi bi-chevron-right text-muted small"></i>`;
+                        btn.innerHTML = `<span>${pos.title}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
                         btn.onclick = () => handlePositionSelection(pos);
                         list.appendChild(btn);
                     });
@@ -78,7 +78,7 @@
         document.getElementById('wizardCategory').value = cat;
         document.getElementById('wizardPosition').value = pos.title;
         document.getElementById('wizardVacancyAnnouncementNo').value = pos.vacancyAnnouncementNo || '';
-        document.getElementById('selectedPositionText').innerHTML = `${cat} > ${pos.title} <small class="text-muted">${pos.vacancyAnnouncementNo ? '(Vacancy #' + pos.vacancyAnnouncementNo + ')' : ''}</small>`;
+        document.getElementById('selectedPositionText').innerHTML = `${cat} > ${pos.title}`;
         document.getElementById('addApplicantTitle').innerHTML = '<i class="bi bi-person-vcard me-2"></i>Applicant Information';
         document.getElementById('wizardStep0').classList.add('d-none');
         document.getElementById('wizardStep1').classList.remove('d-none');

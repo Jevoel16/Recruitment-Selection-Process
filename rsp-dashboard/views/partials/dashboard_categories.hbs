@@ -13,7 +13,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="glass-panel h-100 px-2 py-1">
-                                <select id="vacancyCategory" class="form-select bg-transparent border-0 shadow-none" onchange="filterVacancyTable()">
+                                <select id="vacancyCategory" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
                                     <option value="">All Categories</option>
                                     {{#each groupedPositions}}
                                         <option value="{{this.categoryName}}">{{this.categoryName}}</option>
@@ -23,7 +23,7 @@
                         </div>
                         <div class="col-md-2">
                             <div class="glass-panel h-100 px-2 py-1">
-                                <select id="vacancyStatus" class="form-select bg-transparent border-0 shadow-none" onchange="filterVacancyTable()">
+                                <select id="vacancyStatus" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
                                     <option value="">All Statuses</option>
                                     <option value="vacant">Vacant</option>
                                     <option value="non-vacant">Non-Vacant</option>
@@ -119,7 +119,7 @@
                                                                                     data-bs-target="#positionInfoModal"
                                                                                     data-id="{{this.id}}"
                                                                                     data-title="{{this.title}}"
-                                                                                    data-vacancy="{{this.vacancyAnnouncement}}"
+                                                                                    data-vacancy="{{this.vacancyAnnouncementNo}}"
                                                                                     data-plantilla="{{this.plantillaItem}}"
                                                                                     data-salary="{{this.salaryGrade}}"
                                                                                     data-monthly="{{this.monthlySalary}}"

@@ -9,7 +9,7 @@
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Evaluation Method</label>
-                        <select class="form-select mb-2" id="appEduEvalMethod" onchange="toggleAppEduInputs(); calculateAppEduPoints()">
+                        <select class="form-select mb-2 searchable-select" id="appEduEvalMethod" onchange="toggleAppEduInputs(); calculateAppEduPoints()">
                             <option value="relevant">Experienced: Relevant Intervention</option>
                             <option value="not_relevant">Experienced: Not Relevant Intervention</option>
                             <option value="no_exp">No Experience: GWA Percentage Scale</option>
@@ -18,7 +18,7 @@
 
                     <div class="mb-3" id="appEduMOVsDiv">
                         <label class="form-label fw-bold">MOVs Submitted</label>
-                        <select class="form-select" id="appEduMOVs" onchange="calculateAppEduPoints()">
+                        <select class="form-select searchable-select" id="appEduMOVs" onchange="calculateAppEduPoints()">
                             <option value="0">None (0 pts)</option>
                             <option value="A">Only A (Action Plan) </option>
                             <option value="AB">Only A & B (Action Plan + Accomp. Report)</option>

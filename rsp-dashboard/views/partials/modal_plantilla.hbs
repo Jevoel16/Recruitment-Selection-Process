@@ -8,22 +8,34 @@
             <form id="plantillaForm">
                 <div class="modal-body pb-4">
                     <input type="hidden" id="plantillaPosId" name="id">
-                    <div class="mb-3 border rounded p-3">
-                        <label class="form-label fw-semibold">Location 1</label>
-                        <input type="text" class="form-control mb-2" id="plantillaLoc1" placeholder="Place of Assignment (e.g. School Division Office)">
-                        <textarea class="form-control" id="plantillaItems1" rows="2" placeholder="Plantilla numbers separated by comma"></textarea>
+                    <div id="plantillaSetsContainer">
+                        <div class="mb-3 border rounded p-3 plantilla-set">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-7">
+                                    <textarea class="form-control plantilla-items-input" rows="2" placeholder="Plantilla numbers separated by comma"></textarea>
+                                </div>
+                                <div class="col-md-5">
+                                    <select class="form-select plantilla-dropdown-1">
+                                        <option value="">Select option</option>
+                                        <option value="Choice 1">Choice 1</option>
+                                        <option value="Choice 2">Choice 2</option>
+                                        <option value="Choice 3">Choice 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <select class="form-select plantilla-dropdown-2">
+                                <option value="">Select option</option>
+                                <option value="Choice 1">Choice 1</option>
+                                <option value="Choice 2">Choice 2</option>
+                                <option value="Choice 3">Choice 3</option>
+                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-plantilla-set d-none">Remove</button>
+                        </div>
                     </div>
-                    <div class="mb-3 border rounded p-3">
-                        <label class="form-label fw-semibold">Location 2</label>
-                        <input type="text" class="form-control mb-2" id="plantillaLoc2" placeholder="Place of Assignment">
-                        <textarea class="form-control" id="plantillaItems2" rows="2" placeholder="Plantilla numbers separated by comma"></textarea>
-                    </div>
-                    <div class="mb-3 border rounded p-3">
-                        <label class="form-label fw-semibold">Location 3</label>
-                        <input type="text" class="form-control mb-2" id="plantillaLoc3" placeholder="Place of Assignment">
-                        <textarea class="form-control" id="plantillaItems3" rows="2" placeholder="Plantilla numbers separated by comma"></textarea>
-                        <div class="form-text text-muted mt-2">Separate multiple item numbers with a comma. The vacancy count will be automatically calculated based on the total number of items across all locations.</div>
-                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="addPlantillaSetBtn">
+                        <i class="bi bi-plus-circle"></i> Add more
+                    </button>
+                    <div class="form-text text-muted mt-2">Separate multiple item numbers with a comma. The vacancy count will be automatically calculated based on the total number of items across all sets.</div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-light shadow-sm" data-bs-dismiss="modal">Cancel</button>

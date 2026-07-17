@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Positions</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
@@ -24,7 +24,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Vacancies</option>
                                 {{#each vacancyList}}
                                     <option value="{{this}}" {{#if (eq this ../vacancyFilter)}}selected{{/if}}>{{this}}</option>
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="status" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                            <select name="status" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Status</option>
                                 <option value="ASSESSED" {{#if (eq statusFilter 'ASSESSED')}}selected{{/if}}>Assessed</option>
                                 <option value="NO_APPEARANCE" {{#if (eq statusFilter 'NO_APPEARANCE')}}selected{{/if}}>No Appearance</option>

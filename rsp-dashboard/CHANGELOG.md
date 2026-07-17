@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-17 19:55 (v1.3.1-Release+202607171955)
+
+### CHANGED
+- **UI Styling**: Applied `custom-ui-select` class to all select inputs across dashboard modals and workflow steps (Steps 1-5) to standardize dropdown appearances.
+
+
 ## 2026-07-16 13:13 (v1.3.0-Release+202607161313)
 ### ADDED
 - **Vacancy Announcement Tracking**: Added `vacancyAnnouncementNo` to `applicants` and `positions` database tables and integrated it into the application.

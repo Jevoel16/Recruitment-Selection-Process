@@ -43,7 +43,7 @@ A web-based platform to digitize the recruitment selection process.
 - **Searchable Dropdowns:** Integrated `Choices.js` globally to transform standard form selects into advanced, searchable dropdowns without compromising z-index UI layering in modals.
 - **Real-Time Validations:** Form validations using active keystroke prevention restricting incorrect input values (such as dynamically capping assessment inputs) natively on the frontend.
 - **Stateful UI & Instant DOM Updates:** Dashboard features persistent state retention across manual page reloads using browser History APIs and session storage, alongside lightning-fast instant DOM updates for CRUD operations to eliminate full page reloads.
-- **Modern Aesthetics:** Utilizes responsive glassmorphism UI components (glass panels), custom scrollbars, and seamless borderless inputs for a deeply immersive and premium user experience.
+- **Modern Aesthetics:** Utilizes responsive glassmorphism UI components (glass panels), custom scrollbars, seamless borderless inputs, and standardized `custom-ui-select` styling for a deeply immersive and premium user experience.
 
 ## Installation & Setup
 1. Clone or download this directory.

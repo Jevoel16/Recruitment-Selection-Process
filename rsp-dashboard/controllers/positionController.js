@@ -17,18 +17,17 @@ exports.createPosition = async (req, res) => {
 // This ensures that the dynamic vacancy dashboard accurately reflects real-time Civil Service criteria.
 exports.updatePosition = async (req, res) => {
     try {
-        const { id, vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
-        let { qsEducationLevel, qsTrainingLevel, qsExperienceLevel } = req.body;
-
-        qsEducationLevel = qsEducationLevel || null;
-        qsTrainingLevel = qsTrainingLevel || null;
-        qsExperienceLevel = qsExperienceLevel || null;
+        const { id, vacancyAnnouncementNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
         
-        // Manual validation
-        if (!id) return res.status(400).json({ error: "Missing ID" });
-
-        await db.query(`UPDATE positions SET vacancyAnnouncement=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsEducationLevel=?, qsTraining=?, qsTrainingLevel=?, qsExperience=?, qsExperienceLevel=?, qsEligibility=? WHERE id=?`, 
-            [vacancyAnnouncement, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, id]);
+        let { qsEducationLevel, qsTrainingLevel, qsExperienceLevel } = req.body;
+        qsEducationLevel = qsEducationLevel ? parseInt(qsEducationLevel, 10) : null;
+        qsTrainingLevel = qsTrainingLevel ? parseInt(qsTrainingLevel, 10) : null;
+        qsExperienceLevel = qsExperienceLevel ? parseInt(qsExperienceLevel, 10) : null;
+        
+        // Use a parameterized update query to save the changes to the position profile.
+        // It's critical to capture the 'id' correctly to ensure we don't overwrite other positions.
+        await db.query(`UPDATE positions SET vacancyAnnouncementNo=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsEducationLevel=?, qsTraining=?, qsTrainingLevel=?, qsExperience=?, qsExperienceLevel=?, qsEligibility=? WHERE id=?`, 
+            [vacancyAnnouncementNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, id]);
         res.json({ success: true });
     } catch (e) {
         console.error(e);
@@ -39,7 +38,7 @@ exports.updatePosition = async (req, res) => {
 // Turns off vacancy status for all positions
 exports.turnOffAllVacancies = async (req, res) => {
     try {
-        await db.query(`UPDATE positions SET in_vacancy = 0`);
+        await db.query(`UPDATE positions SET in_vacancy = 0, vacancyAnnouncementNo = NULL`);
         res.json({ success: true });
     } catch (e) {
         console.error(e);
@@ -54,7 +53,11 @@ exports.togglePositionVacancy = async (req, res) => {
         const { in_vacancy } = req.body;
         if (in_vacancy === undefined) return res.status(400).json({ error: "Missing in_vacancy parameter" });
 
-        await db.query(`UPDATE positions SET in_vacancy = ? WHERE id = ?`, [in_vacancy ? 1 : 0, req.params.id]);
+        if (in_vacancy) {
+            await db.query(`UPDATE positions SET in_vacancy = 1 WHERE id = ?`, [req.params.id]);
+        } else {
+            await db.query(`UPDATE positions SET in_vacancy = 0, vacancyAnnouncementNo = NULL WHERE id = ?`, [req.params.id]);
+        }
         res.json({ success: true });
     } catch (e) {
         console.error(e);

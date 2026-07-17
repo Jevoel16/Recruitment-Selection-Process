@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-17 19:55 (v1.3.1-Release+202607171955)
+
+### Changed
+- **UI Styling**: Applied `custom-ui-select` class to all select inputs across dashboard modals and steps to standardize form appearances.
+
+
 All notable changes to this project will be documented in this file.
 
 ## 2026-07-16 13:13 (v1.3.0-Release+202607161313)
