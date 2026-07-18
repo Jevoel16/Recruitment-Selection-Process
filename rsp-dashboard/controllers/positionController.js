@@ -2,11 +2,11 @@ const db = require('../db');
 
 exports.createPosition = async (req, res) => {
     try {
-        const { title, category, salaryGrade, monthlySalary } = req.body;
-        if (!title || !category) return res.status(400).json({ error: "Missing required fields" });
+        const { title, category, salaryGrade, monthlySalary, position_code } = req.body;
+        if (!title || !category || !position_code) return res.status(400).json({ error: "Missing required fields" });
 
-        await db.query(`INSERT INTO positions (title, category, salaryGrade, monthlySalary, groupName) VALUES (?, ?, ?, ?, ?)`, 
-            [title, category, salaryGrade || null, monthlySalary || null, 'Other']); // Defaulting groupName to 'Other' as it is required but not in form
+        await db.query(`INSERT INTO positions (title, category, salaryGrade, monthlySalary, groupName, position_code) VALUES (?, ?, ?, ?, ?, ?)`, 
+            [title, category, salaryGrade || null, monthlySalary || null, 'Other', position_code]);
         res.json({ success: true });
     } catch (e) {
         console.error(e);

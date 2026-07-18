@@ -2,6 +2,28 @@
     let currentPositions = [];
     const itemsPerPage = 5;
 
+    function filterWizardCategories() {
+        const query = document.getElementById('categorySearch').value.toLowerCase();
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            const catName = btn.getAttribute('data-category');
+            const colDiv = btn.closest('.col-md-6');
+            
+            let hasMatch = false;
+            if (!query) {
+                hasMatch = true;
+            } else {
+                const positions = window.dynamicPositionsByCategory ? (window.dynamicPositionsByCategory[catName] || []) : [];
+                hasMatch = positions.some(p => p.title.toLowerCase().includes(query) || (p.vacancyAnnouncementNo && String(p.vacancyAnnouncementNo).includes(query)));
+            }
+            
+            if (hasMatch) {
+                colDiv.style.display = '';
+            } else {
+                colDiv.style.display = 'none';
+            }
+        });
+    }
+
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             handleCategorySelection(e.currentTarget.getAttribute('data-category'));
@@ -14,7 +36,9 @@
         document.getElementById('positionSelection').classList.remove('d-none');
         document.getElementById('selectedCategoryTitle').innerText = `${cat}`;
         
-        document.getElementById('positionSearch').value = '';
+        const outerSearchVal = document.getElementById('categorySearch').value;
+        document.getElementById('positionSearch').value = outerSearchVal;
+        
         currentPositions = window.dynamicPositionsByCategory ? (window.dynamicPositionsByCategory[cat] || []) : [];
         filterAndPaginatePositions(true);
     }

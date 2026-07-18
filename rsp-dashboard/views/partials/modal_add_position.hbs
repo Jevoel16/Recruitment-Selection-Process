@@ -14,8 +14,12 @@
                             <input type="text" class="form-control" id="newPositionTitle" name="title" required placeholder="e.g. Teacher I" style="height: 44px;">
                         </div>
                         <div class="col-md-6">
+                            <label for="newPositionCode" class="form-label">Position Code</label>
+                            <input type="text" class="form-control" id="newPositionCode" name="position_code" required placeholder="e.g. TCH1" style="height: 44px;">
+                        </div>
+                        <div class="col-md-6">
                             <label for="newPositionCategory" class="form-label">Category</label>
-                            <select class="form-select searchable-select" id="newPositionCategory" name="category" required>
+                            <select class="form-select custom-ui-select" id="newPositionCategory" name="category" required>
                                 <option value="">Select a Category...</option>
                                 {{#each groupedPositions}}
                                     <option value="{{this.categoryName}}">{{this.categoryName}}</option>

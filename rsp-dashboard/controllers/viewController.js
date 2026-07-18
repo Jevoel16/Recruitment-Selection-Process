@@ -77,21 +77,27 @@ exports.getDashboard = async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
         const searchQuery = req.query.q || '';
-        const categoryFilter = req.query.category || '';
+        const positionFilter = req.query.position || '';
+        const vacancyFilter = req.query.vacancy || '';
         const stepFilter = req.query.step || '';
 
         let baseQuery = `FROM applicants WHERE 1=1`;
         const queryParams = [];
 
         if (searchQuery) {
-            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR position LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
+            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
             const searchPattern = `%${searchQuery}%`;
-            queryParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
+            queryParams.push(searchPattern, searchPattern, searchPattern);
         }
 
-        if (categoryFilter) {
-            baseQuery += ` AND category = ?`;
-            queryParams.push(categoryFilter);
+        if (positionFilter) {
+            baseQuery += ` AND position = ?`;
+            queryParams.push(positionFilter);
+        }
+
+        if (vacancyFilter) {
+            baseQuery += ` AND vacancyAnnouncementNo = ?`;
+            queryParams.push(vacancyFilter);
         }
 
         if (stepFilter) {
@@ -116,12 +122,35 @@ exports.getDashboard = async (req, res) => {
         const showBackup = req.query.tab === 'backup';
         const showCategories = req.query.tab === 'categories';
 
+        const [positionsResult] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
+        const applicantPositionList = positionsResult.map(p => p.position);
+
+        const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
+        const vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
+
+        const [statuses] = await db.query(`SELECT DISTINCT status FROM applicants WHERE status IS NOT NULL AND status != ''`);
+        const statusMap = {
+            'PENDING': { value: 'step1_pending', label: 'Step 1: Pending' },
+            'QUALIFIED': { value: 'step1_qualified', label: 'Step 1: Qualified' },
+            'DISQUALIFIED': { value: 'step1_disqualified', label: 'Step 1: Disqualified' },
+            'WAITING_FOR_ASSESSMENT': { value: 'step2', label: 'Step 2: Deliberation' },
+            'ASSESSED': { value: 'step3_assessed', label: 'Step 3: Assessed' },
+            'NO_APPEARANCE': { value: 'step3_no_appearance', label: 'Step 3: No Appearance' },
+            'NEWLY_PROMOTED': { value: 'step3_newly_promoted', label: 'Step 3: Newly Promoted' },
+            'WAITING': { value: 'step4', label: 'Step 4: Requirements' },
+            'ASSIGNED': { value: 'step5_assigned', label: 'Step 5: Assigned' },
+            'COMPLETED': { value: 'step5_completed', label: 'Step 5: Completed' }
+        };
+        const stepList = statuses.map(s => statusMap[s.status]).filter(Boolean);
+        stepList.sort((a, b) => a.value.localeCompare(b.value));
+
         const pagination = [];
         for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
                 let pUrl = `/dashboard?tab=masterlist&page=${i}&`;
                 if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
-                if (categoryFilter) pUrl += `category=${encodeURIComponent(categoryFilter)}&`;
+                if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
+                if (vacancyFilter) pUrl += `vacancy=${encodeURIComponent(vacancyFilter)}&`;
                 if (stepFilter) pUrl += `step=${encodeURIComponent(stepFilter)}&`;
                 pagination.push({ page: i, isCurrent: i === page, url: pUrl.replace(/&$/, '') });
             } else if (i === page - 3 || i === page + 3) {
@@ -142,8 +171,12 @@ exports.getDashboard = async (req, res) => {
             currentPage: page,
             totalPages,
             searchQuery,
-            categoryFilter,
+            positionFilter,
+            vacancyFilter,
             stepFilter,
+            positionList: applicantPositionList,
+            vacancyList,
+            stepList,
             pagination: cleanPagination,
             showMasterlist,
             showBackup,
@@ -228,12 +261,35 @@ exports.getDashboardPosition = async (req, res, next) => {
         const showMasterlist = req.query.tab === 'masterlist';
         const showBackup = req.query.tab === 'backup';
 
+        const [positionsResult] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
+        const applicantPositionList = positionsResult.map(p => p.position);
+
+        const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
+        const vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
+
+        const [statuses] = await db.query(`SELECT DISTINCT status FROM applicants WHERE status IS NOT NULL AND status != ''`);
+        const statusMap = {
+            'PENDING': { value: 'step1_pending', label: 'Step 1: Pending' },
+            'QUALIFIED': { value: 'step1_qualified', label: 'Step 1: Qualified' },
+            'DISQUALIFIED': { value: 'step1_disqualified', label: 'Step 1: Disqualified' },
+            'WAITING_FOR_ASSESSMENT': { value: 'step2', label: 'Step 2: Deliberation' },
+            'ASSESSED': { value: 'step3_assessed', label: 'Step 3: Assessed' },
+            'NO_APPEARANCE': { value: 'step3_no_appearance', label: 'Step 3: No Appearance' },
+            'NEWLY_PROMOTED': { value: 'step3_newly_promoted', label: 'Step 3: Newly Promoted' },
+            'WAITING': { value: 'step4', label: 'Step 4: Requirements' },
+            'ASSIGNED': { value: 'step5_assigned', label: 'Step 5: Assigned' },
+            'COMPLETED': { value: 'step5_completed', label: 'Step 5: Completed' }
+        };
+        const stepList = statuses.map(s => statusMap[s.status]).filter(Boolean);
+        stepList.sort((a, b) => a.value.localeCompare(b.value));
+
         const pagination = [];
         for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
                 let pUrl = `/dashboard/${req.params.id}?tab=masterlist&page=${i}&`;
                 if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
                 if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
+                if (vacancyFilter) pUrl += `vacancy=${encodeURIComponent(vacancyFilter)}&`;
                 pagination.push({ page: i, isCurrent: i === page, url: pUrl.replace(/&$/, '') });
             } else if (i === page - 3 || i === page + 3) {
                 pagination.push({ isEllipsis: true, page: '...' });
@@ -255,7 +311,10 @@ exports.getDashboardPosition = async (req, res, next) => {
             totalPages,
             searchQuery,
             positionFilter,
-            positionList: Array.from(new Set(positionList)).sort(),
+            vacancyFilter,
+            positionList: applicantPositionList,
+            vacancyList,
+            stepList,
             pagination: cleanPagination,
             showMasterlist,
             showBackup

@@ -12,6 +12,14 @@
                 <!-- Step 0: Category & Position -->
                 <div id="wizardStep0">
                     <div id="categorySelectionContainer">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="input-group glass-panel h-100 shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterWizardCategories()"><i class="bi bi-search text-primary"></i></span>
+                                    <input type="text" id="categorySearch" class="form-control border-start-0 ps-0" placeholder="Search position..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterWizardCategories(); }">
+                                </div>
+                            </div>
+                        </div>
                         <div class="row g-4 mb-4" id="categorySelection">
                             {{#each groupedPositions}}
                             <div class="col-md-6">
@@ -31,9 +39,9 @@
                             </button>
                             <h4 class="mb-0 fw-bold text-primary" id="selectedCategoryTitle">Category Name</h4>
                             
-                            <div class="input-group shadow-sm ms-auto" style="width: 250px;">
-                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-0" id="positionSearch" placeholder="Search positions..." oninput="filterAndPaginatePositions(true)">
+                            <div class="input-group glass-panel shadow-sm ms-auto" style="width: 250px;">
+                                <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterAndPaginatePositions(true)"><i class="bi bi-search text-primary"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="positionSearch" placeholder="Search positions..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterAndPaginatePositions(true); }">
                             </div>
                         </div>
                         <div class="list-group border rounded-4 shadow-sm overflow-hidden bg-white" id="positionList">

@@ -619,9 +619,254 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        async function refreshEmailLimits() {
+            try {
+                const limitText = document.getElementById('dailyEmailLimitText');
+                if (!limitText) return;
+                
+                const response = await fetch('/api/export/email-codes/limits');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    limitText.innerHTML = `<strong>${data.remaining}</strong> emails remaining today (Limit: ${data.dailyLimit})`;
+                    if (data.remaining <= 0) {
+                        limitText.classList.replace('text-muted', 'text-danger');
+                        document.querySelector('button[onclick="openEmailModal()"]').disabled = true;
+                    } else {
+                        limitText.classList.replace('text-danger', 'text-muted');
+                        document.querySelector('button[onclick="openEmailModal()"]').disabled = false;
+                    }
+                }
+            } catch(e) {
+                console.error('Error fetching email limits', e);
+            }
+        }
+
         document.getElementById('dashboardTabs').addEventListener('shown.bs.tab', function (event) {
             if (event.target.id === 'metrics-tab') {
                 refreshMetricsTab();
+            } else if (event.target.id === 'backup-tab') {
+                refreshEmailLimits();
             }
         });
+        
+        // Also load initially if backup tab is active on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('backup').classList.contains('active')) {
+                refreshEmailLimits();
+            }
+        });
+
+        let emailSelectionModal;
+        let globalEmailApplicants = [];
+
+        async function openEmailModal() {
+            try {
+                const response = await fetch('/api/export/email-codes/applicants');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    globalEmailApplicants = data.applicants;
+                    const listContainer = document.getElementById('emailApplicantsList');
+                    listContainer.innerHTML = '';
+                    
+                    const positionSelect = document.getElementById('emailFilterPosition');
+                    const vacancySelect = document.getElementById('emailFilterVacancy');
+                    
+                    if (globalEmailApplicants.length === 0) {
+                        listContainer.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No applicants with valid email addresses found.</td></tr>';
+                        document.getElementById('selectAllEmails').disabled = true;
+                        document.getElementById('sendEmailBtn').disabled = true;
+                        positionSelect.innerHTML = '<option value="">All Positions</option>';
+                        vacancySelect.innerHTML = '<option value="">All Vacancies</option>';
+                    } else {
+                        document.getElementById('selectAllEmails').disabled = false;
+                        document.getElementById('sendEmailBtn').disabled = false;
+                        document.getElementById('selectAllEmails').checked = false;
+                        
+                        const positions = new Set();
+                        
+                        globalEmailApplicants.forEach(app => {
+                            if (app.position) positions.add(app.position);
+                            
+                            const tr = document.createElement('tr');
+                            tr.className = 'email-applicant-item';
+                            tr.dataset.name = `${app.firstName} ${app.lastName}`.toLowerCase();
+                            tr.dataset.code = (app.applicationCode || '').toLowerCase();
+                            tr.dataset.email = (app.emailAddress || '').toLowerCase();
+                            tr.dataset.position = app.position || '';
+                            tr.dataset.vacancy = app.vacancyAnnouncementNo || '';
+                            
+                            const emailCountStr = app.emailCount ? `<span class="badge bg-success rounded-pill"><i class="bi bi-check2-circle"></i> Sent ${app.emailCount}x</span>` : `<span class="badge bg-secondary rounded-pill opacity-50">Not sent yet</span>`;
+                            
+                            tr.innerHTML = `
+                                <td>
+                                    <input class="form-check-input mt-0 email-applicant-cb" type="checkbox" value="${app.id}" id="emailCb${app.id}" onchange="updateSelectedEmailCount()" style="width: 1.25rem; height: 1.25rem;">
+                                </td>
+                                <td>
+                                    <label class="form-check-label fw-bold" for="emailCb${app.id}">
+                                        ${app.firstName} ${app.lastName}
+                                    </label>
+                                </td>
+                                <td>
+                                    <div class="small fw-bold">${app.applicationCode || 'N/A'}</div>
+                                    <div class="small text-muted">${app.emailAddress}</div>
+                                </td>
+                                <td>
+                                    <div class="small">${app.position || 'N/A'}</div>
+                                    <div class="small text-muted">Vacancy Announcement No. ${app.vacancyAnnouncementNo || 'N/A'}</div>
+                                </td>
+                                <td>
+                                    ${emailCountStr}
+                                </td>
+                            `;
+                            listContainer.appendChild(tr);
+                        });
+                        
+                        positionSelect.innerHTML = '<option value="">All Positions</option>';
+                        Array.from(positions).sort().forEach(p => {
+                            positionSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
+                        });
+                        
+                        updateVacancyFilterOptions('');
+                    }
+                    
+                    document.getElementById('emailSearchName').value = '';
+                    filterEmailApplicants();
+                    
+                    if (!emailSelectionModal) {
+                        emailSelectionModal = new bootstrap.Modal(document.getElementById('emailSelectionModal'));
+                    }
+                    emailSelectionModal.show();
+                } else {
+                    if (window.showToast) window.showToast('Failed to fetch applicants.', 'danger');
+                }
+            } catch (error) {
+                console.error('Error fetching applicants:', error);
+                if (window.showToast) window.showToast('An error occurred while fetching applicants.', 'danger');
+            }
+        }
+        
+        function updateVacancyFilterOptions(selectedPosition) {
+            const vacancySelect = document.getElementById('emailFilterVacancy');
+            const currentVacancy = vacancySelect.value;
+            
+            vacancySelect.innerHTML = '<option value="">All Vacancies</option>';
+            
+            const vacancies = new Set();
+            globalEmailApplicants.forEach(app => {
+                if (!selectedPosition || app.position === selectedPosition) {
+                    if (app.vacancyAnnouncementNo) vacancies.add(app.vacancyAnnouncementNo);
+                }
+            });
+            
+            Array.from(vacancies).sort().forEach(v => {
+                vacancySelect.insertAdjacentHTML('beforeend', `<option value="${v}">${v}</option>`);
+            });
+            
+            if (vacancies.has(currentVacancy)) {
+                vacancySelect.value = currentVacancy;
+            } else {
+                vacancySelect.value = "";
+            }
+        }
+
+        function filterEmailApplicants() {
+            const search = document.getElementById('emailSearchName').value.toLowerCase();
+            const positionSelect = document.getElementById('emailFilterPosition');
+            const position = positionSelect.value;
+            const vacancy = document.getElementById('emailFilterVacancy').value;
+            
+            const items = document.querySelectorAll('.email-applicant-item');
+            
+            items.forEach(item => {
+                const nameMatch = item.dataset.name.includes(search) || item.dataset.code.includes(search) || item.dataset.email.includes(search);
+                const posMatch = !position || item.dataset.position === position;
+                const vacMatch = !vacancy || item.dataset.vacancy === vacancy;
+                
+                if (nameMatch && posMatch && vacMatch) {
+                    item.classList.remove('d-none');
+                } else {
+                    item.classList.add('d-none');
+                }
+            });
+            updateSelectedEmailCount();
+        }
+
+        function toggleSelectAllEmails(checkbox) {
+            const visibleCheckboxes = Array.from(document.querySelectorAll('.email-applicant-item:not(.d-none) .email-applicant-cb'));
+            visibleCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateSelectedEmailCount();
+        }
+
+        function updateSelectedEmailCount() {
+            const visibleCheckboxes = Array.from(document.querySelectorAll('.email-applicant-item:not(.d-none) .email-applicant-cb'));
+            const visibleSelectedCount = visibleCheckboxes.filter(cb => cb.checked).length;
+            
+            const totalSelected = document.querySelectorAll('.email-applicant-cb:checked').length;
+            
+            const badge = document.getElementById('selectedCountBadge');
+            badge.innerText = `${totalSelected} Selected`;
+            document.getElementById('sendEmailBtn').innerHTML = `<i class="bi bi-send-fill me-2"></i> Send to Selected (${totalSelected})`;
+            
+            const selectAll = document.getElementById('selectAllEmails');
+            if (visibleCheckboxes.length > 0) {
+                selectAll.checked = visibleSelectedCount === visibleCheckboxes.length;
+            } else {
+                selectAll.checked = false;
+            }
+        }
+
+        let emailConfirmationModal;
+
+        function promptEmailConfirmation() {
+            const checkboxes = document.querySelectorAll('.email-applicant-cb:checked');
+            const selectedCount = checkboxes.length;
+            
+            if (selectedCount === 0) {
+                if (window.showToast) window.showToast('Please select at least one applicant.', 'danger');
+                return;
+            }
+            
+            document.getElementById('confirmEmailCount').innerText = selectedCount;
+            if (!emailConfirmationModal) {
+                emailConfirmationModal = new bootstrap.Modal(document.getElementById('emailConfirmationModal'));
+            }
+            emailConfirmationModal.show();
+        }
+
+        async function confirmSubmitEmailCodes() {
+            const checkboxes = document.querySelectorAll('.email-applicant-cb:checked');
+            const applicantIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (applicantIds.length === 0) return;
+            
+            const btn = document.getElementById('confirmSendEmailBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/export/email-codes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ applicantIds })
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    if (window.showToast) window.showToast(data.message, 'success', true);
+                    if (emailConfirmationModal) emailConfirmationModal.hide();
+                    if (emailSelectionModal) emailSelectionModal.hide();
+                } else {
+                    if (window.showToast) window.showToast(data.message || 'Failed to send emails', 'danger');
+                }
+            } catch (error) {
+                console.error('Error sending emails:', error);
+                if (window.showToast) window.showToast('An error occurred while sending emails.', 'danger');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
     </script>

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-18 10:33 (v1.3.5-Release+202607181033)
+
+### Added
+- **Position Setup**: Added a `Position Code` field to the "Add New Position" modal.
+
+### Changed
+- **Dashboard UI**: Improved the aesthetic alignment and borders of the search input bars across all workflow steps (Steps 1-5).
+- **User Management UI**: Adjusted "Action" column styling in the users table.
+
+
+
 ## 2026-07-18 10:33 (v1.3.4-Release+202607181033)
 
 ### Changed

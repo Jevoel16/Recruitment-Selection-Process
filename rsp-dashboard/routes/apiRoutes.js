@@ -160,4 +160,115 @@ router.get('/export/backup/csv', async (req, res) => {
     }
 });
 
+// Endpoint to fetch daily email sending limit and remaining count
+router.get('/export/email-codes/limits', async (req, res) => {
+    try {
+        const [logs] = await db.query('SELECT COUNT(*) as sentToday FROM applicant_email_logs WHERE DATE(sent_at) = CURDATE()');
+        const sentToday = logs[0].sentToday || 0;
+        const dailyLimit = process.env.DAILY_EMAIL_LIMIT || 500;
+        const remaining = Math.max(0, dailyLimit - sentToday);
+        
+        res.json({ success: true, sentToday, dailyLimit, remaining });
+    } catch (error) {
+        console.error('Fetch Email Limits Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch email limits' });
+    }
+});
+
+// Endpoint to fetch applicants who have emails
+router.get('/export/email-codes/applicants', async (req, res) => {
+    try {
+        const query = `
+            SELECT a.id, a.firstName, a.lastName, a.emailAddress, a.applicationCode, a.position, a.vacancyAnnouncementNo,
+                   COUNT(l.id) AS emailCount
+            FROM applicants a
+            LEFT JOIN applicant_email_logs l ON a.id = l.applicant_id
+            WHERE a.emailAddress IS NOT NULL AND a.emailAddress != ""
+            GROUP BY a.id
+        `;
+        const [applicants] = await db.query(query);
+        res.json({ success: true, applicants });
+    } catch (error) {
+        console.error('Fetch Applicants Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch applicants' });
+    }
+});
+
+// Endpoint to auto email application codes to specific applicants
+router.post('/export/email-codes', async (req, res) => {
+    try {
+        const { applicantIds } = req.body;
+        if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
+            return res.status(400).json({ success: false, message: 'No applicants selected.' });
+        }
+
+        const [applicants] = await db.query('SELECT id, firstName, lastName, emailAddress, applicationCode FROM applicants WHERE id IN (?) AND emailAddress IS NOT NULL AND emailAddress != ""', [applicantIds]);
+        
+        if (!applicants || applicants.length === 0) {
+            return res.status(404).json({ message: 'No applicants with valid email addresses found among the selection.' });
+        }
+
+        // Get count of emails sent today for these applicants
+        const [todayLogs] = await db.query('SELECT applicant_id, COUNT(*) as todayCount FROM applicant_email_logs WHERE applicant_id IN (?) AND DATE(sent_at) = CURDATE() GROUP BY applicant_id', [applicantIds]);
+        const todayCountMap = {};
+        todayLogs.forEach(log => {
+            todayCountMap[log.applicant_id] = log.todayCount;
+        });
+
+        const nodemailer = require('nodemailer');
+
+        let transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_PORT == 465, 
+            auth: {
+                user: process.env.SMTP_USER || 'your-email@gmail.com', 
+                pass: process.env.SMTP_PASS || 'your-email-password'
+            }
+        });
+
+        let sentCount = 0;
+        let skippedCount = 0;
+        let errors = [];
+
+        for (const applicant of applicants) {
+            // Check daily limit (2 per day)
+            if (todayCountMap[applicant.id] >= 2) {
+                skippedCount++;
+                continue;
+            }
+            try {
+                let info = await transporter.sendMail({
+                    from: `"RSP System" <${process.env.SMTP_USER || 'your-email@gmail.com'}>`,
+                    to: applicant.emailAddress,
+                    subject: 'Your Application Code',
+                    text: `Hello ${applicant.firstName} ${applicant.lastName},\n\nYour application code for the Recruitment and Selection Process is: ${applicant.applicationCode}\n\nPlease keep this code for your reference.\n\nThank you!`,
+                    html: `<p>Hello ${applicant.firstName} ${applicant.lastName},</p><p>Your application code for the Recruitment and Selection Process is: <strong>${applicant.applicationCode}</strong></p><p>Please keep this code for your reference.</p><p>Thank you!</p>`
+                });
+                
+                // Log success
+                await db.query('INSERT INTO applicant_email_logs (applicant_id) VALUES (?)', [applicant.id]);
+                
+                sentCount++;
+            } catch (err) {
+                console.error(`Failed to send to ${applicant.emailAddress}:`, err);
+                errors.push(applicant.emailAddress);
+            }
+        }
+        
+        let message = `Emails sent successfully to ${sentCount} applicants.`;
+        if (skippedCount > 0) message += ` Skipped ${skippedCount} applicants (daily limit reached).`;
+
+        res.json({ 
+            success: true, 
+            message: message,
+            errors: errors.length > 0 ? errors : undefined
+        });
+
+    } catch (error) {
+        console.error('Email Application Codes Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to send emails' });
+    }
+});
+
 module.exports = router;

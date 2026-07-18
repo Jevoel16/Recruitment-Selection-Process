@@ -141,6 +141,7 @@ CREATE TABLE IF NOT EXISTS applicant_eligibility (
 
 CREATE TABLE IF NOT EXISTS positions (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    position_code VARCHAR(50) DEFAULT NULL,
     category VARCHAR(100) NOT NULL,
     groupName VARCHAR(255) DEFAULT NULL,
     title VARCHAR(255) NOT NULL,

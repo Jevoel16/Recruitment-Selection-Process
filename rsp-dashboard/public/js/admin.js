@@ -38,9 +38,11 @@ async function fetchUsers() {
                     <td>${user.username}</td>
                     <td><span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${user.role}</span></td>
                     <td>${user.can_access_step2 ? '<i class="bi bi-check-circle-fill text-success"></i> Yes' : '<i class="bi bi-x-circle-fill text-danger"></i> No'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="openEditUser(${user.id}, '${user.role}', ${user.can_access_step2})"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})"><i class="bi bi-trash"></i></button>
+                    <td class="text-center pe-4 ps-3 text-nowrap">
+                        <div class="d-flex justify-content-center align-items-center gap-2">
+                            <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openEditUser(${user.id}, '${user.role}', ${user.can_access_step2})" title="Edit User"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn btn-sm btn-danger action-btn shadow-sm px-2 py-1" onclick="deleteUser(${user.id})" title="Delete User"><i class="bi bi-trash"></i> Delete</button>
+                        </div>
                     </td>
                 </tr>
             `;
