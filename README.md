@@ -9,6 +9,7 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Redesigned the Backup Tab UI into a split layout separating Database Backups and Document Exports.
 - Restored the Backup Tab UI on the dashboard for easier access to exports.
 - Added `users` and `logs` schema to the primary database seeder for proper RBAC initialization.
 

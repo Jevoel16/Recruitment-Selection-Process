@@ -1,27 +1,78 @@
         <!-- Backup Tab -->
         <div class="tab-pane fade {{#if showBackup}}show active{{/if}}" id="backup" role="tabpanel">
             <div class="row g-4 mb-4">
-                <div class="col-md-12">
+                <!-- System Backups -->
+                <div class="col-md-6">
                     <div class="card border-0 glass-panel shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, rgba(25,135,84,0.1) 0%, rgba(25,135,84,0.05) 100%); border-left: 5px solid #198754 !important;">
-                        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between">
-                            <div class="d-flex align-items-center mb-3 mb-md-0">
-                                <div class="display-4 text-success fw-bold me-4"><i class="bi bi-cloud-arrow-down-fill"></i></div>
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="display-4 text-success fw-bold me-4"><i class="bi bi-database-fill-down"></i></div>
                                 <div>
-                                    <h3 class="fw-bold mb-1">Backup & Export</h3>
-                                    <p class="text-muted mb-0">Download Vacancy evaluation registers and backup all applicant data.</p>
+                                    <h3 class="fw-bold mb-1">Database Backup</h3>
+                                    <p class="text-muted mb-0">Full backup of applicant records and data.</p>
                                 </div>
                             </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-success rounded-pill px-4 shadow-sm" onclick="window.location.href='/api/positions/export/doc'">
-                                    <i class="bi bi-file-earmark-word-fill me-2"></i>Doc (Positions)
+                            <div class="d-flex flex-column gap-3 mt-4">
+                                <button class="btn btn-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/export/backup'">
+                                    <i class="bi bi-filetype-json fs-5 me-2"></i>
+                                    <div class="text-start ms-2">
+                                        <div class="fw-bold">JSON Format</div>
+                                        <div class="small opacity-75" style="line-height:1;">Best for system restore</div>
+                                    </div>
                                 </button>
-                                <button class="btn btn-outline-success rounded-pill px-4 shadow-sm" onclick="window.location.href='/api/export/ver'">
-                                    <i class="bi bi-file-earmark-excel-fill me-2"></i>Excel (VER)
-                                </button>
-                                <button class="btn btn-success rounded-pill px-4 shadow-sm" onclick="window.location.href='/api/export/backup'">
-                                    <i class="bi bi-filetype-json me-2"></i>JSON Backup
+                                <button class="btn btn-outline-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/export/backup/csv'">
+                                    <i class="bi bi-filetype-csv fs-5 me-2"></i>
+                                    <div class="text-start ms-2">
+                                        <div class="fw-bold">CSV Format (ZIP)</div>
+                                        <div class="small opacity-75" style="line-height:1;">Best for spreadsheet analysis</div>
+                                    </div>
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports & Exports -->
+                <div class="col-md-6">
+                    <div class="card border-0 glass-panel shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, rgba(13,110,253,0.1) 0%, rgba(13,110,253,0.05) 100%); border-left: 5px solid #0d6efd !important;">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="display-4 text-primary fw-bold me-4"><i class="bi bi-file-earmark-text-fill"></i></div>
+                                <div>
+                                    <h3 class="fw-bold mb-1">Reports & Exports</h3>
+                                    <p class="text-muted mb-0">Generate documents and evaluation registers.</p>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-3 mt-4">
+                                <button class="btn btn-primary rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/positions/export/doc'">
+                                    <i class="bi bi-file-earmark-word-fill fs-5 me-2"></i>
+                                    <div class="text-start ms-2">
+                                        <div class="fw-bold">Positions (Docx)</div>
+                                        <div class="small opacity-75" style="line-height:1;">Export open positions document</div>
+                                    </div>
+                                </button>
+                                <button class="btn btn-outline-primary rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/export/ver'">
+                                    <i class="bi bi-file-earmark-excel-fill fs-5 me-2"></i>
+                                    <div class="text-start ms-2">
+                                        <div class="fw-bold">Vacancy Evaluation Register</div>
+                                        <div class="small opacity-75" style="line-height:1;">Export VER to Excel</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card border-0 glass-panel shadow-sm rounded-4" style="background: linear-gradient(135deg, rgba(255,193,7,0.1) 0%, rgba(255,193,7,0.05) 100%); border-left: 5px solid #ffc107 !important;">
+                        <div class="card-body p-5 text-center">
+                            <i class="bi bi-shield-check display-1 text-warning mb-3 opacity-75"></i>
+                            <h4 class="fw-bold text-dark">Data Security and Integrity</h4>
+                            <p class="text-muted mx-auto mb-0" style="max-width: 700px; font-size: 1.1rem;">
+                                Regular backups are crucial for maintaining data security. It is recommended to download a JSON backup at the end of each workweek to ensure that no applicant information is lost in case of a system failure. The CSV backups are ideal for generating offline analytics or for viewing data directly without specific database tools.
+                            </p>
                         </div>
                     </div>
                 </div>

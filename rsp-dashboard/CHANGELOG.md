@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-18 10:33 (v1.3.4-Release+202607181033)
+
+### CHANGED
+- **Dashboard Backup UI**: Redesigned the Backup tab into a modern split layout separating "System Backups" (JSON and CSV) from "Reports & Exports" (Docx and VER), alongside a new Data Security disclaimer.
+
+
+
 ## 2026-07-18 10:30 (v1.3.3-Release+202607181030)
 
 ### ADDED
