@@ -344,18 +344,7 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
         count++;
     }
 
-    // Widow/Orphan estimation logic to prevent lonely footers
-    const estimatedRowsPerPage = 32;
-    const footerRows = 20;
-    const rowsOnLastPage = r % estimatedRowsPerPage;
-    const remainingSpace = estimatedRowsPerPage - rowsOnLastPage;
 
-    if (remainingSpace < footerRows && applicants.length >= 3) {
-        const breakRow = r - 3;
-        if (breakRow > hr2) {
-            sheet.getRow(breakRow).addPageBreak();
-        }
-    }
 
     const d = new Date();
     const currentDateStr = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;

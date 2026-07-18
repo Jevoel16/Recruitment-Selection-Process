@@ -40,13 +40,17 @@ router.get('/ver', async (req, res) => {
                         if (loc.items && loc.items.trim() !== "") {
                             let locItems = loc.items.split(',').map(s => s.trim()).filter(s => s !== '');
                             locItems.forEach(item => {
-                                itemsObj.push({ itemNo: item, assignment: loc.location || (pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City') });
+                                itemsObj.push({ 
+                                    itemNo: item, 
+                                    comp: loc.dropdown1,
+                                    assignment: loc.dropdown2 || loc.location || '' 
+                                });
                             });
                         }
                     });
                 } catch (e) {
                     let locItems = pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== '');
-                    let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
+                    let defAssignment = '';
                     locItems.forEach(item => {
                         itemsObj.push({ itemNo: item, assignment: defAssignment });
                     });
@@ -54,7 +58,7 @@ router.get('/ver', async (req, res) => {
             }
             
             if (itemsObj.length === 0) {
-                let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
+                let defAssignment = '';
                 for (let i=0; i<(pos.vacancyCount || 1); i++) {
                     itemsObj.push({ itemNo: '', assignment: defAssignment });
                 }
@@ -76,7 +80,7 @@ router.get('/ver', async (req, res) => {
                     train: pos.qsTraining || 'None required',
                     exp: pos.qsExperience || 'None required',
                     elig: pos.qsEligibility || 'None required',
-                    comp: pos.qsCompetency || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation',
+                    comp: obj.comp || pos.qsCompetency || '',
                     assignment: obj.assignment
                 });
             }

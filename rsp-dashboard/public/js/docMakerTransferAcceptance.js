@@ -9,8 +9,7 @@ window.printTransferAcceptance = async function(id) {
         return;
     }
 
-    const d = new Date();
-    const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const { d, dateStr: formattedDate } = await window.getOrSetDocDate(id, 'TransferAcceptance', data);
 
     const app = data.applicant || data;
     const fName = app.firstName || '';

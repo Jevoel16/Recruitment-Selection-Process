@@ -1,5 +1,33 @@
 // Core utilities for generating Word documents from HTML and handling modals
 
+window.getOrSetDocDate = async function(id, docType, applicantData) {
+    let docDates = {};
+    const applicantObj = applicantData.applicant || applicantData;
+    if (applicantObj && applicantObj.doc_dates) {
+        try {
+            docDates = typeof applicantObj.doc_dates === 'string' ? JSON.parse(applicantObj.doc_dates) : applicantObj.doc_dates;
+        } catch(e) {}
+    }
+    
+    let dateStr = docDates[docType];
+    let d = new Date();
+    
+    if (!dateStr) {
+        dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        try {
+            fetch('/api/applicants/' + id + '/doc-date', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ docType, dateStr })
+            });
+        } catch(e) { console.error('Failed to save doc date', e); }
+    } else {
+        d = new Date(dateStr);
+    }
+    
+    return { dateStr, d };
+};
+
 window.exportFromTemplate = async (templateUrl, data, filename) => {
     try {
         // Use a static version parameter to allow the browser to cache the 3MB template!

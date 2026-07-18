@@ -14,6 +14,7 @@ A web-based platform to digitize the recruitment selection process.
 - **Role-Based Access Control (RBAC):** Advanced three-tier hierarchical system (Superadmin, Admin, Evaluator) with dynamic dashboard conditionally rendering administrative functions and tightly locking down access to endpoints like Step 2 (Deliberation).
 - **Audit Logging:** Implemented professional audit trailing (tracking `save`, `update`, `delete`, `proceed`, and `download` actions) filtered by role, explicitly keeping high-level superadmin traffic out of the audit logs for clean reporting.
 - **Concurrency Locks (SSE & JWT):** Robust anti-deadlock mechanisms using JWT tracking cookies alongside continuous Server-Sent Events (SSE) background streams that drop locks instantly upon browser tab closure.
+- **Database Backups:** Dedicated CSV backup endpoint to dynamically generate and download zipped archives of all critical database tables.
 - **Dynamic Seeding & Setup:** Dedicated scripts to safely initialize the database and dynamically map raw text-based qualification standards, including a high-concurrency 1000-applicant seeder with fully randomized, realistic JSON metadata.
 - **Seeding Authentication:** Extended JWT expiration handling to ensure smooth, uninterrupted massive local database seeding.
 

@@ -242,6 +242,33 @@ exports.toggleAssignmentReq = async (req, res) => {
     }
 };
 
+exports.saveDocDate = async (req, res) => {
+    try {
+        const { docType, dateStr } = req.body;
+        if (!docType || !dateStr) return res.status(400).json({ error: "Missing parameters" });
+
+        const [rows] = await db.query(`SELECT doc_dates FROM applicants WHERE id = ?`, [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ error: "Applicant not found" });
+
+        let docDates = {};
+        if (rows[0].doc_dates) {
+            try {
+                docDates = JSON.parse(rows[0].doc_dates);
+            } catch (e) { }
+        }
+
+        if (!docDates[docType]) {
+            docDates[docType] = dateStr;
+            await db.query(`UPDATE applicants SET doc_dates = ? WHERE id = ?`, [JSON.stringify(docDates), req.params.id]);
+        }
+        
+        res.json({ success: true, docDates });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+};
+
 // Transitions the applicant into the final ASSIGNED status when their official Assignment Order is confirmed.
 // Also deducts the corresponding vacancy count from the specific position/plantilla to enforce capacity limits natively in the database.
 exports.assignApplicant = async (req, res) => {

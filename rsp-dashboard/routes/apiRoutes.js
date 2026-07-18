@@ -45,6 +45,7 @@ router.post('/applicants/:id/assign', applicantController.assignApplicant);
 router.post('/applicants/:id/complete', applicantController.completeApplicant);
 router.put('/applicants/:id/info', applicantController.updateInfo);
 router.get('/applicants/:id/details', applicantController.getApplicantDetails);
+router.post('/applicants/:id/doc-date', applicantController.saveDocDate);
 router.put('/applicants/:id/:type/:docId/status', applicantController.updateDocumentStatus);
 router.post('/applicants/:id/lock', applicantController.lockApplicant);
 router.post('/applicants/:id/unlock', applicantController.unlockApplicant);
@@ -109,6 +110,53 @@ router.get('/export/backup', async (req, res) => {
     } catch (error) {
         console.error('Backup Export Error:', error);
         res.status(500).send('Failed to generate backup');
+    }
+});
+
+// Helper for CSV conversion
+function jsonToCsv(jsonArray) {
+    if (!jsonArray || !jsonArray.length) return '';
+    const keys = Object.keys(jsonArray[0]);
+    const header = keys.join(',');
+    const rows = jsonArray.map(obj => {
+        return keys.map(k => {
+            let val = obj[k];
+            if (val === null || val === undefined) return '';
+            val = String(val).replace(/"/g, '""');
+            if (val.search(/("|,|\n)/g) >= 0) val = `"${val}"`;
+            return val;
+        }).join(',');
+    });
+    return [header, ...rows].join('\n');
+}
+
+// CSV Database Backup Endpoint (Zip of CSVs)
+router.get('/export/backup/csv', async (req, res) => {
+    try {
+        const [applicants] = await db.query('SELECT * FROM applicants');
+        const [education] = await db.query('SELECT * FROM applicant_education');
+        const [experience] = await db.query('SELECT * FROM applicant_experience');
+        const [training] = await db.query('SELECT * FROM applicant_training');
+        const [eligibility] = await db.query('SELECT * FROM applicant_eligibility');
+        
+        const PizZip = require('pizzip');
+        const zip = new PizZip();
+        
+        zip.file('applicants.csv', jsonToCsv(applicants));
+        zip.file('education.csv', jsonToCsv(education));
+        zip.file('experience.csv', jsonToCsv(experience));
+        zip.file('training.csv', jsonToCsv(training));
+        zip.file('eligibility.csv', jsonToCsv(eligibility));
+        
+        const content = zip.generate({ type: 'nodebuffer' });
+        const dateStr = new Date().toISOString().split('T')[0];
+        
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="RSP-Backup-CSV-${dateStr}.zip"`);
+        res.send(content);
+    } catch (error) {
+        console.error('CSV Backup Export Error:', error);
+        res.status(500).send('Failed to generate CSV backup');
     }
 });
 

@@ -9,8 +9,7 @@ window.printReqPromotion = async function(id) {
         return;
     }
 
-    const d = new Date();
-    const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const { d, dateStr: formattedDate } = await window.getOrSetDocDate(id, 'ReqPromotion', data);
     const remarksDate = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
     const app = data.applicant || data;

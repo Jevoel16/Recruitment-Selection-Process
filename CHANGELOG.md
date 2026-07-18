@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-18 10:23 (v1.3.2-Release+202607181023)
+
+### Added
+- **Database Backup**: Added a new `/export/backup/csv` endpoint to download the entire database as a zipped archive of CSV files.
+- **Applicant Schema**: Added `doc_dates` column to the `applicants` table.
+
+### Changed
+- **Excel Exports**: Removed hardcoded default location text from VER exports; it now defaults to blank or uses dropdown selections.
+- **Export Formats**: Removed manual widow/orphan page break estimations from CAR, IER, and VER generators and optimized VER column widths.
+
+
+
 ## 2026-07-17 19:55 (v1.3.1-Release+202607171955)
 
 ### Changed

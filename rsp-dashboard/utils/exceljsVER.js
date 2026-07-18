@@ -36,17 +36,17 @@ async function generateVERExcelJS(items) {
     const tnr12 = { name: 'Times New Roman', size: 12 };
     
     const colWidths = [
-        4.33,  // A
-        14.33, // B
-        11.89, // C
-        7.44,  // D
-        9.66,  // E
-        27.11, // F
-        29.0,  // G
-        20.66, // H
-        16.11, // I
-        16.55, // J
-        12.66  // K
+        4.33,  // A No
+        14.33, // B Position
+        12.0,  // C Plantilla
+        7.5,   // D SG
+        9.66,  // E Salary
+        25.0,  // F Education
+        26.0,  // G Training
+        20.0,  // H Experience
+        16.0,  // I Eligibility
+        19.0,  // J Competency
+        15.0   // K Assignment
     ];
 
     sheet.columns = colWidths.map(w => ({ width: w }));
@@ -194,18 +194,7 @@ async function generateVERExcelJS(items) {
         }
         r++;
     }
-    // Widow/Orphan estimation logic to prevent lonely footers
-    const estimatedRowsPerPage = 32;
-    const footerRows = 25;
-    const rowsOnLastPage = r % estimatedRowsPerPage;
-    const remainingSpace = estimatedRowsPerPage - rowsOnLastPage;
 
-    if (remainingSpace < footerRows && items.length >= 3) {
-        const breakRow = r - 3;
-        if (breakRow > 17) {
-            sheet.getRow(breakRow).addPageBreak();
-        }
-    }
 
     // Directly append the footer text
     const footerLines = [

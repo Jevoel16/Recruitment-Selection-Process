@@ -368,18 +368,7 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         }
         currentRow++;
     }
-    // Widow/Orphan estimation logic to prevent lonely footers
-    const estimatedRowsPerPage = 32;
-    const footerRows = 15;
-    const rowsOnLastPage = currentRow % estimatedRowsPerPage;
-    const remainingSpace = estimatedRowsPerPage - rowsOnLastPage;
 
-    if (remainingSpace < footerRows && applicants.length >= 3) {
-        const breakRow = currentRow - 3;
-        if (breakRow > 10) {
-            sheet.getRow(breakRow).addPageBreak();
-        }
-    }
 
     currentRow += 2;
     const noteStartCol = hideNameColumn ? 'B' : 'D';

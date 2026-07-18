@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS applicants (
     assessmentTotal DOUBLE DEFAULT NULL,
     assessmentRemarks ENUM('Assessed', 'In-Prog', 'Pending') DEFAULT 'Pending',
     remarks TEXT DEFAULT NULL,
+    doc_dates TEXT DEFAULT NULL,
 
     assignedOffice VARCHAR(255) DEFAULT NULL,
     cc VARCHAR(255) DEFAULT NULL,

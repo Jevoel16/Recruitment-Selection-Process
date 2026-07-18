@@ -1,6 +1,5 @@
 window.printAssignmentDivision = async function(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, reloadOnComplete = true) {
-    const d = new Date();
-    const formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const { d, dateStr: formattedDate } = await window.getOrSetDocDate(id, 'AssignmentDivision', data);
 
     let rankTitle = 'Teacher I';
     let appEffectivity = '';

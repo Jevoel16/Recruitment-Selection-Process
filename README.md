@@ -9,6 +9,9 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Added a CSV database backup feature that exports tables as a zipped archive.
+- Removed hardcoded defaults and improved page break formatting across Excel exports.
+
 - Implemented vacancy announcement tracking and a new vacancy filter across dashboard views.
 - Enhanced Plantilla Location UI to support multiple assignments.
 - Updated Excel exports (CAR, IER, VER) to incorporate vacancy announcement details.

@@ -9,8 +9,7 @@ window.printInitialEvalDQNoOmnibus = async function(id) {
         return;
     }
 
-    const d = new Date();
-    const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const { d, dateStr } = await window.getOrSetDocDate(id, 'InitialEvalDQNoOmnibus', data);
 
     let appName = 'Unknown Applicant';
     const applicantObj = data.applicant || data;
