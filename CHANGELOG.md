@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-18 10:30 (v1.3.3-Release+202607181030)
+
+### Added
+- **Dashboard Backup UI**: Restored the `dashboard_backup.hbs` partial, adding a dedicated UI tab for downloading Position Docs, Excel VERs, and JSON backups.
+- **Database Schema**: Explicitly added `users` and `logs` tables to `database.sql` to support RBAC and audit logging natively during database initialization.
+
+
+
 ## 2026-07-18 10:23 (v1.3.2-Release+202607181023)
 
 ### Added

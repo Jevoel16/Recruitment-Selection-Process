@@ -9,6 +9,9 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Restored the Backup Tab UI on the dashboard for easier access to exports.
+- Added `users` and `logs` schema to the primary database seeder for proper RBAC initialization.
+
 - Added a CSV database backup feature that exports tables as a zipped archive.
 - Removed hardcoded defaults and improved page break formatting across Excel exports.
 
