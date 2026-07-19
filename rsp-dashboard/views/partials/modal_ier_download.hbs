@@ -25,14 +25,28 @@
 </div>
 
 <script>
+function handleIERDownloadClick() {
+    const positionFilter = document.querySelector('select[name="position"]').value;
+    const vacancyFilter = document.querySelector('select[name="vacancy"]').value;
+    if (!positionFilter || !vacancyFilter) {
+        window.showToast('Please select both Position and Vacancy filters to download the report.', 'danger');
+        return;
+    }
+    const modal = new bootstrap.Modal(document.getElementById('ierDownloadModal'));
+    modal.show();
+}
+
 function downloadIER(exportType) {
     const positionFilter = document.querySelector('select[name="position"]').value;
     let url = '/api/export/ier?';
-    if (positionFilter) {
-        url += 'position=' + encodeURIComponent(positionFilter) + '&';
-    }
+    url += 'position=' + encodeURIComponent(positionFilter) + '&';
     url += 'exportType=' + exportType;
+    window.showToast("Spreadsheet generated successfully.", "success");
     window.location.href = url;
-    bootstrap.Modal.getInstance(document.getElementById('ierDownloadModal')).hide();
+    const modalEl = document.getElementById('ierDownloadModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+        modal.hide();
+    }
 }
 </script>

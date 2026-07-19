@@ -156,6 +156,7 @@ CREATE TABLE IF NOT EXISTS positions (
     qsExperience TEXT DEFAULT NULL,
     qsExperienceLevel INT DEFAULT NULL,
     qsEligibility TEXT DEFAULT NULL,
+    qsCompetency TEXT DEFAULT NULL,
     in_vacancy BOOLEAN DEFAULT FALSE,
     vacancyCount INT DEFAULT 1,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP

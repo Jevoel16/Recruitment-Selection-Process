@@ -6,15 +6,15 @@
             <div class="mb-3">
                 
                 <form method="GET" action="/step5/1" class="row g-2">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="input-group glass-panel h-100 shadow-sm">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
                             <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name or application code..." value="{{searchQuery}}">
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                 <option value="">All Positions</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
@@ -22,7 +22,17 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                                <option value="">All Vacancies</option>
+                                {{#each vacancyList}}
+                                    <option value="{{this}}" {{#if (eq this ../vacancyFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="glass-panel h-100 px-2 py-1">
                             <select name="office" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Offices</option>
@@ -43,7 +53,6 @@
                             <th>Applicant Name</th>
                             <th>Position</th>
                             <th>Assigned Office</th>
-                            <th>Score</th>
                             <th class="text-end">Action</th>
                         </tr>
                     </thead>
@@ -54,13 +63,6 @@
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                             <td>{{this.position}}</td>
                             <td>{{this.assignedOffice}}</td>
-                            <td class="fw-bold text-success">
-                                {{#unless (eq this.scores.total null)}}
-                                    {{this.scores.total}}
-                                {{else}}
-                                    -
-                                {{/unless}}
-                            </td>
                             <td class="text-end pe-4">
                                 <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(5, {{this.id}}, '', '', `{{titleCase this.name}}`, `{{this.assignedOffice}}`, `{{this.category}}`, `{{this.applicationCode}}`, `{{this.cc}}`, `{{this.ccDesignation}}`)" title="Generate DOC">
                                     <i class="bi bi-file-earmark-word"></i> DOC
@@ -68,7 +70,7 @@
                             </td>
                         </tr>
                         {{else}}
-                        <tr><td colspan="6" class="text-center text-muted py-4">No assignment orders available.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">No assignment orders available.</td></tr>
                         {{/each}}
                     </tbody>
                 </table>
@@ -91,3 +93,5 @@
             {{/if}}
         {{/if}}
     
+
+

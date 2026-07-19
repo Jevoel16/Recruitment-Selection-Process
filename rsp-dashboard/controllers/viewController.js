@@ -101,13 +101,49 @@ exports.getDashboard = async (req, res) => {
         }
 
         if (stepFilter) {
-            if (stepFilter === 'step1_pending') baseQuery += ` AND status = 'PENDING'`;
+            if (stepFilter === 'step1_pending') {
+                baseQuery += ` AND status = 'PENDING' AND NOT EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                )`;
+            } else if (stepFilter === 'step1_assessed') {
+                baseQuery += ` AND status = 'PENDING' AND NOT EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                ) AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id
+                )`;
+            } else if (stepFilter === 'step1_in_prog') {
+                baseQuery += ` AND status = 'PENDING' AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                ) AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                )`;
+            }
             else if (stepFilter === 'step1_qualified') baseQuery += ` AND status = 'QUALIFIED'`;
             else if (stepFilter === 'step1_disqualified') baseQuery += ` AND status = 'DISQUALIFIED'`;
-            else if (stepFilter === 'step2') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT'`;
+            else if (stepFilter === 'step2_pending') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND (assessmentRemarks = 'Pending' OR assessmentRemarks IS NULL OR assessmentRemarks = '')`;
+            else if (stepFilter === 'step2_in_prog') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND assessmentRemarks = 'In-Prog'`;
+            else if (stepFilter === 'step2_assessed') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND assessmentRemarks = 'Assessed'`;
+            else if (stepFilter === 'step2_newly_promoted') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND assessmentRemarks = 'Newly Promoted'`;
             else if (stepFilter === 'step3_assessed') baseQuery += ` AND status = 'ASSESSED'`;
             else if (stepFilter === 'step3_no_appearance') baseQuery += ` AND status = 'NO_APPEARANCE'`;
-            else if (stepFilter === 'step4') baseQuery += ` AND status = 'WAITING'`;
+            else if (stepFilter === 'step3_newly_promoted') baseQuery += ` AND status = 'NEWLY_PROMOTED'`;
+            else if (stepFilter === 'step4_pending') baseQuery += ` AND status = 'WAITING' AND (assignmentReqStatus = 'INCOMPLETE' OR assignmentReqStatus IS NULL OR assignmentReqStatus = '')`;
+            else if (stepFilter === 'step4_generated') baseQuery += ` AND status = 'WAITING' AND assignmentReqStatus = 'COMPLETE'`;
             else if (stepFilter === 'step5_assigned') baseQuery += ` AND status = 'ASSIGNED'`;
             else if (stepFilter === 'step5_completed') baseQuery += ` AND status = 'COMPLETED'`;
         }
@@ -118,6 +154,22 @@ exports.getDashboard = async (req, res) => {
 
         const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
+        for (let row of applicants) {
+            if (row.status !== 'PENDING') continue;
+            const [docs] = await db.query(`
+                SELECT status FROM applicant_education WHERE applicant_id = ?
+                UNION ALL SELECT status FROM applicant_training WHERE applicant_id = ?
+                UNION ALL SELECT status FROM applicant_experience WHERE applicant_id = ?
+                UNION ALL SELECT status FROM applicant_eligibility WHERE applicant_id = ?
+            `, [row.id, row.id, row.id, row.id]);
+            if (docs.length === 0) { row.docRemark = 'Pending'; } else {
+                const pendingCount = docs.filter(d => d.status === 'PENDING' || !d.status).length;
+                if (pendingCount === docs.length) row.docRemark = 'Pending';
+                else if (pendingCount === 0) row.docRemark = 'Assessed';
+                else row.docRemark = 'In-Prog';
+            }
+        }
+
         const showMasterlist = req.query.tab === 'masterlist';
         const showBackup = req.query.tab === 'backup';
         const showCategories = req.query.tab === 'categories';
@@ -125,23 +177,65 @@ exports.getDashboard = async (req, res) => {
         const [positionsResult] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
         const applicantPositionList = positionsResult.map(p => p.position);
 
-        const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
+        let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL`;
+        let vacancyParams = [];
+        if (positionFilter) {
+            vacancyQuery += ` AND position = ?`;
+            vacancyParams.push(positionFilter);
+        }
+        vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
+        const [vacancies] = await db.query(vacancyQuery, vacancyParams);
         const vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
 
-        const [statuses] = await db.query(`SELECT DISTINCT status FROM applicants WHERE status IS NOT NULL AND status != ''`);
-        const statusMap = {
-            'PENDING': { value: 'step1_pending', label: 'Step 1: Pending' },
-            'QUALIFIED': { value: 'step1_qualified', label: 'Step 1: Qualified' },
-            'DISQUALIFIED': { value: 'step1_disqualified', label: 'Step 1: Disqualified' },
-            'WAITING_FOR_ASSESSMENT': { value: 'step2', label: 'Step 2: Deliberation' },
-            'ASSESSED': { value: 'step3_assessed', label: 'Step 3: Assessed' },
-            'NO_APPEARANCE': { value: 'step3_no_appearance', label: 'Step 3: No Appearance' },
-            'NEWLY_PROMOTED': { value: 'step3_newly_promoted', label: 'Step 3: Newly Promoted' },
-            'WAITING': { value: 'step4', label: 'Step 4: Requirements' },
-            'ASSIGNED': { value: 'step5_assigned', label: 'Step 5: Assigned' },
-            'COMPLETED': { value: 'step5_completed', label: 'Step 5: Completed' }
-        };
-        const stepList = statuses.map(s => statusMap[s.status]).filter(Boolean);
+        let statusQuery = `SELECT DISTINCT status FROM applicants WHERE status IS NOT NULL AND status != ''`;
+        let statusParams = [];
+        if (positionFilter) {
+            statusQuery += ` AND position = ?`;
+            statusParams.push(positionFilter);
+        }
+        if (vacancyFilter) {
+            statusQuery += ` AND vacancyAnnouncementNo = ?`;
+            statusParams.push(vacancyFilter);
+        }
+        const [statuses] = await db.query(statusQuery, statusParams);
+        let stepListMap = new Map();
+        for (let row of statuses) {
+            let s = row.status;
+            if (s === 'QUALIFIED') stepListMap.set('step1_qualified', { value: 'step1_qualified', label: 'Step 1: Qualified' });
+            else if (s === 'DISQUALIFIED') stepListMap.set('step1_disqualified', { value: 'step1_disqualified', label: 'Step 1: Disqualified' });
+            else if (s === 'ASSESSED') stepListMap.set('step3_assessed', { value: 'step3_assessed', label: 'Step 3: Assessed' });
+            else if (s === 'NO_APPEARANCE') stepListMap.set('step3_no_appearance', { value: 'step3_no_appearance', label: 'Step 3: No Appearance' });
+            else if (s === 'NEWLY_PROMOTED') stepListMap.set('step3_newly_promoted', { value: 'step3_newly_promoted', label: 'Step 3: Newly Promoted' });
+            else if (s === 'ASSIGNED') stepListMap.set('step5_assigned', { value: 'step5_assigned', label: 'Step 5: Assigned' });
+            else if (s === 'COMPLETED') stepListMap.set('step5_completed', { value: 'step5_completed', label: 'Step 5: Completed' });
+            else if (s === 'PENDING') {
+                const [p] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                if (p.length > 0) stepListMap.set('step1_pending', { value: 'step1_pending', label: 'Step 1: Pending' });
+                
+                const [i] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                if (i.length > 0) stepListMap.set('step1_in_prog', { value: 'step1_in_prog', label: 'Step 1: In Prog' });
+                
+                const [a] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id) LIMIT 1`, statusParams);
+                if (a.length > 0) stepListMap.set('step1_assessed', { value: 'step1_assessed', label: 'Step 1: Assessed' });
+            }
+            else if (s === 'WAITING_FOR_ASSESSMENT') {
+                const [s2] = await db.query(`SELECT DISTINCT assessmentRemarks FROM applicants WHERE status = 'WAITING_FOR_ASSESSMENT' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''}`, statusParams);
+                for (let r of s2) {
+                    if (r.assessmentRemarks === 'In-Prog') stepListMap.set('step2_in_prog', { value: 'step2_in_prog', label: 'Step 2: In Prog' });
+                    else if (r.assessmentRemarks === 'Assessed') stepListMap.set('step2_assessed', { value: 'step2_assessed', label: 'Step 2: Assessed' });
+                    else if (r.assessmentRemarks === 'Newly Promoted') stepListMap.set('step2_newly_promoted', { value: 'step2_newly_promoted', label: 'Step 2: Newly Promoted' });
+                    else stepListMap.set('step2_pending', { value: 'step2_pending', label: 'Step 2: Pending' });
+                }
+            }
+            else if (s === 'WAITING') {
+                const [s4] = await db.query(`SELECT DISTINCT assignmentReqStatus FROM applicants WHERE status = 'WAITING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''}`, statusParams);
+                for (let r of s4) {
+                    if (r.assignmentReqStatus === 'COMPLETE') stepListMap.set('step4_generated', { value: 'step4_generated', label: 'Step 4: Generated' });
+                    else stepListMap.set('step4_pending', { value: 'step4_pending', label: 'Step 4: Pending' });
+                }
+            }
+        }
+        const stepList = Array.from(stepListMap.values());
         stepList.sort((a, b) => a.value.localeCompare(b.value));
 
         const pagination = [];
@@ -237,6 +331,8 @@ exports.getDashboardPosition = async (req, res, next) => {
         const offset = (page - 1) * limit;
         const searchQuery = req.query.q || '';
         const positionFilter = req.query.position || '';
+        const vacancyFilter = req.query.vacancy || '';
+        const stepFilter = req.query.step || '';
 
         let baseQuery = `FROM applicants WHERE 1=1`;
         const queryParams = [];
@@ -251,6 +347,59 @@ exports.getDashboardPosition = async (req, res, next) => {
             baseQuery += ` AND position = ?`;
             queryParams.push(positionFilter);
         }
+        
+        if (vacancyFilter) {
+            baseQuery += ` AND vacancyAnnouncementNo = ?`;
+            queryParams.push(vacancyFilter);
+        }
+
+        if (stepFilter) {
+            if (stepFilter === 'step1_pending') {
+                baseQuery += ` AND status = 'PENDING' AND NOT EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                )`;
+            } else if (stepFilter === 'step1_assessed') {
+                baseQuery += ` AND status = 'PENDING' AND NOT EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                ) AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id
+                )`;
+            } else if (stepFilter === 'step1_in_prog') {
+                baseQuery += ` AND status = 'PENDING' AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                ) AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                )`;
+            }
+            else if (stepFilter === 'step1_qualified') baseQuery += ` AND status = 'QUALIFIED'`;
+            else if (stepFilter === 'step1_disqualified') baseQuery += ` AND status = 'DISQUALIFIED'`;
+            else if (stepFilter === 'step2_pending') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND (assessmentRemarks = 'Pending' OR assessmentRemarks IS NULL OR assessmentRemarks = '')`;
+            else if (stepFilter === 'step2_in_prog') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND assessmentRemarks = 'In-Prog'`;
+            else if (stepFilter === 'step2_assessed') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND assessmentRemarks = 'Assessed'`;
+            else if (stepFilter === 'step2_newly_promoted') baseQuery += ` AND status = 'WAITING_FOR_ASSESSMENT' AND assessmentRemarks = 'Newly Promoted'`;
+            else if (stepFilter === 'step3_assessed') baseQuery += ` AND status = 'ASSESSED'`;
+            else if (stepFilter === 'step3_no_appearance') baseQuery += ` AND status = 'NO_APPEARANCE'`;
+            else if (stepFilter === 'step3_newly_promoted') baseQuery += ` AND status = 'NEWLY_PROMOTED'`;
+            else if (stepFilter === 'step4_pending') baseQuery += ` AND status = 'WAITING' AND (assignmentReqStatus = 'INCOMPLETE' OR assignmentReqStatus IS NULL OR assignmentReqStatus = '')`;
+            else if (stepFilter === 'step4_generated') baseQuery += ` AND status = 'WAITING' AND assignmentReqStatus = 'COMPLETE'`;
+            else if (stepFilter === 'step5_assigned') baseQuery += ` AND status = 'ASSIGNED'`;
+            else if (stepFilter === 'step5_completed') baseQuery += ` AND status = 'COMPLETED'`;
+        }
 
         const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
         const totalRecords = countResult[0].total;
@@ -258,29 +407,87 @@ exports.getDashboardPosition = async (req, res, next) => {
 
         const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
+        for (let row of applicants) {
+            if (row.status !== 'PENDING') continue;
+            const [docs] = await db.query(`
+                SELECT status FROM applicant_education WHERE applicant_id = ?
+                UNION ALL SELECT status FROM applicant_training WHERE applicant_id = ?
+                UNION ALL SELECT status FROM applicant_experience WHERE applicant_id = ?
+                UNION ALL SELECT status FROM applicant_eligibility WHERE applicant_id = ?
+            `, [row.id, row.id, row.id, row.id]);
+            if (docs.length === 0) { row.docRemark = 'Pending'; } else {
+                const pendingCount = docs.filter(d => d.status === 'PENDING' || !d.status).length;
+                if (pendingCount === docs.length) row.docRemark = 'Pending';
+                else if (pendingCount === 0) row.docRemark = 'Assessed';
+                else row.docRemark = 'In-Prog';
+            }
+        }
+
         const showMasterlist = req.query.tab === 'masterlist';
         const showBackup = req.query.tab === 'backup';
 
         const [positionsResult] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
         const applicantPositionList = positionsResult.map(p => p.position);
 
-        const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
+        let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL`;
+        let vacancyParams = [];
+        if (positionFilter) {
+            vacancyQuery += ` AND position = ?`;
+            vacancyParams.push(positionFilter);
+        }
+        vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
+        const [vacancies] = await db.query(vacancyQuery, vacancyParams);
         const vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
 
-        const [statuses] = await db.query(`SELECT DISTINCT status FROM applicants WHERE status IS NOT NULL AND status != ''`);
-        const statusMap = {
-            'PENDING': { value: 'step1_pending', label: 'Step 1: Pending' },
-            'QUALIFIED': { value: 'step1_qualified', label: 'Step 1: Qualified' },
-            'DISQUALIFIED': { value: 'step1_disqualified', label: 'Step 1: Disqualified' },
-            'WAITING_FOR_ASSESSMENT': { value: 'step2', label: 'Step 2: Deliberation' },
-            'ASSESSED': { value: 'step3_assessed', label: 'Step 3: Assessed' },
-            'NO_APPEARANCE': { value: 'step3_no_appearance', label: 'Step 3: No Appearance' },
-            'NEWLY_PROMOTED': { value: 'step3_newly_promoted', label: 'Step 3: Newly Promoted' },
-            'WAITING': { value: 'step4', label: 'Step 4: Requirements' },
-            'ASSIGNED': { value: 'step5_assigned', label: 'Step 5: Assigned' },
-            'COMPLETED': { value: 'step5_completed', label: 'Step 5: Completed' }
-        };
-        const stepList = statuses.map(s => statusMap[s.status]).filter(Boolean);
+        let statusQuery = `SELECT DISTINCT status FROM applicants WHERE status IS NOT NULL AND status != ''`;
+        let statusParams = [];
+        if (positionFilter) {
+            statusQuery += ` AND position = ?`;
+            statusParams.push(positionFilter);
+        }
+        if (vacancyFilter) {
+            statusQuery += ` AND vacancyAnnouncementNo = ?`;
+            statusParams.push(vacancyFilter);
+        }
+        const [statuses] = await db.query(statusQuery, statusParams);
+        let stepListMap = new Map();
+        for (let row of statuses) {
+            let s = row.status;
+            if (s === 'QUALIFIED') stepListMap.set('step1_qualified', { value: 'step1_qualified', label: 'Step 1: Qualified' });
+            else if (s === 'DISQUALIFIED') stepListMap.set('step1_disqualified', { value: 'step1_disqualified', label: 'Step 1: Disqualified' });
+            else if (s === 'ASSESSED') stepListMap.set('step3_assessed', { value: 'step3_assessed', label: 'Step 3: Assessed' });
+            else if (s === 'NO_APPEARANCE') stepListMap.set('step3_no_appearance', { value: 'step3_no_appearance', label: 'Step 3: No Appearance' });
+            else if (s === 'NEWLY_PROMOTED') stepListMap.set('step3_newly_promoted', { value: 'step3_newly_promoted', label: 'Step 3: Newly Promoted' });
+            else if (s === 'ASSIGNED') stepListMap.set('step5_assigned', { value: 'step5_assigned', label: 'Step 5: Assigned' });
+            else if (s === 'COMPLETED') stepListMap.set('step5_completed', { value: 'step5_completed', label: 'Step 5: Completed' });
+            else if (s === 'PENDING') {
+                const [p] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                if (p.length > 0) stepListMap.set('step1_pending', { value: 'step1_pending', label: 'Step 1: Pending' });
+                
+                const [i] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                if (i.length > 0) stepListMap.set('step1_in_prog', { value: 'step1_in_prog', label: 'Step 1: In Prog' });
+                
+                const [a] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id) LIMIT 1`, statusParams);
+                if (a.length > 0) stepListMap.set('step1_assessed', { value: 'step1_assessed', label: 'Step 1: Assessed' });
+            }
+            else if (s === 'WAITING_FOR_ASSESSMENT') {
+                const [s2] = await db.query(`SELECT DISTINCT assessmentRemarks FROM applicants WHERE status = 'WAITING_FOR_ASSESSMENT' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''}`, statusParams);
+                for (let r of s2) {
+                    if (r.assessmentRemarks === 'In-Prog') stepListMap.set('step2_in_prog', { value: 'step2_in_prog', label: 'Step 2: In Prog' });
+                    else if (r.assessmentRemarks === 'Assessed') stepListMap.set('step2_assessed', { value: 'step2_assessed', label: 'Step 2: Assessed' });
+                    else if (r.assessmentRemarks === 'Newly Promoted') stepListMap.set('step2_newly_promoted', { value: 'step2_newly_promoted', label: 'Step 2: Newly Promoted' });
+                    else stepListMap.set('step2_pending', { value: 'step2_pending', label: 'Step 2: Pending' });
+                }
+            }
+            else if (s === 'WAITING') {
+                const [s4] = await db.query(`SELECT DISTINCT assignmentReqStatus FROM applicants WHERE status = 'WAITING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''}`, statusParams);
+                for (let r of s4) {
+                    if (r.assignmentReqStatus === 'COMPLETE') stepListMap.set('step4_generated', { value: 'step4_generated', label: 'Step 4: Generated' });
+                    else stepListMap.set('step4_pending', { value: 'step4_pending', label: 'Step 4: Pending' });
+                }
+            }
+        }
+        const stepList = Array.from(stepListMap.values());
         stepList.sort((a, b) => a.value.localeCompare(b.value));
 
         const pagination = [];
@@ -431,7 +638,7 @@ exports.getStepPage = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const searchQuery = req.query.q || '';
     const officeFilter = req.query.office || '';
-    const statusFilter = req.query.status || '';
+    const remarksFilter = req.query.remarks || '';
     const config = stepsConfig[step];
     
     let baseQuery = `FROM applicants WHERE ${config.conditions}`;
@@ -453,14 +660,59 @@ exports.getStepPage = async (req, res, next) => {
         queryParams.push(vacancyFilter);
     }
     
-    if (statusFilter && step === 'step3') {
-        baseQuery += ` AND status = ?`;
-        queryParams.push(statusFilter);
-    }
-    
     if (officeFilter && step === 'step5') {
         baseQuery += ` AND assignedOffice = ?`;
         queryParams.push(officeFilter);
+    }
+
+    if (remarksFilter) {
+        if (step === 'step1') {
+            if (remarksFilter === 'Qualified') {
+                baseQuery += ` AND status = 'QUALIFIED'`;
+            } else if (remarksFilter === 'Disqualified') {
+                baseQuery += ` AND status = 'DISQUALIFIED'`;
+            } else if (remarksFilter === 'Pending') {
+                baseQuery += ` AND status = 'PENDING' AND NOT EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                )`;
+            } else if (remarksFilter === 'Assessed') {
+                baseQuery += ` AND status = 'PENDING' AND NOT EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                ) AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id
+                )`;
+            } else if (remarksFilter === 'In-Prog') {
+                baseQuery += ` AND status = 'PENDING' AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)
+                ) AND EXISTS (
+                    SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                    UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL
+                )`;
+            }
+        } else if (step === 'step3') {
+            baseQuery += ` AND status = ?`;
+            queryParams.push(remarksFilter);
+        } else if (step === 'step2') {
+            baseQuery += ` AND assessmentRemarks = ?`;
+            queryParams.push(remarksFilter);
+        } else if (step === 'step4') {
+            baseQuery += ` AND assignmentReqStatus = ?`;
+            queryParams.push(remarksFilter);
+        }
     }
 
     try {
@@ -472,17 +724,122 @@ exports.getStepPage = async (req, res, next) => {
 
         let positionList = [];
         let vacancyList = [];
+        let remarksList = [];
         if (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5') {
-            const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
+            const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' AND ${config.conditions} ORDER BY position ASC`);
             positionList = positions.map(p => p.position);
             
-            const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
+            let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL AND ${config.conditions}`;
+            let vacancyParams = [];
+            if (positionFilter) {
+                vacancyQuery += ` AND position = ?`;
+                vacancyParams.push(positionFilter);
+            }
+            vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
+            
+            const [vacancies] = await db.query(vacancyQuery, vacancyParams);
             vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
+            
+            if (step === 'step1') {
+                let pQuery = `SELECT id, status FROM applicants WHERE ${config.conditions}`;
+                let pParams = [];
+                if (positionFilter) { pQuery += ` AND position = ?`; pParams.push(positionFilter); }
+                if (vacancyFilter) { pQuery += ` AND vacancyAnnouncementNo = ?`; pParams.push(vacancyFilter); }
+                const [allStep1Apps] = await db.query(pQuery, pParams);
+                
+                const remarksSet = new Set();
+                if (allStep1Apps.length > 0) {
+                    let joinCondition = '';
+                    let singleJoinParams = [];
+                    if (positionFilter) {
+                        joinCondition += ' AND b.position = ?';
+                        singleJoinParams.push(positionFilter);
+                    }
+                    if (vacancyFilter) {
+                        joinCondition += ' AND b.vacancyAnnouncementNo = ?';
+                        singleJoinParams.push(vacancyFilter);
+                    }
+                    const joinParams = [...singleJoinParams, ...singleJoinParams, ...singleJoinParams, ...singleJoinParams];
+                    const [docs] = await db.query(`
+                        SELECT a.applicant_id, a.status FROM applicant_education a JOIN applicants b ON a.applicant_id = b.id WHERE b.status = 'PENDING'${joinCondition}
+                        UNION ALL SELECT a.applicant_id, a.status FROM applicant_training a JOIN applicants b ON a.applicant_id = b.id WHERE b.status = 'PENDING'${joinCondition}
+                        UNION ALL SELECT a.applicant_id, a.status FROM applicant_experience a JOIN applicants b ON a.applicant_id = b.id WHERE b.status = 'PENDING'${joinCondition}
+                        UNION ALL SELECT a.applicant_id, a.status FROM applicant_eligibility a JOIN applicants b ON a.applicant_id = b.id WHERE b.status = 'PENDING'${joinCondition}
+                    `, joinParams);
+                    
+                    const docsByApp = {};
+                    for (let app of allStep1Apps) docsByApp[app.id] = [];
+                    for (let d of docs) {
+                        if(docsByApp[d.applicant_id]) docsByApp[d.applicant_id].push(d);
+                    }
+                    
+                    for (let app of allStep1Apps) {
+                        if (app.status === 'QUALIFIED') remarksSet.add('Qualified');
+                        else if (app.status === 'DISQUALIFIED') remarksSet.add('Disqualified');
+                        else {
+                            let appDocs = docsByApp[app.id];
+                            if (appDocs.length === 0) { remarksSet.add('Pending'); } else {
+                                const pendingCount = appDocs.filter(d => d.status === 'PENDING' || !d.status).length;
+                                if (pendingCount === appDocs.length) remarksSet.add('Pending');
+                                else if (pendingCount === 0) remarksSet.add('Assessed');
+                                else remarksSet.add('In-Prog');
+                            }
+                        }
+                    }
+                }
+                const sortedRemarks = Array.from(remarksSet).sort();
+                remarksList = sortedRemarks.map(val => ({ value: val, label: val }));
+            } else if (step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5') {
+                const remarksColumnMap = {
+                    'step2': 'assessmentRemarks',
+                    'step3': 'status',
+                    'step4': 'assignmentReqStatus',
+                    'step5': 'status'
+                };
+                const remarksCol = remarksColumnMap[step];
+                let remarksQuery = `SELECT DISTINCT ${remarksCol} AS remarkValue FROM applicants WHERE ${remarksCol} IS NOT NULL AND ${remarksCol} != '' AND ${config.conditions}`;
+                let remarksParamsArr = [];
+                if (positionFilter) {
+                    remarksQuery += ` AND position = ?`;
+                    remarksParamsArr.push(positionFilter);
+                }
+                if (vacancyFilter) {
+                    remarksQuery += ` AND vacancyAnnouncementNo = ?`;
+                    remarksParamsArr.push(vacancyFilter);
+                }
+                remarksQuery += ` ORDER BY ${remarksCol} ASC`;
+                const [remarks] = await db.query(remarksQuery, remarksParamsArr);
+                remarksList = remarks.map(r => {
+                    let val = r.remarkValue;
+                    let label = val;
+                    if (val === 'PENDING' && step !== 'step2') label = 'Pending';
+                    else if (val === 'QUALIFIED') label = 'Qualified';
+                    else if (val === 'DISQUALIFIED') label = 'Disqualified';
+                    else if (val === 'ASSESSED') label = 'Assessed';
+                    else if (val === 'NO_APPEARANCE') label = 'No Appearance';
+                    else if (val === 'NEWLY_PROMOTED') label = 'Newly Promoted';
+                    else if (val === 'COMPLETE') label = 'Generated';
+                    else if (val === 'INCOMPLETE') label = 'Pending';
+                    else if (val === 'ASSIGNED') label = 'Assigned';
+                    return { value: val, label: label };
+                });
+            }
         }
         
         let officeList = [];
         if (step === 'step5') {
-            const [offices] = await db.query(`SELECT DISTINCT assignedOffice FROM applicants WHERE assignedOffice IS NOT NULL AND assignedOffice != '' ORDER BY assignedOffice ASC`);
+            let officeQuery = `SELECT DISTINCT assignedOffice FROM applicants WHERE assignedOffice IS NOT NULL AND assignedOffice != '' AND ${config.conditions}`;
+            let officeParams = [];
+            if (positionFilter) {
+                officeQuery += ` AND position = ?`;
+                officeParams.push(positionFilter);
+            }
+            if (vacancyFilter) {
+                officeQuery += ` AND vacancyAnnouncementNo = ?`;
+                officeParams.push(vacancyFilter);
+            }
+            officeQuery += ` ORDER BY assignedOffice ASC`;
+            const [offices] = await db.query(officeQuery, officeParams);
             officeList = offices.map(o => o.assignedOffice);
         }
 
@@ -526,7 +883,8 @@ exports.getStepPage = async (req, res, next) => {
                 if (searchQuery) pUrl += `q=${encodeURIComponent(searchQuery)}&`;
                 if (positionFilter) pUrl += `position=${encodeURIComponent(positionFilter)}&`;
                 if (vacancyFilter) pUrl += `vacancy=${encodeURIComponent(vacancyFilter)}&`;
-                if (statusFilter) pUrl += `status=${encodeURIComponent(statusFilter)}&`;
+                if (officeFilter) pUrl += `office=${encodeURIComponent(officeFilter)}&`;
+                if (remarksFilter) pUrl += `remarks=${encodeURIComponent(remarksFilter)}&`;
                 pagination.push({ page: i, isCurrent: i === page, url: pUrl.replace(/&$/, '') });
             } else if (i === page - 3 || i === page + 3) {
                 pagination.push({ isEllipsis: true, page: '...' });
@@ -539,7 +897,7 @@ exports.getStepPage = async (req, res, next) => {
         });
 
         res.render('index', {
-            currentStep: step, [step]: mappedRows, searchQuery, positionFilter, positionList, vacancyFilter, vacancyList, officeFilter, officeList, statusFilter,
+            currentStep: step, [step]: mappedRows, searchQuery, positionFilter, positionList, vacancyFilter, vacancyList, officeFilter, officeList, remarksFilter, remarksList,
             pagination: cleanPagination, step1Active: step === 'step1', step2Active: step === 'step2', step3Active: step === 'step3',
             step4Active: step === 'step4', step5Active: step === 'step5', offset
         });

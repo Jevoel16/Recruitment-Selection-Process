@@ -94,8 +94,32 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         return code;
     };
     const plantillaItem = posData?.plantillaItem || '';
-    const numItems = plantillaItem ? plantillaItem.split(',').filter(x => x.trim() !== '').length : 0;
-    const formattedPlantilla = numItems > 0 ? `${numItems} ${getPositionCode(positionFilter)} Vacant Items` : '0 Vacant Items';
+    let itemsArray = [];
+    if (plantillaItem) {
+        try {
+            const parsed = JSON.parse(plantillaItem);
+            if (Array.isArray(parsed)) {
+                let all = [];
+                parsed.forEach(p => {
+                    if (p.items) all.push(...p.items.split(',').map(s => s.trim()).filter(s => s));
+                });
+                itemsArray = all;
+            } else {
+                itemsArray = plantillaItem.split(',').map(x => x.trim()).filter(x => x !== '');
+            }
+        } catch(e) {
+            itemsArray = plantillaItem.split(',').map(x => x.trim()).filter(x => x !== '');
+        }
+    }
+    const numItems = itemsArray.length;
+    let formattedPlantilla = '0 Vacant Items';
+    if (numItems > 0) {
+        if (numItems <= 4) {
+            formattedPlantilla = itemsArray.join(', ');
+        } else {
+            formattedPlantilla = `${numItems} ${getPositionCode(positionFilter)} Vacant Items`;
+        }
+    }
 
     const maxCol = hideNameColumn ? 'Q' : 'S';
     const borderEndCol = hideNameColumn ? 'R' : 'T';
@@ -126,31 +150,34 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         sheet.getCell('C4').font = { ...baseFont, bold: true, size: 11 };
         sheet.getCell('C4').border = { bottom: { style: 'thin' } };
 
-        sheet.getCell('J4').value = 'Plantilla Item Number:';
-        sheet.getCell('J4').font = { ...baseFont, bold: true, size: 11 };
-
         sheet.mergeCells('M4:N4');
-        sheet.getCell('M4').value = formattedPlantilla;
+        sheet.getCell('M4').value = 'Plantilla Item Number:';
         sheet.getCell('M4').font = { ...baseFont, bold: true, size: 11 };
-        sheet.getCell('M4').border = { bottom: { style: 'thin' } };
+
+        sheet.mergeCells('O4:Q4');
+        sheet.getCell('O4').value = formattedPlantilla;
+        sheet.getCell('O4').font = { ...baseFont, bold: true, size: 11 };
+        sheet.getCell('O4').border = { bottom: { style: 'thin' } };
+        sheet.getCell('O4').alignment = { wrapText: true, vertical: 'middle' };
 
         sheet.getRow(5).height = 16.5; // 22 pixels
         sheet.mergeCells('B5:E5');
         sheet.getCell('B5').value = 'Office/Bureau/Service/Unit where the vacancy exists: ';
         sheet.getCell('B5').font = { ...baseFont, bold: true, size: 11 };
 
-        sheet.mergeCells('F5:H5');
+        sheet.mergeCells('F5:I5');
         sheet.getCell('F5').value = 'Public Elementary and Secondary Schools in Iligan City';
         sheet.getCell('F5').font = { ...baseFont, bold: true, size: 11 };
         sheet.getCell('F5').border = { bottom: { style: 'thin' } };
 
-        sheet.getCell('J5').value = 'Date of Final Deliberation:';
-        sheet.getCell('J5').font = { ...baseFont, bold: true, size: 11 };
-
         sheet.mergeCells('M5:N5');
-        sheet.getCell('M5').value = '';
-        sheet.getCell('M5').font = { ...baseFont, size: 11 };
-        sheet.getCell('M5').border = { bottom: { style: 'thin' } };
+        sheet.getCell('M5').value = 'Date of Final Deliberation:';
+        sheet.getCell('M5').font = { ...baseFont, bold: true, size: 11 };
+
+        sheet.mergeCells('O5:Q5');
+        sheet.getCell('O5').value = '';
+        sheet.getCell('O5').font = { ...baseFont, size: 11 };
+        sheet.getCell('O5').border = { bottom: { style: 'thin' } };
     } else {
         // With Names layout
         sheet.mergeCells('B4:C4');
@@ -170,6 +197,7 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         sheet.getCell('Q4').value = formattedPlantilla;
         sheet.getCell('Q4').font = { ...baseFont, bold: true, size: 11 };
         sheet.getCell('Q4').border = { bottom: { style: 'thin' } };
+        sheet.getCell('Q4').alignment = { wrapText: true, vertical: 'middle' };
 
         sheet.getRow(5).height = 16.5; // 22 pixels
         sheet.mergeCells('B5:E5');
@@ -297,49 +325,81 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
         appName = appName.replace(/^,\s*/, '').trim();
         
         let remarks = app.remarks || '';
-        if (app.status === 'NO_APPEARANCE' && !remarks.toLowerCase().includes('no appearance')) {
-            remarks = remarks ? `No Appearance; ${remarks}` : 'No Appearance';
-        } else if (app.status === 'NEWLY_PROMOTED' && !remarks.toLowerCase().includes('newly promoted')) {
-            remarks = remarks ? `Newly Promoted; ${remarks}` : 'Newly Promoted';
+
+        let appCodeStatus = '';
+        let appCodeStatusColor = undefined;
+        if (app.status === 'NO_APPEARANCE') {
+            appCodeStatus = '\n"No Appearance"';
+            appCodeStatusColor = { argb: 'FFFF0000' };
+        } else if (app.status === 'NEWLY_PROMOTED') {
+            appCodeStatus = '\n"Newly Promoted"';
+            appCodeStatusColor = { argb: 'FFFF0000' };
         }
 
         let extraDetails = '';
-        if (!hideNameColumn && exportType === 'withDetails') {
+        if (exportType === 'withDetails') {
             extraDetails = `\nSex: ${app.sex || 'N/A'}\nStatus: ${app.civilStatus || 'N/A'}\nContact: ${app.contactNo || 'N/A'}\nAddress: ${app.address || 'N/A'}`;
         }
         
-        let codeWithDetails = app.applicationCode;
-        if (hideNameColumn && exportType === 'withDetails') {
-            codeWithDetails += `\nSex: ${app.sex || 'N/A'}\nStatus: ${app.civilStatus || 'N/A'}\nContact: ${app.contactNo || 'N/A'}\nAddress: ${app.address || 'N/A'}`;
+        const isDisq = app.isDisqualified;
+
+        let codeWithDetails;
+        if (appCodeStatus) {
+            codeWithDetails = {
+                richText: [
+                    { text: app.applicationCode, font: { ...baseFont, size: 10, color: isDisq ? { argb: 'FFFF0000' } : undefined } },
+                    { text: appCodeStatus, font: { ...baseFont, size: 10, color: appCodeStatusColor } }
+                ]
+            };
+            if (hideNameColumn && extraDetails) {
+                 codeWithDetails.richText.push({ text: extraDetails, font: { ...baseFont, size: 10, color: isDisq ? { argb: 'FFFF0000' } : undefined } });
+            }
+        } else {
+            codeWithDetails = app.applicationCode;
+            if (hideNameColumn && extraDetails) {
+                codeWithDetails += extraDetails;
+            }
         }
 
         const row = sheet.getRow(currentRow);
         row.height = 43.5; // 58 pixels
         let colIdx = 2; // B
 
-        const setVal = (val, isDisq = false, bold = false, fSize = 10) => {
+        const setVal = (val, isDisqParam = false, bold = false, fSize = 10) => {
             const cell = row.getCell(colIdx);
             cell.value = val;
             cell.border = headerBorder;
             cell.alignment = centerAlign;
-            cell.font = { ...baseFont, size: fSize, color: isDisq ? { argb: 'FFFF0000' } : undefined, bold: bold };
+            if (val && typeof val === 'object' && val.richText) {
+                // preserve richText fonts
+            } else {
+                cell.font = { ...baseFont, size: fSize, color: isDisqParam ? { argb: 'FFFF0000' } : undefined, bold: bold };
+            }
             colIdx++;
         };
 
-        const isDisq = app.isDisqualified;
+        const formatScore = (score, defaultStr, isTotal = false) => {
+            if (app.status === 'NO_APPEARANCE' || app.status === 'NEWLY_PROMOTED') {
+                return '0';
+            }
+            if (isTotal) {
+                return score !== null && score !== undefined ? Number(score).toFixed(3) : defaultStr;
+            }
+            return score || defaultStr;
+        };
 
         if (hideNameColumn) {
             setVal(count++, false, false, 10);
             setVal(codeWithDetails, isDisq, false, 10);
-            setVal(app.scoreEducation || '0.0', false, false, 11);
-            setVal(app.scoreTraining || '0.0', false, false, 11);
-            setVal(app.scoreExperience || '0.0', false, false, 11);
-            setVal(app.scorePerformance || '0.000', false, false, 11);
-            setVal(app.scoreOutstandingAccomplishments || '0', false, false, 11);
-            setVal(app.scoreApplicationOfEducation || '0.0', false, false, 11);
-            setVal(app.scoreApplicationOfLD || '0', false, false, 11);
-            setVal(app.scorePotential || '0.0', false, false, 11);
-            setVal(app.assessmentTotal !== null ? Number(app.assessmentTotal).toFixed(3) : '0.000', false, false, 11);
+            setVal(formatScore(app.scoreEducation, '0.0'), false, false, 11);
+            setVal(formatScore(app.scoreTraining, '0.0'), false, false, 11);
+            setVal(formatScore(app.scoreExperience, '0.0'), false, false, 11);
+            setVal(formatScore(app.scorePerformance, '0.000'), false, false, 11);
+            setVal(formatScore(app.scoreOutstandingAccomplishments, '0'), false, false, 11);
+            setVal(formatScore(app.scoreApplicationOfEducation, '0.0'), false, false, 11);
+            setVal(formatScore(app.scoreApplicationOfLD, '0'), false, false, 11);
+            setVal(formatScore(app.scorePotential, '0.0'), false, false, 11);
+            setVal(formatScore(app.assessmentTotal, '0.000', true), false, false, 11);
             setVal(remarks, false, false, 11);
             setVal('', false, false, 11); // N Yes
             setVal('', false, false, 11); // O No
@@ -351,15 +411,15 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
             setVal(appName + extraDetails, isDisq, true, 10);
             colIdx++; // Skip column D since it's merged
             setVal(codeWithDetails, isDisq, false, 10);
-            setVal(app.scoreEducation || '0.0', false, false, 11);
-            setVal(app.scoreTraining || '0.0', false, false, 11);
-            setVal(app.scoreExperience || '0.0', false, false, 11);
-            setVal(app.scorePerformance || '0.000', false, false, 11);
-            setVal(app.scoreOutstandingAccomplishments || '0', false, false, 11);
-            setVal(app.scoreApplicationOfEducation || '0.0', false, false, 11);
-            setVal(app.scoreApplicationOfLD || '0', false, false, 11);
-            setVal(app.scorePotential || '0.0', false, false, 11);
-            setVal(app.assessmentTotal !== null ? Number(app.assessmentTotal).toFixed(3) : '0.000', false, false, 11);
+            setVal(formatScore(app.scoreEducation, '0.0'), false, false, 11);
+            setVal(formatScore(app.scoreTraining, '0.0'), false, false, 11);
+            setVal(formatScore(app.scoreExperience, '0.0'), false, false, 11);
+            setVal(formatScore(app.scorePerformance, '0.000'), false, false, 11);
+            setVal(formatScore(app.scoreOutstandingAccomplishments, '0'), false, false, 11);
+            setVal(formatScore(app.scoreApplicationOfEducation, '0.0'), false, false, 11);
+            setVal(formatScore(app.scoreApplicationOfLD, '0'), false, false, 11);
+            setVal(formatScore(app.scorePotential, '0.0'), false, false, 11);
+            setVal(formatScore(app.assessmentTotal, '0.000', true), false, false, 11);
             setVal(remarks, false, false, 11);
             setVal('', false, false, 11); // P Yes
             setVal('', false, false, 11); // Q No

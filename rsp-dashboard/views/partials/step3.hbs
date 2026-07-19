@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                 <option value="">All Positions</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
@@ -34,16 +34,16 @@
                     </div>
                     <div class="col-md-2">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="status" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
-                                <option value="">All Status</option>
-                                <option value="ASSESSED" {{#if (eq statusFilter 'ASSESSED')}}selected{{/if}}>Assessed</option>
-                                <option value="NO_APPEARANCE" {{#if (eq statusFilter 'NO_APPEARANCE')}}selected{{/if}}>No Appearance</option>
-                                <option value="NEWLY_PROMOTED" {{#if (eq statusFilter 'NEWLY_PROMOTED')}}selected{{/if}}>Newly Promoted</option>
+                            <select name="remarks" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                                <option value="">All Steps & Remarks</option>
+                                {{#each remarksList}}
+                                    <option value="{{this.value}}" {{#if (eq this.value ../remarksFilter)}}selected{{/if}}>{{this.label}}</option>
+                                {{/each}}
                             </select>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <button type="button" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold text-nowrap" style="white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#carDownloadModal">
+                        <button type="button" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold text-nowrap" style="white-space: nowrap;" onclick="handleCARDownloadClick()">
                             <i class="bi bi-file-earmark-spreadsheet me-2"></i> Download CAR
                         </button>
                     </div>
@@ -60,7 +60,7 @@
                             <th class="text-center">Score Summary</th>
                             <th class="text-center" style="width: 80px;">Rank</th>
                             <th class="text-center">Total</th>
-                            <th class="text-center">Status</th>
+                            <th class="text-center">Remarks</th>
                             <th class="text-end pe-4">Action</th>
                         </tr>
                     </thead>
@@ -76,7 +76,7 @@
                                 </button>
                             </td>
                             <td class="fw-bold text-primary text-center">#{{incOffset @index ../offset}}</td>
-                            <td class="text-center fw-bold {{#if (eq this.status 'NO_APPEARANCE')}}text-danger{{else if (eq this.status 'NEWLY_PROMOTED')}}text-primary{{else}}text-success{{/if}} fs-5">
+                            <td class="text-center fw-bold {{#if (eq this.status 'NO_APPEARANCE')}}text-danger{{else if (eq this.status 'NEWLY_PROMOTED')}}text-danger{{else}}text-success{{/if}} fs-5">
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
                                     0
                                 {{else if (eq this.status 'NEWLY_PROMOTED')}}
@@ -93,7 +93,7 @@
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
                                     <span class="badge bg-danger">No Appearance</span>
                                 {{else if (eq this.status 'NEWLY_PROMOTED')}}
-                                    <span class="badge bg-primary">Newly Promoted</span>
+                                    <span class="badge bg-danger">Newly Promoted</span>
                                 {{else}}
                                     <span class="badge bg-success">Assessed</span>
                                 {{/if}}
@@ -133,4 +133,6 @@
             </nav>
             {{/if}}
         {{/if}}
+
+
 

@@ -42,25 +42,27 @@ router.get('/ver', async (req, res) => {
                             locItems.forEach(item => {
                                 itemsObj.push({ 
                                     itemNo: item, 
-                                    comp: loc.dropdown1,
-                                    assignment: loc.dropdown2 || loc.location || '' 
+                                    assignment: loc.dropdown1 || loc.location || (pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City'),
+                                    competency: loc.dropdown2 || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation'
                                 });
                             });
                         }
                     });
                 } catch (e) {
                     let locItems = pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== '');
-                    let defAssignment = '';
+                    let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
+                    let defComp = 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                     locItems.forEach(item => {
-                        itemsObj.push({ itemNo: item, assignment: defAssignment });
+                        itemsObj.push({ itemNo: item, assignment: defAssignment, competency: defComp });
                     });
                 }
             }
             
             if (itemsObj.length === 0) {
-                let defAssignment = '';
+                let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
+                let defComp = 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                 for (let i=0; i<(pos.vacancyCount || 1); i++) {
-                    itemsObj.push({ itemNo: '', assignment: defAssignment });
+                    itemsObj.push({ itemNo: '', assignment: defAssignment, competency: defComp });
                 }
             }
             
@@ -80,7 +82,7 @@ router.get('/ver', async (req, res) => {
                     train: pos.qsTraining || 'None required',
                     exp: pos.qsExperience || 'None required',
                     elig: pos.qsEligibility || 'None required',
-                    comp: obj.comp || pos.qsCompetency || '',
+                    comp: pos.qsCompetency || obj.competency,
                     assignment: obj.assignment
                 });
             }

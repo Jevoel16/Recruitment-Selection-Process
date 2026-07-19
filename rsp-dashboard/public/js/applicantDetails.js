@@ -189,7 +189,26 @@ async function openSummaryModal(id, name, hideActions = false) {
             if(!items || !items.length) return `<li class="list-group-item text-muted small">No ${typeName} records.</li>`;
             return items.map(item => {
                 const badgeClass = item.status === 'QUALIFIED' ? 'bg-success' : item.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark';
-                const docTitle = item.degree || item.title || item.details;
+                let docTitle = item.degree || item.title || item.details;
+                
+                if (typeName === 'training' && item.hours) {
+                    const hrsStr = item.hours == 1 ? 'hour' : 'hours';
+                    docTitle += ` <span class="text-muted fst-italic">(${item.hours} ${hrsStr})</span>`;
+                } else if (typeName === 'experience') {
+                    let expStr = [];
+                    if (item.years) {
+                        const yrStr = item.years == 1 ? 'yr' : 'yrs';
+                        expStr.push(`${item.years} ${yrStr}`);
+                    }
+                    if (item.months) {
+                        const moStr = item.months == 1 ? 'mo' : 'mos';
+                        expStr.push(`${item.months} ${moStr}`);
+                    }
+                    if (expStr.length > 0) {
+                        docTitle += ` <span class="text-muted fst-italic">(${expStr.join(', ')})</span>`;
+                    }
+                }
+                
                 return `<li class="list-group-item d-flex justify-content-between align-items-center small">
                     <span>${docTitle}</span>
                     <span class="badge ${badgeClass}">${item.status || 'PENDING'}</span>
@@ -223,7 +242,13 @@ async function openSummaryModal(id, name, hideActions = false) {
             if(!items || !items.length) return false;
             return items.some(item => !item.status || item.status === 'PENDING');
         };
+        const checkDisqualified = (items) => {
+            if(!items || !items.length) return false;
+            return items.some(item => item.status === 'DISQUALIFIED');
+        };
+        
         const hasPending = checkPending(data.education) || checkPending(data.training) || checkPending(data.experience) || checkPending(data.eligibility);
+        const hasDisqualified = checkDisqualified(data.education) || checkDisqualified(data.training) || checkDisqualified(data.experience) || checkDisqualified(data.eligibility);
         
         const sumQualifyBtn = document.getElementById('summaryQualifyBtn');
         const sumDisqualifyBtn = document.getElementById('summaryDisqualifyBtn');
@@ -233,9 +258,12 @@ async function openSummaryModal(id, name, hideActions = false) {
         } else {
             if (sumQualifyBtn) {
                 sumQualifyBtn.style.display = 'inline-block';
-                sumQualifyBtn.disabled = hasPending;
+                sumQualifyBtn.disabled = hasPending || hasDisqualified;
                 if (hasPending) {
                     sumQualifyBtn.title = "All documents must be evaluated first";
+                    sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Qualify';
+                } else if (hasDisqualified) {
+                    sumQualifyBtn.title = "Cannot qualify because one or more documents are disqualified";
                     sumQualifyBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Qualify';
                 } else {
                     sumQualifyBtn.title = "";
@@ -306,12 +334,18 @@ window.openApplicantDetailsModal = async function(id, name, assignedOffice, cate
 
     const btnEval = document.getElementById('unifiedBtnEval');
     const btnAssessSum = document.getElementById('unifiedBtnAssessSum');
-    const btnReq = document.getElementById('unifiedBtnReq');
+    const btnReq = document.getElementById('unifiedBtnPdfStep4');
     const btnPdf = document.getElementById('unifiedBtnPdf');
     const btnStep1Pdf = document.getElementById('unifiedBtnStep1Pdf');
 
-    if (btnEval) btnEval.disabled = !hasStep2;
-    if (btnAssessSum) btnAssessSum.disabled = !hasStep2;
+    if (btnEval) {
+        const canAccess = btnEval.getAttribute('data-can-access') === 'true';
+        btnEval.disabled = !hasStep2 || !canAccess;
+    }
+    if (btnAssessSum) {
+        const canAccess = btnAssessSum.getAttribute('data-can-access') === 'true';
+        btnAssessSum.disabled = !hasStep2 || !canAccess;
+    }
     if (btnReq) btnReq.disabled = !hasStep4;
     if (btnPdf) btnPdf.disabled = !hasStep5;
     if (btnStep1Pdf) btnStep1Pdf.disabled = (status === 'PENDING');

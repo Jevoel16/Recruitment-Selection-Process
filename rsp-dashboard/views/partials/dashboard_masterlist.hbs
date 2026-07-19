@@ -12,7 +12,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
-                                <select name="position" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="this.form.submit()">
+                                <select name="position" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                     <option value="">All Positions</option>
                                     {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq ../positionFilter this)}}selected{{/if}}>{{this}}</option>
@@ -33,7 +33,7 @@
                         <div class="col-md-3">
                             <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
                                 <select name="step" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="this.form.submit()">
-                                    <option value="">All Steps & Statuses</option>
+                                    <option value="">All Steps & Remarks</option>
                                     {{#each stepList}}
                                     <option value="{{this.value}}" {{#if (eq ../stepFilter this.value)}}selected{{/if}}>{{this.label}}</option>
                                     {{/each}}
@@ -60,16 +60,24 @@
                                 <td class="ps-4 pe-3 text-nowrap"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                                 <td class="fw-medium px-3 applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                                 <td class="px-4 text-nowrap">
-                                    {{#if (eq this.status 'PENDING')}}<span class="badge bg-warning text-dark">Step 1: Pending</span>{{/if}}
+                                    {{#if (eq this.status 'PENDING')}}
+                                        {{#if (eq this.docRemark 'In-Prog')}}
+                                            <span class="badge bg-info text-dark">Step 1: In Prog</span>
+                                        {{else if (eq this.docRemark 'Assessed')}}
+                                            <span class="badge bg-success">Step 1: Assessed</span>
+                                        {{else}}
+                                            <span class="badge bg-warning text-dark">Step 1: Pending</span>
+                                        {{/if}}
+                                    {{/if}}
                                     {{#if (eq this.status 'QUALIFIED')}}<span class="badge bg-success">Step 1: Qualified</span>{{/if}}
                                     {{#if (eq this.status 'DISQUALIFIED')}}<span class="badge bg-danger">Step 1: Disqualified</span>{{/if}}
-                                    {{#if (eq this.status 'WAITING_FOR_ASSESSMENT')}}<span class="badge bg-info text-dark">Step 2: Deliberation</span>{{/if}}
-                                    {{#if (eq this.status 'ASSESSED')}}<span class="badge bg-primary">Step 3: Assessed</span>{{/if}}
+                                    {{#if (eq this.status 'WAITING_FOR_ASSESSMENT')}}{{#if (eq this.assessmentRemarks 'In-Prog')}}<span class="badge bg-info text-dark">Step 2: In Prog</span>{{else if (eq this.assessmentRemarks 'Newly Promoted')}}<span class="badge bg-danger">Step 2: Newly Promoted</span>{{else}}<span class="badge bg-warning text-dark">Step 2: Pending</span>{{/if}}{{/if}}
+                                    {{#if (eq this.status 'ASSESSED')}}<span class="badge bg-success">Step 3: Assessed</span>{{/if}}
                                     {{#if (eq this.status 'NO_APPEARANCE')}}<span class="badge bg-danger">Step 3: No Appearance</span>{{/if}}
-                                    {{#if (eq this.status 'NEWLY_PROMOTED')}}<span class="badge bg-primary">Step 3: Newly Promoted</span>{{/if}}
-                                    {{#if (eq this.status 'WAITING')}}<span class="badge bg-secondary">Step 4: Requirements</span>{{/if}}
+                                    {{#if (eq this.status 'NEWLY_PROMOTED')}}<span class="badge bg-danger">Step 3: Newly Promoted</span>{{/if}}
+                                    {{#if (eq this.status 'WAITING')}}{{#if (eq this.assignmentReqStatus 'COMPLETE')}}<span class="badge shadow-sm border border-light" style="background-color: purple; color: white;">Step 4: Generated</span>{{else}}<span class="badge bg-warning text-dark">Step 4: Pending</span>{{/if}}{{/if}}
                                     {{#if (eq this.status 'ASSIGNED')}}<span class="badge bg-success shadow-sm border border-light">Step 5: Assigned</span>{{/if}}
-                                    {{#if (eq this.status 'COMPLETED')}}<span class="badge bg-dark shadow-sm border border-light">Step 5: Completed</span>{{/if}}
+                                    {{#if (eq this.status 'COMPLETED')}}<span class="badge shadow-sm border border-light" style="background-color: purple; color: white;">Step 5: Completed</span>{{/if}}
                                 </td>
                                 <td class="text-center px-4 text-nowrap">
                                     <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="openApplicantDetailsModal({{this.id}}, '{{titleCase this.name}}', '{{this.assignedOffice}}', '{{this.category}}', '{{this.applicationCode}}', '{{this.status}}')" title="Applicant Details"><i class="bi bi-card-list"></i> Details</button>

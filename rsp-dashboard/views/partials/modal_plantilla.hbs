@@ -1,5 +1,18 @@
+<style>
+    .btn-light-blue {
+        background-color: #e0f0ff;
+        color: #0056b3;
+        border: 1px solid #b3d7ff;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-light-blue:hover {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+</style>
 <div class="modal fade glass-modal" id="plantillaModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content border-0">
             <div class="modal-header border-bottom-0 pb-0">
                 <h5 class="modal-title fw-bold text-success" id="plantillaModalTitle">Setup Plantilla</h5>
@@ -12,27 +25,30 @@
                         <div class="mb-3 border rounded p-3 plantilla-set">
                             <div class="row g-2 mb-2">
                                 <div class="col-md-7">
+                                    <label class="form-label fw-semibold small text-secondary">Plantilla Item No.</label>
                                     <textarea class="form-control plantilla-items-input" rows="2" placeholder="Plantilla numbers separated by comma"></textarea>
                                 </div>
                                 <div class="col-md-5">
+                                    <label class="form-label fw-semibold small text-secondary">Place of Assignment</label>
                                     <select class="form-select plantilla-dropdown-1">
-                                        <option value="">Select option</option>
-                                        <option value="Choice 1">Choice 1</option>
-                                        <option value="Choice 2">Choice 2</option>
-                                        <option value="Choice 3">Choice 3</option>
+                                        <option value="">Select Location / Assignment</option>
+                                        <option value="Public Elementary School/s in Iligan City">Public Elementary School/s in Iligan City</option>
+                                        <option value="Public Secondary School/s in Iligan City offering Senior High School">Public Secondary School/s in Iligan City offering Senior High School</option>
+                                        <option value="SDO-School Governance and Operations Division- Human Resource Development (HRD)">SDO-School Governance and Operations Division- Human Resource Development (HRD)</option>
+                                        <option value="School Division Office of Iligan City- Personnel Office">School Division Office of Iligan City- Personnel Office</option>
                                     </select>
                                 </div>
                             </div>
-                            <select class="form-select plantilla-dropdown-2">
-                                <option value="">Select option</option>
-                                <option value="Choice 1">Choice 1</option>
-                                <option value="Choice 2">Choice 2</option>
-                                <option value="Choice 3">Choice 3</option>
-                            </select>
+                            <div class="mt-2">
+                                <label class="form-label fw-semibold small text-secondary">Competency/ Area of Specialization/ Residency Requirement (if applicable)</label>
+                                <select class="form-select plantilla-dropdown-2">
+                                    <option value="Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation" selected>Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation</option>
+                                </select>
+                            </div>
                             <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-plantilla-set d-none">Remove</button>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="addPlantillaSetBtn">
+                    <button type="button" class="btn btn-light-blue btn-sm mt-2" id="addPlantillaSetBtn">
                         <i class="bi bi-plus-circle"></i> Add more
                     </button>
                     <div class="form-text text-muted mt-2">Separate multiple item numbers with a comma. The vacancy count will be automatically calculated based on the total number of items across all sets.</div>

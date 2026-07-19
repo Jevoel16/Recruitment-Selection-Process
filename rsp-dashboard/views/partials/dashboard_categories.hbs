@@ -1,4 +1,28 @@
         <!-- Categories Tab -->
+        <style>
+            .sidebar-scroll {
+                max-height: 65vh;
+                overflow-y: auto;
+                padding-right: 5px;
+            }
+            .sidebar-scroll::-webkit-scrollbar {
+                width: 6px;
+            }
+            .sidebar-scroll::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+            }
+            .sidebar-scroll::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 10px;
+            }
+            .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+            .search-hidden-row {
+                display: none !important;
+            }
+        </style>
         <div class="tab-pane fade {{#if selectedPosition}}show active{{/if}} {{#if showCategories}}show active{{/if}}" id="categories" role="tabpanel">
             <div class="glass-panel p-4 rounded-4 shadow-sm h-100 position-relative">
                 
@@ -68,26 +92,46 @@
                         <div class="tab-content" id="v-pills-tabContent">
                             {{#each groupedPositions}}
                                 <div class="tab-pane fade vacancy-category-group" id="v-pills-{{this.categorySlug}}" role="tabpanel" data-category="{{this.categoryName}}" data-bs-target="#v-pills-{{this.categorySlug}}">
-                                    <div class="bg-white p-3 rounded-4 shadow-sm border-0">
-                                        <div class="accordion" id="accordionGroup-{{this.categorySlug}}">
-                                            {{#each this.positionGroups}}
-                                                <div class="accordion-item border mb-2 rounded-3 vacancy-group-wrapper" data-category="{{../this.categoryName}}" data-group="{{this.groupName}}" style="overflow: hidden;">
-                                                    <h2 class="accordion-header" id="heading-{{../this.categorySlug}}-{{this.groupSlug}}">
-                                                        <button class="accordion-button collapsed fw-semibold text-secondary py-2 bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{../this.categorySlug}}-{{this.groupSlug}}" aria-expanded="false" aria-controls="collapse-{{../this.categorySlug}}-{{this.groupSlug}}">
-                                                            <i class="bi bi-journal-text me-2"></i> {{this.groupName}}
+                                    <div class="bg-white p-4 rounded-4 shadow-sm border-0">
+                                        <div class="row min-vh-50">
+                                            <!-- Vertical Sidebar for Groups -->
+                                            <div class="col-md-3 border-end pe-3">
+                                                <h6 class="text-uppercase fw-bold text-muted mb-3 fs-7" style="letter-spacing: 1px;">Position Groups</h6>
+                                                <div class="nav flex-column nav-pills gap-1 sidebar-scroll" id="v-pills-group-{{this.categorySlug}}" role="tablist" aria-orientation="vertical">
+                                                    {{#each this.positionGroups}}
+                                                        <button class="nav-link text-start fw-semibold vacancy-group-tab-btn {{#if @first}}active{{/if}} rounded-3" 
+                                                                id="tab-btn-{{../this.categorySlug}}-{{this.groupSlug}}" 
+                                                                data-bs-toggle="pill" 
+                                                                data-bs-target="#tab-pane-{{../this.categorySlug}}-{{this.groupSlug}}" 
+                                                                type="button" role="tab"
+                                                                data-category="{{../this.categoryName}}" data-group="{{this.groupName}}"
+                                                                style="transition: all 0.2s;">
+                                                            <i class="bi bi-folder2 me-2 opacity-75"></i> {{this.groupName}}
                                                         </button>
-                                                    </h2>
-                                                    <div id="collapse-{{../this.categorySlug}}-{{this.groupSlug}}" class="accordion-collapse collapse" aria-labelledby="heading-{{../this.categorySlug}}-{{this.groupSlug}}" data-bs-parent="#accordionGroup-{{../this.categorySlug}}">
-                                                        <div class="accordion-body p-0">
-                                                            <div class="table-responsive">
+                                                    {{/each}}
+                                                </div>
+                                            </div>
+                                            <!-- Main Content Area for Table -->
+                                            <div class="col-md-9 ps-4">
+                                                <div class="tab-content" id="v-pills-group-tabContent-{{this.categorySlug}}">
+                                                    {{#each this.positionGroups}}
+                                                        <div class="tab-pane fade {{#if @first}}show active{{/if}} vacancy-group-wrapper" 
+                                                             id="tab-pane-{{../this.categorySlug}}-{{this.groupSlug}}" 
+                                                             role="tabpanel"
+                                                             data-category="{{../this.categoryName}}" data-group="{{this.groupName}}">
+                                                            
+                                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                <h5 class="fw-bold text-secondary mb-0"><i class="bi bi-journal-text me-2"></i>{{this.groupName}}</h5>
+                                                            </div>
+                                                            <div class="table-responsive border rounded-3">
                                                                 <table class="table table-hover align-middle mb-0 border-0 vacancyTable">
                                                                     <thead class="table-light border-bottom">
                                                                         <tr>
-                                                                            <th class="fw-bold px-3">Position Name</th>
-                                                                            <th class="text-center fw-bold">Vacancy</th>
-                                                                            <th class="text-center fw-bold">Plantilla</th>
-                                                                            <th class="text-center fw-bold">Slots</th>
-                                                                            <th class="text-center fw-bold">Position Info</th>
+                                                                            <th class="fw-bold px-3 py-3">Position Name</th>
+                                                                            <th class="text-center fw-bold py-3">Vacancy</th>
+                                                                            <th class="text-center fw-bold py-3">Plantilla</th>
+                                                                            <th class="text-center fw-bold py-3">Slots</th>
+                                                                            <th class="text-center fw-bold py-3">Position Info</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -138,13 +182,11 @@
                                                                     </tbody>
                                                                 </table>
                                                             </div>
+                                                            <div class="w-100 mt-2" id="pagination-tab-pane-{{../this.categorySlug}}-{{this.groupSlug}}"></div>
                                                         </div>
-                                                    </div>
+                                                    {{/each}}
                                                 </div>
-                                            {{/each}}
-                                        </div>
-                                        <div class="w-100 mt-3" id="pagination-{{this.categorySlug}}">
-                                            <!-- Pagination populated by PaginationHelper -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -159,8 +201,8 @@
                         document.getElementById('vacancyPositionContent').classList.remove('d-none');
                         document.getElementById('activeCategoryTitle').innerText = title;
                         
-                        // Hide all panes
-                        document.querySelectorAll('#v-pills-tabContent .tab-pane').forEach(pane => {
+                        // Hide all category panes
+                        document.querySelectorAll('.vacancy-category-group').forEach(pane => {
                             pane.classList.remove('show', 'active');
                         });
                         

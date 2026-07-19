@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-19 17:22 (v1.4.0-Release+202607191722)
+
+### Added
+- **Filters**: Extended the `Vacancy Announcement` dropdown filter to Step 4 and Step 5 workflows.
+- **Workflow State**: Introduced an `All Steps & Remarks` status filter to Step 4.
+
+### Changed
+- **Assignment Orders (Step 5)**: Fully migrated Assignment Order generation from PDF to dynamic Word Document (`.docx`) format utilizing `docxtemplater`, natively supporting dynamic CC assignments.
+- **UI Adjustments**: Removed the redundant `Score` column from Step 4 and Step 5 tables to declutter the UI, and restyled the generation badges.
+
+### Removed
+- **Legacy Engine**: Purged obsolete PDF assignment letter generation endpoints and routing logic.
+
+
+
 ## 2026-07-18 10:33 (v1.3.5-Release+202607181033)
 
 ### Added

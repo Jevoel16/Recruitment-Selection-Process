@@ -168,16 +168,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (loc.items && loc.items.trim() !== '') {
                                 let locItems = loc.items.split(',').map(s => s.trim()).filter(s => s);
                                 locItems.forEach(item => {
-                                    let suffix = [];
-                                    if(loc.dropdown1) suffix.push(loc.dropdown1);
-                                    if(loc.dropdown2) suffix.push(loc.dropdown2);
-                                    let locStr = suffix.length > 0 ? suffix.join(', ') : (loc.location || 'Default');
+                                    let locStr = loc.dropdown1 || loc.location || '';
                                     itemsObj.push({item: item, loc: locStr});
                                 });
                             }
                         });
                     } catch (e) {
-                        itemsObj = plantillaStr.split(',').map(s => s.trim()).filter(s => s).map(s => ({item: s, loc: 'Default'}));
+                        itemsObj = plantillaStr.split(',').map(s => s.trim()).filter(s => s).map(s => ({item: s, loc: ''}));
                     }
                     
                     if (itemsObj.length > 0) {
@@ -188,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ul.style.fontSize = '0.75rem';
                         itemsObj.forEach(obj => {
                             const li = document.createElement('li');
-                            li.textContent = obj.loc && obj.loc !== 'Default' ? `${obj.item} (${obj.loc})` : obj.item;
+                            li.textContent = obj.loc ? `${obj.item} (${obj.loc})` : obj.item;
                             ul.appendChild(li);
                         });
                         pList.appendChild(ul);
@@ -220,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const clone = template.cloneNode(true);
                     clone.querySelector('.plantilla-items-input').value = '';
                     clone.querySelector('.plantilla-dropdown-1').value = '';
-                    clone.querySelector('.plantilla-dropdown-2').value = '';
+                    clone.querySelector('.plantilla-dropdown-2').value = 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                     clone.querySelector('.remove-plantilla-set').classList.remove('d-none');
                     container.appendChild(clone);
                 }
@@ -250,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const clone = template.cloneNode(true);
                             clone.querySelector('.plantilla-items-input').value = item.items || '';
                             clone.querySelector('.plantilla-dropdown-1').value = item.dropdown1 || '';
-                            clone.querySelector('.plantilla-dropdown-2').value = item.dropdown2 || '';
+                            clone.querySelector('.plantilla-dropdown-2').value = item.dropdown2 || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                             if (index > 0) clone.querySelector('.remove-plantilla-set').classList.remove('d-none');
                             container.appendChild(clone);
                         });
@@ -351,7 +348,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterVacancyTable() {
         const query = document.getElementById('vacancySearch').value.toLowerCase();
         const selectedCategory = document.getElementById('vacancyCategory').value;
-        const selectedStatus = document.getElementById('vacancyStatus').value;
+        const statusSelect = document.getElementById('vacancyStatus');
+        const selectedStatus = statusSelect.value;
+
+        // Determine available statuses for the selected category
+        let hasVacant = false;
+        let hasNonVacant = false;
+        
+        document.querySelectorAll('.vacancy-row').forEach(row => {
+            const category = row.getAttribute('data-category');
+            if (!selectedCategory || category === selectedCategory) {
+                const checkbox = row.querySelector('.vacancy-toggle');
+                if (checkbox && checkbox.checked) hasVacant = true;
+                else hasNonVacant = true;
+            }
+        });
+        
+        // Update Status Dropdown options
+        statusSelect.innerHTML = '<option value="">All Statuses</option>';
+        if (hasVacant) statusSelect.innerHTML += '<option value="vacant">Vacant</option>';
+        if (hasNonVacant) statusSelect.innerHTML += '<option value="non-vacant">Non-Vacant</option>';
+        
+        // Restore selected status if it's still available
+        if (selectedStatus === 'vacant' && hasVacant) statusSelect.value = 'vacant';
+        else if (selectedStatus === 'non-vacant' && hasNonVacant) statusSelect.value = 'non-vacant';
+        else statusSelect.value = '';
+        
+        const finalStatus = statusSelect.value;
         
         // Hide/Show Rows
         document.querySelectorAll('.vacancy-row').forEach(row => {
@@ -363,41 +386,68 @@ document.addEventListener('DOMContentLoaded', function() {
             const matchCategory = !selectedCategory || category === selectedCategory;
             const matchQuery = !query || title.includes(query);
             let matchStatus = true;
-            if (selectedStatus === 'vacant') matchStatus = isVacant;
-            else if (selectedStatus === 'non-vacant') matchStatus = !isVacant;
+            if (finalStatus === 'vacant') matchStatus = isVacant;
+            else if (finalStatus === 'non-vacant') matchStatus = !isVacant;
             
             if (matchCategory && matchQuery && matchStatus) {
-                row.style.display = '';
+                row.classList.remove('search-hidden-row');
+                row.style.display = ''; // Reset display style
             } else {
-                row.style.display = 'none';
+                row.classList.add('search-hidden-row');
             }
         });
 
-        // Hide/Show Position Group Wrappers based on visible rows
+        // Hide/Show Position Group Wrappers and Nav Links based on visible rows
         document.querySelectorAll('.vacancy-group-wrapper').forEach(wrapper => {
             const category = wrapper.getAttribute('data-category');
+            const group = wrapper.getAttribute('data-group');
+            // Find the corresponding nav pill button
+            const navLink = document.querySelector(`.vacancy-group-tab-btn[data-category="${category}"][data-group="${group}"]`);
+
             if (selectedCategory && category !== selectedCategory) {
                 wrapper.classList.add('search-hidden');
+                if (navLink) navLink.style.display = 'none';
                 return;
             }
             const rowsInGroup = wrapper.querySelectorAll('.vacancy-row');
-            let hasVisibleRow = Array.from(rowsInGroup).some(row => row.style.display !== 'none');
+            let hasVisibleRow = Array.from(rowsInGroup).some(row => !row.classList.contains('search-hidden-row'));
             
             if (hasVisibleRow) {
                 wrapper.classList.remove('search-hidden');
-                if (query) {
-                    const collapse = wrapper.querySelector('.accordion-collapse');
-                    if (collapse && !collapse.classList.contains('show')) {
-                        const bsCollapse = bootstrap.Collapse.getInstance(collapse) || new bootstrap.Collapse(collapse, {toggle: false});
-                        bsCollapse.show();
-                    }
-                }
+                if (navLink) navLink.style.display = '';
             } else {
                 wrapper.classList.add('search-hidden');
+                if (navLink) navLink.style.display = 'none';
+            }
+        });
+
+        // Ensure a visible tab is active
+        document.querySelectorAll('.vacancy-category-group').forEach(catPane => {
+            const visibleLinks = Array.from(catPane.querySelectorAll('.vacancy-group-tab-btn')).filter(btn => btn.style.display !== 'none');
+            
+            let activeLink = visibleLinks.find(btn => btn.classList.contains('active'));
+            
+            if (!activeLink && visibleLinks.length > 0) {
+                // Clean up any stray active classes
+                catPane.querySelectorAll('.vacancy-group-tab-btn').forEach(btn => btn.classList.remove('active'));
+                catPane.querySelectorAll('.vacancy-group-wrapper').forEach(pane => pane.classList.remove('show', 'active'));
+                
+                // Activate the first visible tab
+                const firstLink = visibleLinks[0];
+                firstLink.classList.add('active');
+                const targetPane = document.querySelector(firstLink.getAttribute('data-bs-target'));
+                if (targetPane) {
+                    targetPane.classList.add('show', 'active');
+                }
             }
         });
         
-        // Hide/Show Category Group Headers based on visible groups
+        // Apply row-level pagination for each visible position group
+        document.querySelectorAll('.vacancy-group-wrapper:not(.search-hidden)').forEach(wrapper => {
+            const visibleRows = Array.from(wrapper.querySelectorAll('.vacancy-row:not(.search-hidden-row)'));
+            PaginationHelper.paginateDOM(`vacancy-table-${wrapper.id}`, visibleRows, 10, `pagination-${wrapper.id}`, true);
+        });
+
         let firstVisibleTab = null;
         document.querySelectorAll('.vacancy-category-group').forEach(pane => {
             const category = pane.getAttribute('data-category');
@@ -418,9 +468,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 if (gridItem) gridItem.style.display = 'none';
             }
-
-            // Apply pagination for this category
-            applyPagination(slug);
         });
         
         if (firstVisibleTab && (query || selectedCategory)) {
@@ -434,19 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    const itemsPerPage = 5;
 
-    function applyPagination(slug) {
-        const pane = document.getElementById('v-pills-' + slug);
-        if (!pane) return;
-        
-        const allGroups = pane.querySelectorAll('.vacancy-group-wrapper:not(.search-hidden)');
-        
-        // Hide all groups first to avoid flickering
-        pane.querySelectorAll('.vacancy-group-wrapper').forEach(wrapper => wrapper.style.display = 'none');
-        
-        PaginationHelper.paginateDOM(`vacancy-${slug}`, allGroups, itemsPerPage, 'pagination-' + slug, true); // Reset page on filter
-    }
         let metricsChartInstance = null;
         let metricsDataCache = null;
 

@@ -2,6 +2,7 @@
         <div class="tab-pane fade {{#if showBackup}}show active{{/if}}" id="backup" role="tabpanel">
             <div class="row g-4 mb-4">
                 <!-- System Backups -->
+                {{#if (eq user.role "admin")}}
                 <div class="col-lg-4 col-md-6">
                     <div class="card border-0 glass-panel shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, rgba(25,135,84,0.1) 0%, rgba(25,135,84,0.05) 100%); border-left: 5px solid #198754 !important;">
                         <div class="card-body p-4">
@@ -31,6 +32,7 @@
                         </div>
                     </div>
                 </div>
+                {{/if}}
 
                 <!-- Reports & Exports -->
                 <div class="col-lg-4 col-md-6">

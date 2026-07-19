@@ -49,6 +49,7 @@ window.exportFromTemplate = async (templateUrl, data, filename) => {
         });
 
         saveAs(out, filename);
+        window.showToast("Document generated successfully.", "success");
     } catch (error) {
         console.error("Error generating document:", error);
         alert("Failed to generate document from template: " + (error.message || error));
@@ -112,6 +113,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
         fileDownload.click();
         document.body.removeChild(fileDownload);
         URL.revokeObjectURL(url);
+        window.showToast("Document generated successfully.", "success");
     } else {
         const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
         const fileDownload = document.createElement("a");
@@ -120,6 +122,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
         fileDownload.download = filename;
         fileDownload.click();
         document.body.removeChild(fileDownload);
+        window.showToast("Document generated successfully.", "success");
     }
 };
 
@@ -158,7 +161,11 @@ window.openGenericDocModal = function(step, id, status, docRemark, name, office,
         `;
     }
     
-    const modal = new bootstrap.Modal(document.getElementById('docTypeModal'));
+    let modalEl = document.getElementById('docTypeModal');
+    let modal = bootstrap.Modal.getInstance(modalEl);
+    if (!modal) {
+        modal = new bootstrap.Modal(modalEl);
+    }
     modal.show();
 };
 
@@ -194,9 +201,9 @@ window.downloadSelectedDoc = function() {
         }
     } else if (p.step === 5) {
         if (type === 'Assignment Order - School-Based' && window.printAssignmentSchool) {
-            window.printAssignmentSchool(p.id, p.name, p.office, '', p.category, p.applicationCode, p.ccName, p.ccDesignation);
+            window.printAssignmentSchool(p.id, p.name, p.office, '', p.category, p.applicationCode, p.ccName, p.ccDesignation, false);
         } else if (type === 'Assignment Order - Division Office' && window.printAssignmentDivision) {
-            window.printAssignmentDivision(p.id, p.name, p.office, '', p.category, p.applicationCode, p.ccName, p.ccDesignation);
+            window.printAssignmentDivision(p.id, p.name, p.office, '', p.category, p.applicationCode, p.ccName, p.ccDesignation, false);
         }
     }
 };

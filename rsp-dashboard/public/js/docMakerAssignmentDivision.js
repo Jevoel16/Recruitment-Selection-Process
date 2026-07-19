@@ -1,24 +1,23 @@
 window.printAssignmentDivision = async function(id, name, office, dateStr, category, applicationCode, ccName, ccDesignation, reloadOnComplete = true) {
-    const { d, dateStr: formattedDate } = await window.getOrSetDocDate(id, 'AssignmentDivision', data);
-
     let rankTitle = 'Teacher I';
     let appEffectivity = '';
     let appCC1 = '', appCCDesignation1 = '';
     let appCC2 = '', appCCDesignation2 = '';
     let appCC3 = '', appCCDesignation3 = '';
     let appCC4 = '', appCCDesignation4 = '';
+    let data = {};
 
     try {
         const res = await fetch(`/api/applicants/${id}/details`);
         if (res.ok) {
-            const data = await res.json();
+            data = await res.json();
             const applicant = data.applicant || data;
             if (applicant.position) rankTitle = applicant.position;
             if (applicant.appointmentEffectivity) {
                 const parts = applicant.appointmentEffectivity.split('-');
                 if (parts.length === 3) {
-                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
-                    appEffectivity = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const dDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                    appEffectivity = dDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                 } else {
                     appEffectivity = applicant.appointmentEffectivity;
                 }
@@ -43,6 +42,8 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
             }
         }
     } catch (err) {}
+
+    const { d, dateStr: formattedDate } = await window.getOrSetDocDate(id, 'AssignmentDivision', data);
 
     let orderNum = "007";
     if (applicationCode) {

@@ -6,18 +6,38 @@
             <div class="mb-3">
                 
                 <form method="GET" action="/step4/1" class="row g-2">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="input-group glass-panel h-100 shadow-sm">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
                             <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name or application code..." value="{{searchQuery}}">
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                 <option value="">All Positions (Filter by Position)</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                                <option value="">All Vacancies</option>
+                                {{#each vacancyList}}
+                                    <option value="{{this}}" {{#if (eq this ../vacancyFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="remarks" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                                <option value="">All Steps & Remarks</option>
+                                {{#each remarksList}}
+                                    <option value="{{this.value}}" {{#if (eq this.value ../remarksFilter)}}selected{{/if}}>{{this.label}}</option>
                                 {{/each}}
                             </select>
                         </div>
@@ -33,7 +53,6 @@
                             <th>Applicant Name</th>
                             <th>Position</th>
                             <th class="text-center">Document</th>
-                            <th class="text-center">Score</th>
                             <th class="text-center">Remarks</th>
                             <th class="text-end">Action</th>
                         </tr>
@@ -49,16 +68,9 @@
                                     <i class="bi bi-file-earmark-word"></i> DOC
                                 </button>
                             </td>
-                            <td class="text-center fw-bold text-success fs-5">
-                                {{#unless (eq this.scores.total null)}}
-                                    {{this.scores.total}}
-                                {{else}}
-                                    -
-                                {{/unless}}
-                            </td>
                             <td class="text-center">
                                 {{#if (eq this.assignmentReqStatus 'COMPLETE')}}
-                                    <span id="requirements-status-{{this.id}}" class="badge bg-success">Generated</span>
+                                    <span id="requirements-status-{{this.id}}" class="badge" style="background-color: purple; color: white;">Generated</span>
                                 {{else}}
                                     <span id="requirements-status-{{this.id}}" class="badge bg-warning text-dark">Pending</span>
                                 {{/if}}
@@ -68,7 +80,7 @@
                             </td>
                         </tr>
                         {{else}}
-                        <tr><td colspan="7" class="text-center text-muted py-4">No applicants waiting for requirements.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4">No applicants waiting for requirements.</td></tr>
                         {{/each}}
                     </tbody>
                 </table>
@@ -90,4 +102,6 @@
             </nav>
             {{/if}}
         {{/if}}
+
+
 

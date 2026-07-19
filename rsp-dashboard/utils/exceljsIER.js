@@ -110,40 +110,74 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
     addField('Position: ', positionFilter);
     addField('VACANCY ANNOUNCEMENT NO. ', vAnnounce);
 
-    // Auto-split Plantilla items so second line starts at column C
-    const pItemsArr = pItem.split(',').map(s => s.trim()).filter(s => s);
+    const getPositionCode = (title) => {
+        if (!title) return '';
+        const mapRoman = { 'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5', 'VI': '6', 'VII': '7', 'VIII': '8', 'IX': '9', 'X': '10' };
+        const words = title.split(/[\s-]+/);
+        let code = '';
+        for (let word of words) {
+            if (mapRoman[word.toUpperCase()]) code += mapRoman[word.toUpperCase()];
+            else if (word.match(/^[A-Za-z]/)) code += word[0].toUpperCase();
+        }
+        return code;
+    };
+
+    let pItemsArr = [];
+    if (posData?.plantillaItem) {
+        try {
+            const parsed = JSON.parse(posData.plantillaItem);
+            if (Array.isArray(parsed)) {
+                let all = [];
+                parsed.forEach(p => {
+                    if (p.items) all.push(...p.items.split(',').map(s => s.trim()).filter(s => s));
+                });
+                pItemsArr = all;
+            } else {
+                pItemsArr = posData.plantillaItem.split(',').map(s => s.trim()).filter(s => s);
+            }
+        } catch(e) {
+            pItemsArr = posData.plantillaItem.split(',').map(s => s.trim()).filter(s => s);
+        }
+    }
+    
     let firstLineItems = '';
     let subsequentLines = [];
     let currentLine = '';
-    
-    let i = 0;
-    while(i < pItemsArr.length && (firstLineItems.length + pItemsArr[i].length + 2) < 124) {
-        firstLineItems += pItemsArr[i] + ', ';
-        i++;
-    }
-    
-    while(i < pItemsArr.length) {
-        if (currentLine.length + pItemsArr[i].length + 2 < 150) {
-            currentLine += pItemsArr[i] + ', ';
-            i++;
-        } else {
-            subsequentLines.push(currentLine);
-            currentLine = pItemsArr[i] + ', ';
+
+    if (pItemsArr.length > 20) {
+        firstLineItems = `${pItemsArr.length} ${getPositionCode(positionFilter)} Vacant Items`;
+    } else {
+        let i = 0;
+        while(i < pItemsArr.length && (firstLineItems.length + pItemsArr[i].length + 2) < 124) {
+            firstLineItems += pItemsArr[i] + ', ';
             i++;
         }
+        
+        while(i < pItemsArr.length) {
+            if (currentLine.length + pItemsArr[i].length + 2 < 150) {
+                currentLine += pItemsArr[i] + ', ';
+                i++;
+            } else {
+                subsequentLines.push(currentLine);
+                currentLine = pItemsArr[i] + ', ';
+                i++;
+            }
+        }
+        if (currentLine) subsequentLines.push(currentLine);
     }
-    if (currentLine) subsequentLines.push(currentLine);
 
     sheet.getCell(`B${r}`).value = {
         richText: [
             { font: { ...baseFont, size: 12 }, text: 'PLANTILLA ITEM/S NUMBER:  ' },
-            { font: { ...baseFont, size: 12, bold: true, underline: true }, text: firstLineItems.replace(/,\s*$/, '') }
+            { font: { ...baseFont, size: 12, bold: true, underline: true }, text: subsequentLines.length > 0 ? firstLineItems.trim() : firstLineItems.replace(/,\s*$/, '') }
         ]
     };
     sheet.getRow(r).height = 20;
     r++;
-    for (let sub of subsequentLines) {
-        sheet.getCell(`C${r}`).value = sub.replace(/,\s*$/, '');
+    for (let j = 0; j < subsequentLines.length; j++) {
+        let sub = subsequentLines[j];
+        let text = (j < subsequentLines.length - 1) ? sub.trim() : sub.replace(/,\s*$/, '');
+        sheet.getCell(`C${r}`).value = text;
         sheet.getCell(`C${r}`).font = { ...baseFont, size: 12, bold: true, underline: true };
         sheet.getRow(r).height = 20;
         r++;

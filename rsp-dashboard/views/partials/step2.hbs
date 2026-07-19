@@ -6,7 +6,7 @@
             <div class="mb-3">
                 
                 <form method="GET" action="/step2/1" class="row g-2">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="input-group glass-panel h-100 shadow-sm">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
                             <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name or application code..." value="{{searchQuery}}">
@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-md-3">
                         <div class="glass-panel h-100 px-2 py-1">
-                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                 <option value="">All Positions</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
@@ -28,6 +28,16 @@
                                 <option value="">All Vacancies</option>
                                 {{#each vacancyList}}
                                     <option value="{{this}}" {{#if (eq this ../vacancyFilter)}}selected{{/if}}>{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="glass-panel h-100 px-2 py-1">
+                            <select name="remarks" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                                <option value="">All Steps & Remarks</option>
+                                {{#each remarksList}}
+                                    <option value="{{this.value}}" {{#if (eq this.value ../remarksFilter)}}selected{{/if}}>{{this.label}}</option>
                                 {{/each}}
                             </select>
                         </div>
@@ -59,7 +69,7 @@
                                     <i class="bi bi-pencil-square"></i> Assess
                                 </button>
                             </td>
-                            <td class="text-center fw-bold text-primary fs-5">
+                            <td class="text-center fw-bold {{#if (eq this.assessmentRemarks 'Newly Promoted')}}text-danger{{else}}text-primary{{/if}} fs-5">
                                 {{#unless (eq this.scores.total null)}}
                                     {{this.scores.total}}
                                 {{else}}
@@ -68,7 +78,7 @@
                             </td>
                             <td>
                                 {{#if (eq this.assessmentRemarks 'Assessed')}}<span class="badge bg-success">Assessed</span>
-                                {{else if (eq this.assessmentRemarks 'In-Prog')}}<span class="badge bg-warning text-dark">In-Prog</span>
+                                {{else if (eq this.assessmentRemarks 'In-Prog')}}<span class="badge bg-info text-dark">In-Prog</span>{{else if (eq this.assessmentRemarks 'Newly Promoted')}}<span class="badge bg-danger">Newly Promoted</span>
                                 {{else}}<span class="badge bg-warning text-dark">Pending</span>{{/if}}
                             </td>
                             <td class="text-end">
@@ -100,4 +110,6 @@
             </nav>
             {{/if}}
         {{/if}}
+
+
 
