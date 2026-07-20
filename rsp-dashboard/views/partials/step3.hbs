@@ -13,7 +13,7 @@
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="glass-panel h-100 px-2 py-1">
+                        <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
                             <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                 <option value="">All Positions</option>
                                 {{#each positionList}}
@@ -23,7 +23,7 @@
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="glass-panel h-100 px-2 py-1">
+                        <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
                             <select name="vacancy" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Vacancies</option>
                                 {{#each vacancyList}}
@@ -32,8 +32,8 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div class="glass-panel h-100 px-2 py-1">
+                    <div class="col-md-3">
+                        <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
                             <select name="remarks" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Steps & Remarks</option>
                                 {{#each remarksList}}
@@ -42,8 +42,8 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold text-nowrap" style="white-space: nowrap;" onclick="handleCARDownloadClick()">
+                    <div class="col-md-auto ms-auto">
+                        <button type="button" class="btn btn-outline-success h-100 px-3 d-flex align-items-center justify-content-center fw-semibold text-nowrap" style="white-space: nowrap;" onclick="handleCARDownloadClick()">
                             <i class="bi bi-file-earmark-spreadsheet me-2"></i> Download CAR
                         </button>
                     </div>

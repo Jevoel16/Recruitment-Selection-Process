@@ -44,10 +44,21 @@ body {
 }
 
 /* Round edges for search bars and filters */
-.input-group.glass-panel,
-.glass-panel:has(> select.form-select) {
+.input-group.glass-panel {
     border-radius: 50rem !important;
     overflow: hidden !important;
+}
+
+.filter-glass-panel {
+    border-radius: 50rem !important;
+    overflow: visible !important;
+    position: relative;
+    z-index: 1030; /* Higher than table sticky-top (1020) */
+}
+
+/* Elevate the specific filter panel that has an open dropdown so it overlays sibling panels */
+.filter-glass-panel:has(.choices.is-open) {
+    z-index: 1060 !important;
 }
 
 /* Seamless inner search icon */
@@ -438,4 +449,131 @@ body {
     background-color: #198754 !important; /* Bootstrap success */
     border-color: #198754 !important;
     color: white !important;
+}
+
+/* Choices.js Premium Styling (for Dropdown Contents) */
+.choices__list--dropdown {
+    border-radius: 2rem !important; /* Extremely round corners for the white background */
+    width: 150% !important; /* Half more width than the dropdown itself */
+    left: -25% !important; /* Center the wider dropdown */
+    border: 1px solid color-mix(in srgb, var(--black) 10%, transparent) !important;
+    box-shadow: 0 16px 32px color-mix(in srgb, var(--black) 12%, transparent) !important;
+    background: color-mix(in srgb, var(--white) 95%, transparent) !important;
+    backdrop-filter: blur(12px) !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin-top: 8px !important;
+    z-index: 9999 !important; /* Ensure it overlays above tables and sticky headers */
+}
+
+/* Modest expansion for specific wide filters to prevent horizontal overflow */
+.dropdown-narrow-expansion .choices__list--dropdown {
+    width: calc(100% + 20px) !important;
+    left: -10px !important;
+}
+
+.choices__list--dropdown .choices__item--selectable {
+    padding: 12px 20px !important;
+    font-size: 0.95rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--black) 5%, transparent);
+    transition: background-color 0.2s ease, padding-left 0.2s ease, color 0.2s ease !important;
+}
+
+.choices__list--dropdown .choices__item--selectable:last-child {
+    border-bottom: none !important;
+}
+
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background-color: color-mix(in srgb, var(--primary) 8%, transparent) !important;
+    color: var(--primary) !important;
+    padding-left: 26px !important; /* Dynamic indent on hover */
+}
+
+/* Inner selection box */
+.choices__inner {
+    border-radius: 50rem !important; /* Pill shape exactly like search bars */
+    border: 1px solid color-mix(in srgb, var(--black) 15%, transparent) !important;
+    background-color: color-mix(in srgb, var(--white) 95%, transparent) !important;
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--black) 5%, transparent) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    padding: 0.5rem 1.25rem !important;
+    min-height: calc(3rem + 2px) !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.choices.is-open .choices__inner,
+.choices.is-focused .choices__inner {
+    border-radius: 50rem !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent) !important;
+    background-color: var(--white) !important;
+}
+
+.choices.is-open {
+    z-index: 9999 !important;
+}
+
+/* Filter Dropdowns specifically within filter-glass-panel */
+.filter-glass-panel .choices__inner {
+    border-radius: 50rem !important;
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+.filter-glass-panel .choices.is-focused .choices__inner {
+    background-color: var(--white) !important;
+    box-shadow: inset 0 0 0 2px var(--primary) !important;
+}
+
+/* Custom Select Dropdowns (Modals & Forms) */
+select.custom-ui-select {
+    border-radius: 12px !important;
+    border: 1px solid color-mix(in srgb, var(--black) 15%, transparent) !important;
+    background-color: color-mix(in srgb, var(--white) 95%, transparent);
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--black) 5%, transparent) !important;
+    font-weight: 500;
+    color: var(--black);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+select.custom-ui-select:hover {
+    border-color: color-mix(in srgb, var(--primary) 40%, transparent) !important;
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 15%, transparent) !important;
+    transform: translateY(-2px);
+    background-color: var(--white);
+}
+
+select.custom-ui-select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent) !important;
+    outline: none;
+    background-color: var(--white);
+    transform: translateY(-1px);
+}
+
+select.custom-ui-select option {
+    font-weight: 500;
+    color: var(--black);
+    background-color: var(--white);
+}
+
+/* Adjustments for filter bar dropdowns that use glass-panel parent */
+.glass-panel select.custom-ui-select.bg-transparent.border-0 {
+    border-radius: 50rem !important;
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    transform: none !important;
+}
+
+.glass-panel select.custom-ui-select.bg-transparent.border-0:hover {
+    background-color: color-mix(in srgb, var(--primary) 5%, transparent) !important;
+}
+
+.glass-panel select.custom-ui-select.bg-transparent.border-0:focus {
+    background-color: var(--white) !important;
+    box-shadow: inset 0 0 0 2px var(--primary) !important;
 }

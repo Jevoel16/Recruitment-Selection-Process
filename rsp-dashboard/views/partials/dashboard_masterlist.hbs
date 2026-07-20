@@ -11,7 +11,7 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
+                            <div class="glass-panel filter-glass-panel h-100 px-2 py-1 shadow-sm bg-white">
                                 <select name="position" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                     <option value="">All Positions</option>
                                     {{#each positionList}}
@@ -21,7 +21,7 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
+                            <div class="glass-panel filter-glass-panel h-100 px-2 py-1 shadow-sm bg-white">
                                 <select name="vacancy" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="this.form.submit()">
                                     <option value="">All Vacancies</option>
                                     {{#each vacancyList}}
@@ -31,7 +31,7 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="glass-panel h-100 px-2 py-1 shadow-sm bg-white">
+                            <div class="glass-panel filter-glass-panel h-100 px-2 py-1 shadow-sm bg-white">
                                 <select name="step" class="form-select border-0 shadow-none bg-transparent custom-ui-select" onchange="this.form.submit()">
                                     <option value="">All Steps & Remarks</option>
                                     {{#each stepList}}

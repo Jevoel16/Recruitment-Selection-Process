@@ -49,15 +49,15 @@
                                 <button class="btn btn-primary rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/positions/export/doc'">
                                     <i class="bi bi-file-earmark-word-fill fs-5 me-2"></i>
                                     <div class="text-start ms-2">
-                                        <div class="fw-bold">Positions (Docx)</div>
-                                        <div class="small opacity-75" style="line-height:1;">Export open positions document</div>
+                                        <div class="fw-bold">Vacancy Endorsement (Docx)</div>
+                                        <div class="small opacity-75" style="line-height:1;">Export endorsement document</div>
                                     </div>
                                 </button>
                                 <button class="btn btn-outline-primary rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/export/ver'">
                                     <i class="bi bi-file-earmark-excel-fill fs-5 me-2"></i>
                                     <div class="text-start ms-2">
-                                        <div class="fw-bold">Vacancy Evaluation Register</div>
-                                        <div class="small opacity-75" style="line-height:1;">Export VER to Excel</div>
+                                        <div class="fw-bold">Vacancy Endorsement (Excel)</div>
+                                        <div class="small opacity-75" style="line-height:1;">Export endorsement to Excel</div>
                                     </div>
                                 </button>
                             </div>
@@ -108,21 +108,32 @@
 
                         
                         <div class="row g-2 mb-3">
-                            <div class="col-md-5">
-                                <div class="input-group glass-panel shadow-sm">
+                            <div class="col-md-4">
+                                <div class="input-group glass-panel h-100 shadow-sm">
                                     <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterEmailApplicants()"><i class="bi bi-search text-primary"></i></span>
                                     <input type="text" class="form-control border-start-0 ps-0" id="emailSearchName" placeholder="Search by name, code, or email..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterEmailApplicants(); }">
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <select class="form-select rounded-pill" id="emailFilterPosition" onchange="updateVacancyFilterOptions(this.value); filterEmailApplicants();">
-                                    <option value="">All Positions</option>
-                                </select>
+                            <div class="col-md-3">
+                                <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
+                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailFilterPosition" onchange="document.getElementById('emailFilterStatus').value=''; updateVacancyFilterOptions(this.value); updateEmailStatusFilterOptions(); filterEmailApplicants();">
+                                        <option value="">All Positions</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
+                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailFilterVacancy" onchange="updateEmailStatusFilterOptions(); filterEmailApplicants()">
+                                        <option value="">All Vacancies</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select rounded-pill" id="emailFilterVacancy" onchange="filterEmailApplicants()">
-                                    <option value="">All Vacancies</option>
-                                </select>
+                                <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
+                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailFilterStatus" onchange="filterEmailApplicants()">
+                                        <option value="">All Email Statuses</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -147,6 +158,11 @@
                                     <!-- Applicants will be loaded here dynamically -->
                                 </tbody>
                             </table>
+                            <div id="emailEmptyState" class="d-none text-center p-5 text-muted bg-white">
+                                <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
+                                <h5 class="fw-semibold">No applicants found</h5>
+                                <p class="mb-0 small opacity-75">Try adjusting your search filters.</p>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0 pt-0">

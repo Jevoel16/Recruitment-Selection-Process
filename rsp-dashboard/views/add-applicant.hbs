@@ -31,6 +31,11 @@
                             </div>
                             {{/each}}
                         </div>
+                        <div id="categoryEmptyState" class="d-none text-center p-5 text-muted glass-panel rounded-4">
+                            <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
+                            <h5 class="fw-semibold">No categories or positions found</h5>
+                            <p class="mb-0 small opacity-75">Try adjusting your search term.</p>
+                        </div>
                     </div>
                     
                     <div id="positionSelection" class="d-none">
@@ -297,8 +302,14 @@
 <script src="/js/addApplicant.js?v=5"></script>
 
 {{> index_modals}}
-</div>
-</div>
+</div> <!-- End container-fluid -->
+
+<footer class="text-center text-muted mt-5 mb-3 d-print-none" style="font-size: 0.85rem;">
+    &copy; 2026 Recruitment Selection Process. All rights reserved to DepEd Iligan City Personnel.
+</footer>
+
+        </main>
+    </div> <!-- End d-flex wrapper -->
 
 <!-- Custom Script -->
 
@@ -311,6 +322,19 @@
 <script src="/js/main.js"></script>
 <script src="/js/modal_stack.js"></script>
     {{> global_toasts}}
+    <script src="/choices.js/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.searchable-select, .custom-ui-select').forEach(function(el) {
+                new Choices(el, {
+                    searchEnabled: el.classList.contains('searchable-select'), // Only enable search if it's explicitly a searchable select
+                    itemSelectText: '',
+                    shouldSort: false,
+                    position: 'bottom'
+                });
+            });
+        });
+    </script>
     <script src="/js/utils.js"></script>
 </body>
 </html>

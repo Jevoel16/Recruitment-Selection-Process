@@ -9,17 +9,17 @@
                 <div class="modal-body pb-4">
                     <input type="hidden" id="updateStatusId">
                     <p class="text-muted mb-3">Updating status for: <strong id="updateStatusName" class="text-dark"></strong></p>
-                    <div class="mb-3">
+                    <div class="mb-3 dropdown-narrow-expansion">
                         <label class="form-label fw-semibold">Status</label>
                         <select class="form-select custom-ui-select" id="updateStatusSelect" required>
                             <option value="PENDING">Step 1: Pending</option>
                             <option value="QUALIFIED">Step 1: Qualified</option>
                             <option value="DISQUALIFIED">Step 1: Disqualified</option>
-                            <option value="WAITING_FOR_ASSESSMENT">Step 2: Deliberation (Waiting for Assessment)</option>
+                            <option value="WAITING_FOR_ASSESSMENT">Step 2: Pending</option>
                             <option value="ASSESSED">Step 3: Assessed</option>
                             <option value="NO_APPEARANCE">Step 3: No Appearance</option>
                             <option value="NEWLY_PROMOTED">Step 3: Newly Promoted</option>
-                            <option value="WAITING">Step 4: Requirements (Waiting)</option>
+                            <option value="WAITING">Step 4: Pending</option>
                             <option value="ASSIGNED">Step 5: Assigned</option>
                             <option value="COMPLETED">Step 5: Completed</option>
                         </select>

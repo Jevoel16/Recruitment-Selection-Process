@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitBtn.innerHTML = 'Submit Application <i class="bi bi-check-circle"></i>';
                 }
             } catch (err) {
-                alert('Network error. Please try again.');
+                alert('Network error. Failed to submit application.');
                 const submitBtn = appForm.querySelector('button[type="submit"]');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Submit Application <i class="bi bi-check-circle"></i>';

@@ -1,4 +1,4 @@
-    <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     // Tab retention
     const tabs = document.querySelectorAll('button[data-bs-toggle="pill"]');
@@ -470,6 +470,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        const emptyState = document.getElementById('vacancyEmptyState');
+        if (emptyState) {
+            if (firstVisibleTab) {
+                emptyState.classList.add('d-none');
+            } else {
+                emptyState.classList.remove('d-none');
+            }
+        }
+        
         if (firstVisibleTab && (query || selectedCategory)) {
             const slug = firstVisibleTab.getAttribute('id').replace('v-pills-', '');
             const title = firstVisibleTab.getAttribute('data-category');
@@ -714,15 +723,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('sendEmailBtn').disabled = true;
                         positionSelect.innerHTML = '<option value="">All Positions</option>';
                         vacancySelect.innerHTML = '<option value="">All Vacancies</option>';
+                        document.getElementById('emailFilterStatus').innerHTML = '<option value="">All Email Statuses</option>';
+                        if (window.refreshChoices) {
+                            window.refreshChoices('emailFilterPosition');
+                            window.refreshChoices('emailFilterVacancy');
+                            window.refreshChoices('emailFilterStatus');
+                        }
                     } else {
                         document.getElementById('selectAllEmails').disabled = false;
                         document.getElementById('sendEmailBtn').disabled = false;
                         document.getElementById('selectAllEmails').checked = false;
                         
                         const positions = new Set();
+                        const emailCounts = new Set();
                         
                         globalEmailApplicants.forEach(app => {
                             if (app.position) positions.add(app.position);
+                            const count = app.emailCount || 0;
+                            emailCounts.add(count);
                             
                             const tr = document.createElement('tr');
                             tr.className = 'email-applicant-item';
@@ -731,8 +749,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             tr.dataset.email = (app.emailAddress || '').toLowerCase();
                             tr.dataset.position = app.position || '';
                             tr.dataset.vacancy = app.vacancyAnnouncementNo || '';
+                            tr.dataset.status = app.status || '';
+                            tr.dataset.emailCount = count;
                             
-                            const emailCountStr = app.emailCount ? `<span class="badge bg-success rounded-pill"><i class="bi bi-check2-circle"></i> Sent ${app.emailCount}x</span>` : `<span class="badge bg-secondary rounded-pill opacity-50">Not sent yet</span>`;
+                            const emailCountStr = count ? `<span class="badge bg-success rounded-pill"><i class="bi bi-check2-circle"></i> Sent ${count}x</span>` : `<span class="badge bg-secondary rounded-pill opacity-50">Not sent yet</span>`;
                             
                             tr.innerHTML = `
                                 <td>
@@ -762,11 +782,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         Array.from(positions).sort().forEach(p => {
                             positionSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
                         });
+                        if (window.refreshChoices) window.refreshChoices('emailFilterPosition');
                         
                         updateVacancyFilterOptions('');
+                        updateEmailStatusFilterOptions();
                     }
                     
                     document.getElementById('emailSearchName').value = '';
+                    document.getElementById('emailFilterStatus').value = '';
                     filterEmailApplicants();
                     
                     if (!emailSelectionModal) {
@@ -790,8 +813,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const vacancies = new Set();
             globalEmailApplicants.forEach(app => {
-                if (!selectedPosition || app.position === selectedPosition) {
-                    if (app.vacancyAnnouncementNo) vacancies.add(app.vacancyAnnouncementNo);
+                if (!selectedPosition || String(app.position || '') === selectedPosition) {
+                    if (app.vacancyAnnouncementNo) vacancies.add(String(app.vacancyAnnouncementNo));
                 }
             });
             
@@ -804,6 +827,41 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 vacancySelect.value = "";
             }
+            if (window.refreshChoices) window.refreshChoices('emailFilterVacancy');
+        }
+
+        function updateEmailStatusFilterOptions() {
+            const position = document.getElementById('emailFilterPosition').value;
+            const vacancy = document.getElementById('emailFilterVacancy').value;
+            const statusSelect = document.getElementById('emailFilterStatus');
+            const currentStatus = statusSelect.value;
+            
+            const emailCounts = new Set();
+            globalEmailApplicants.forEach(app => {
+                const posMatch = !position || String(app.position || '') === position;
+                const vacMatch = !vacancy || String(app.vacancyAnnouncementNo || '') === vacancy;
+                if (posMatch && vacMatch) {
+                    emailCounts.add(app.emailCount || 0);
+                }
+            });
+            
+            statusSelect.innerHTML = '<option value="">All Email Statuses</option>';
+            Array.from(emailCounts).sort((a,b) => a-b).forEach(c => {
+                const label = c === 0 ? 'Not Sent (0)' : `Sent ${c}x`;
+                statusSelect.insertAdjacentHTML('beforeend', `<option value="${c}">${label}</option>`);
+            });
+            
+            if (currentStatus !== '') {
+                const exists = Array.from(emailCounts).some(c => String(c) === String(currentStatus));
+                if (exists) {
+                    statusSelect.value = currentStatus;
+                } else {
+                    statusSelect.value = '';
+                }
+            } else {
+                statusSelect.value = '';
+            }
+            if (window.refreshChoices) window.refreshChoices('emailFilterStatus');
         }
 
         function filterEmailApplicants() {
@@ -811,20 +869,34 @@ document.addEventListener('DOMContentLoaded', function() {
             const positionSelect = document.getElementById('emailFilterPosition');
             const position = positionSelect.value;
             const vacancy = document.getElementById('emailFilterVacancy').value;
+            const emailStatus = document.getElementById('emailFilterStatus').value;
             
             const items = document.querySelectorAll('.email-applicant-item');
+            let anyVisible = false;
             
             items.forEach(item => {
                 const nameMatch = item.dataset.name.includes(search) || item.dataset.code.includes(search) || item.dataset.email.includes(search);
                 const posMatch = !position || item.dataset.position === position;
                 const vacMatch = !vacancy || item.dataset.vacancy === vacancy;
+                const statusMatch = !emailStatus || item.dataset.emailCount === emailStatus;
                 
-                if (nameMatch && posMatch && vacMatch) {
+                if (nameMatch && posMatch && vacMatch && statusMatch) {
                     item.classList.remove('d-none');
+                    anyVisible = true;
                 } else {
                     item.classList.add('d-none');
                 }
             });
+            
+            const emptyState = document.getElementById('emailEmptyState');
+            if (emptyState) {
+                if (anyVisible) {
+                    emptyState.classList.add('d-none');
+                } else {
+                    emptyState.classList.remove('d-none');
+                }
+            }
+            
             updateSelectedEmailCount();
         }
 

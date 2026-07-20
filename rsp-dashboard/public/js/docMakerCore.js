@@ -132,34 +132,54 @@ window.openGenericDocModal = function(step, id, status, docRemark, name, office,
     currentGenericDocParams = { step, id, status, docRemark, name, office, category, applicationCode, ccName, ccDesignation };
     
     const selectEl = document.getElementById('docTypeSelect');
-    selectEl.innerHTML = '';
     
+    let options = [];
     if (step === 1) {
-        if (status === 'QUALIFIED') {
-            selectEl.innerHTML = `
-                <option value="Notice to Qualified - Higher Teaching">Notice to Qualified - Higher Teaching</option>
-                <option value="Notice to Qualified - Without Date of Assessment">Notice to Qualified - Without Date of Assessment</option>
-            `;
-        } else if (status === 'DISQUALIFIED') {
-            selectEl.innerHTML = `
-                <option value="Notice to DQ - Higher Teaching">Notice to DQ - Higher Teaching</option>
-                <option value="Notice to DQ - No Omnibus">Notice to DQ - No Omnibus</option>
-                <option value="Notice to DQ - Not notarized Omnibus">Notice to DQ - Not notarized Omnibus</option>
-                <option value="Notice to DQ">Notice to DQ</option>
-            `;
+        const isQualified = status === 'QUALIFIED' || docRemark === 'Qualified' || ['WAITING_FOR_ASSESSMENT', 'ASSESSED', 'NO_APPEARANCE', 'NEWLY_PROMOTED', 'WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
+        if (isQualified) {
+            options = [
+                { value: 'Notice to Qualified - Higher Teaching', label: 'Notice to Qualified - Higher Teaching' },
+                { value: 'Notice to Qualified - Without Date of Assessment', label: 'Notice to Qualified - Without Date of Assessment' }
+            ];
+        } else if (status === 'DISQUALIFIED' || docRemark === 'Disqualified') {
+            options = [
+                { value: 'Notice to DQ - Higher Teaching', label: 'Notice to DQ - Higher Teaching' },
+                { value: 'Notice to DQ - No Omnibus', label: 'Notice to DQ - No Omnibus' },
+                { value: 'Notice to DQ - Not notarized Omnibus', label: 'Notice to DQ - Not notarized Omnibus' },
+                { value: 'Notice to DQ', label: 'Notice to DQ' }
+            ];
         }
     } else if (step === 4) {
-        selectEl.innerHTML = `
-            <option value="Notice of Requirements - Newly Hired">Newly Hired</option>
-            <option value="Notice of Requirements - Promotion">Promotion</option>
-            <option value="Transfer Acceptance">Transfer Acceptance</option>
-        `;
+        options = [
+            { value: 'Notice of Requirements - Newly Hired', label: 'Newly Hired' },
+            { value: 'Notice of Requirements - Promotion', label: 'Promotion' },
+            { value: 'Transfer Acceptance', label: 'Transfer Acceptance' }
+        ];
     } else if (step === 5) {
-        selectEl.innerHTML = `
-            <option value="Assignment Order - School-Based">Assignment Order - School-Based</option>
-            <option value="Assignment Order - Division Office">Assignment Order - Division Office</option>
-        `;
+        options = [
+            { value: 'Assignment Order - School-Based', label: 'Assignment Order - School-Based' },
+            { value: 'Assignment Order - Division Office', label: 'Assignment Order - Division Office' }
+        ];
     }
+
+    if (selectEl.choicesInstance) {
+        selectEl.choicesInstance.destroy();
+        delete selectEl.choicesInstance;
+    }
+    
+    selectEl.innerHTML = '';
+    options.forEach((opt, index) => {
+        const isSelected = index === 0 ? 'selected' : '';
+        selectEl.insertAdjacentHTML('beforeend', `<option value="${opt.value}" ${isSelected}>${opt.label}</option>`);
+    });
+    
+    // Explicitly re-initialize Choices on this specific element to guarantee it updates perfectly
+    selectEl.choicesInstance = new Choices(selectEl, {
+        searchEnabled: false,
+        itemSelectText: '',
+        shouldSort: false,
+        position: 'bottom'
+    });
     
     let modalEl = document.getElementById('docTypeModal');
     let modal = bootstrap.Modal.getInstance(modalEl);

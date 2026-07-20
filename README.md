@@ -9,6 +9,7 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Optimized the responsive layout for filter panels and download buttons across all dashboard workflow steps.
 - Migrated Step 5 Assignment Orders from legacy PDF generation to a dynamic Word Document (.docx) template system.
 - Expanded Vacancy Announcement filtering to all workflow steps and removed redundant score columns.
 - Redesigned the Backup Tab UI into a split layout separating Database Backups and Document Exports.

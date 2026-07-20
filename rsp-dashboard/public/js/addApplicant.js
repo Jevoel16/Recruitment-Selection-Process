@@ -1,9 +1,12 @@
     let dynamicWizardCategory = '';
+    
     let currentPositions = [];
     const itemsPerPage = 5;
 
     function filterWizardCategories() {
         const query = document.getElementById('categorySearch').value.toLowerCase();
+        let anyMatch = false;
+        
         document.querySelectorAll('.category-btn').forEach(btn => {
             const catName = btn.getAttribute('data-category');
             const colDiv = btn.closest('.col-md-6');
@@ -18,10 +21,20 @@
             
             if (hasMatch) {
                 colDiv.style.display = '';
+                anyMatch = true;
             } else {
                 colDiv.style.display = 'none';
             }
         });
+        
+        const emptyState = document.getElementById('categoryEmptyState');
+        if (emptyState) {
+            if (anyMatch) {
+                emptyState.classList.add('d-none');
+            } else {
+                emptyState.classList.remove('d-none');
+            }
+        }
     }
 
     document.querySelectorAll('.category-btn').forEach(btn => {
@@ -431,10 +444,9 @@
                 btn.disabled = false;
             }
         } catch (err) {
-            console.error(err);
-            if (window.showToast) window.showToast('An error occurred while saving', 'danger');
-            else alert('An error occurred');
-            
+            console.error('Failed to save applicant', err);
+            if (window.showToast) window.showToast('Network error. Failed to save applicant.', 'danger');
+            else alert('Network error. Failed to save applicant.');
             btn.innerHTML = originalText;
             btn.disabled = false;
         }

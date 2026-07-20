@@ -36,7 +36,7 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="glass-panel h-100 px-2 py-1">
+                            <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
                                 <select id="vacancyCategory" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
                                     <option value="">All Categories</option>
                                     {{#each groupedPositions}}
@@ -46,7 +46,7 @@
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="glass-panel h-100 px-2 py-1">
+                            <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
                                 <select id="vacancyStatus" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
                                     <option value="">All Statuses</option>
                                     <option value="vacant">Vacant</option>
@@ -66,6 +66,11 @@
                 </div>
 
                 <div id="vacancyWizardLayout">
+                    <div id="vacancyEmptyState" class="d-none text-center p-5 text-muted mt-4 glass-panel rounded-4">
+                        <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
+                        <h5 class="fw-semibold">No positions found</h5>
+                        <p class="mb-0 small opacity-75">Try adjusting your search filters.</p>
+                    </div>
                     <!-- Step 0: Category Grid -->
                     <div id="vacancyCategorySelection">
                         <div class="row g-4">

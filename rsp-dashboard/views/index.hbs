@@ -11,6 +11,15 @@
 
 {{> index_modals}}
 
+</div> <!-- End container-fluid -->
+
+<footer class="text-center text-muted mt-5 mb-3 d-print-none" style="font-size: 0.85rem;">
+    &copy; 2026 Recruitment Selection Process. All rights reserved to DepEd Iligan City Personnel.
+</footer>
+
+        </main>
+    </div> <!-- End d-flex wrapper -->
+
 <script src="/js/requirements.js"></script>
 <script src="/js/qualifications.js"></script>
 <script src="/js/assignment.js?v=1.6"></script>
@@ -24,9 +33,9 @@
 <script src="/choices.js/scripts/choices.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll('.searchable-select').forEach(function(el) {
-            new Choices(el, {
-                searchEnabled: true,
+        document.querySelectorAll('.searchable-select, .custom-ui-select').forEach(function(el) {
+            el.choicesInstance = new Choices(el, {
+                searchEnabled: el.classList.contains('searchable-select'), // Only enable search if it's explicitly a searchable select
                 itemSelectText: '',
                 shouldSort: false,
                 position: 'bottom'

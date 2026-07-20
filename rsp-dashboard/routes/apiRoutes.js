@@ -239,7 +239,7 @@ router.post('/export/email-codes', async (req, res) => {
             }
             try {
                 let info = await transporter.sendMail({
-                    from: `"RSP System" <${process.env.SMTP_USER || 'your-email@gmail.com'}>`,
+                    from: `"${process.env.SMTP_GMAILNAME}" <${process.env.SMTP_USER || 'your-email@gmail.com'}>`,
                     to: applicant.emailAddress,
                     subject: 'Your Application Code',
                     text: `Hello ${applicant.firstName} ${applicant.lastName},\n\nYour application code for the Recruitment and Selection Process is: ${applicant.applicationCode}\n\nPlease keep this code for your reference.\n\nThank you!`,

@@ -7,15 +7,15 @@
             
             <div class="mb-3">
                 <form method="GET" action="/step1/1" class="row g-2">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="input-group glass-panel h-100 shadow-sm">
                             <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="this.closest('form').submit()"><i class="bi bi-search text-primary"></i></span>
                             <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name or application code..." value="{{searchQuery}}">
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="glass-panel h-100 px-2 py-1">
-                            <select name="position" class="form-select bg-transparent border-0 shadow-none" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
+                        <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
+                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                 <option value="">All Positions</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
@@ -24,8 +24,8 @@
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="glass-panel h-100 px-2 py-1">
-                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                        <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
+                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Vacancies</option>
                                 {{#each vacancyList}}
                                     <option value="{{this}}" {{#if (eq this ../vacancyFilter)}}selected{{/if}}>{{this}}</option>
@@ -33,9 +33,9 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div class="glass-panel h-100 px-2 py-1">
-                            <select name="remarks" class="form-select bg-transparent border-0 shadow-none" onchange="this.form.submit()">
+                    <div class="col-md-3">
+                        <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
+                            <select name="remarks" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Steps & Remarks</option>
                                 {{#each remarksList}}
                                     <option value="{{this.value}}" {{#if (eq this.value ../remarksFilter)}}selected{{/if}}>{{this.label}}</option>
@@ -43,8 +43,8 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-outline-success w-100 h-100 d-flex align-items-center justify-content-center fw-semibold" onclick="handleIERDownloadClick()">
+                    <div class="col-md-auto ms-auto">
+                        <button type="button" class="btn btn-outline-success h-100 px-3 d-flex align-items-center justify-content-center fw-semibold" onclick="handleIERDownloadClick()">
                             <i class="bi bi-file-earmark-spreadsheet me-2"></i> Download IER
                         </button>
                     </div>

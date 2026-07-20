@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-20 13:47 (v1.4.1-Release+202607201347)
+
+### Changed
+- **Dashboard UI**: Enhanced the responsiveness of the filter panels across all workflow steps, resolving layout clipping issues and ensuring download buttons no longer wrap awkwardly on smaller displays.
+- **Portal UX**: Refined the network error alert message during applicant submission in the Applicant Portal.
+
+
+
 ## 2026-07-19 17:22 (v1.4.0-Release+202607191722)
 
 ### Added
