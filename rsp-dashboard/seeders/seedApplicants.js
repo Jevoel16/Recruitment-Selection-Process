@@ -192,33 +192,69 @@ async function seed() {
         }
 
         console.log(`⏩ Moving ${step3Ids.length} applicants to Step 3 (Assessing and Scoring)...`);
+        
+        let step3Conn = await mysql.createConnection({
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'rsp_db'
+        });
+        const [appData] = step3Ids.length > 0 ? await step3Conn.query('SELECT a.id, p.category, p.title as posTitle, p.salaryGrade FROM applicants a LEFT JOIN positions p ON a.position = p.title WHERE a.id IN (?)', [step3Ids]) : [[]];
+        await step3Conn.end();
+        
+        const appMap = {};
+        appData.forEach(row => appMap[row.id] = row);
+
         for (let i = 0; i < step3Ids.length; i += BATCH_SIZE) {
             const batch = step3Ids.slice(i, i + BATCH_SIZE);
             const batchPromises = batch.map(async id => {
-                const scorePayload = {
-                    education: Math.floor(Math.random() * 5) + 5,
-                    training: Math.floor(Math.random() * 5) + 5,
-                    experience: Math.floor(Math.random() * 5) + 5,
-                    performance: Math.floor(Math.random() * 10) + 10,
-                    outstandingAccomplishments: Math.floor(Math.random() * 5) + 5,
-                    applicationOfEducation: Math.floor(Math.random() * 5) + 5,
-                    applicationOfLD: Math.floor(Math.random() * 5) + 5,
-                    potential: Math.floor(Math.random() * 10) + 5,
-                    pbet: Math.floor(Math.random() * 5) + 5,
-                    ppst_coi: Math.floor(Math.random() * 20) + 15,
-                    ppst_ncoi: Math.floor(Math.random() * 15) + 10,
-                    scoreWe: Math.floor(Math.random() * 5),
-                    scoreSwst: Math.floor(Math.random() * 10),
-                    scoreBei: Math.floor(Math.random() * 5),
-                    maxWe: 5,
-                    maxSwst: 10,
-                    maxBei: 5,
-                    scorePotPa: Math.floor(Math.random() * 20) + 5,
-                    scorePotPsa: Math.floor(Math.random() * 10) + 5,
-                    maxPotPa: 35,
-                    maxPotPsa: 20,
-                    isComplete: true
+                const info = appMap[id] || {};
+                const category = info.category || '';
+                const title = info.posTitle || '';
+                const sgStr = info.salaryGrade || '';
+                const sg = parseInt(sgStr.replace(/[^0-9]/g, ''), 10) || 0;
+                
+                let standard = 'General';
+                if (category === 'Teaching' && title.includes('Teacher I') && !title.includes('Teacher II') && !title.includes('Teacher III')) standard = 'Teacher I';
+                else if (category === 'School Administration') standard = 'School Administration';
+                else if (category === 'Teaching' || category === 'Related Teaching') {
+                    if (sg >= 11 && sg <= 15) standard = 'RT SG 11-15';
+                    else if (sg >= 16 && sg <= 23) standard = 'RT SG 16-23';
+                    else if (sg == 24) standard = 'RT SG 24';
+                    else standard = 'General';
+                } else {
+                    if (sg >= 1 && sg <= 9) standard = 'SG 1-9';
+                    else if (sg >= 10 && sg <= 22) standard = 'SG 10-22';
+                    else if (sg == 24) standard = 'SG 24';
+                    else standard = 'General';
+                }
+
+                const cKeys = {
+                    'Teacher I': ['education', 'training', 'experience', 'pbet', 'ppst_coi', 'ppst_ncoi'],
+                    'School Administration': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
+                    'General': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'potential'],
+                    'SG 1-9': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
+                    'SG 10-22': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
+                    'SG 24': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
+                    'RT SG 11-15': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
+                    'RT SG 16-23': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
+                    'RT SG 24': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential']
                 };
+                
+                const keys = cKeys[standard] || cKeys['General'];
+                const scorePayload = { isComplete: true };
+                
+                if (keys.includes('education')) scorePayload.education = Math.floor(Math.random() * 5) + 1;
+                if (keys.includes('training')) scorePayload.training = Math.floor(Math.random() * 5) + 1;
+                if (keys.includes('experience')) scorePayload.experience = Math.floor(Math.random() * 5) + 1;
+                if (keys.includes('performance')) scorePayload.performance = Math.floor(Math.random() * 10) + 5;
+                if (keys.includes('outstandingAccomplishments')) scorePayload.outstandingAccomplishments = Math.floor(Math.random() * 5) + 1;
+                if (keys.includes('applicationOfEducation')) scorePayload.applicationOfEducation = Math.floor(Math.random() * 5) + 1;
+                if (keys.includes('applicationOfLD')) scorePayload.applicationOfLD = Math.floor(Math.random() * 5) + 1;
+                if (keys.includes('potential')) scorePayload.potential = Math.floor(Math.random() * 10) + 1;
+                if (keys.includes('pbet')) scorePayload.pbet = Math.floor(Math.random() * 5) + 1;
+                if (keys.includes('ppst_coi')) scorePayload.ppst_coi = Math.floor(Math.random() * 15) + 5;
+                if (keys.includes('ppst_ncoi')) scorePayload.ppst_ncoi = Math.floor(Math.random() * 10) + 5;
                 await fetch(`${API_BASE}/applicants/${id}/assess`, {
                     method: 'POST',
                     headers: authHeaders,
