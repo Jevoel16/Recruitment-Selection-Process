@@ -864,6 +864,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.refreshChoices) window.refreshChoices('emailFilterStatus');
         }
 
+        window.submitBackupSearch = function() {
+            document.getElementById('emailFilterPosition').value = '';
+            if (window.refreshChoices) window.refreshChoices('emailFilterPosition');
+            updateVacancyFilterOptions('');
+            updateEmailStatusFilterOptions();
+            filterEmailApplicants();
+        };
+
         function filterEmailApplicants() {
             const search = document.getElementById('emailSearchName').value.toLowerCase();
             const positionSelect = document.getElementById('emailFilterPosition');

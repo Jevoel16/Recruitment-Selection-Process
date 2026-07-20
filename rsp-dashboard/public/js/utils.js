@@ -43,3 +43,13 @@ window.showToast = function(message, type = 'info', reload = false) {
 
     toast.show();
 };
+
+window.submitSearch = function(form) {
+    if (form.position) form.position.value = '';
+    if (form.vacancy) form.vacancy.value = '';
+    if (form.step) form.step.value = '';
+    if (form.remarks) form.remarks.value = '';
+    if (form.office) form.office.value = '';
+    if (form.status) form.status.value = '';
+    form.submit();
+};

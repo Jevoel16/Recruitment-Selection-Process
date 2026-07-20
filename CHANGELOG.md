@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-20 14:03 (v1.4.2-Release+202607201403)
+
+### Changed
+- **Dashboard UI**: Implemented standardized `submitSearch` event handling across all search inputs (Masterlist and Steps 1-5) to cleanly intercept `Enter` key presses and prevent default form submission bugs.
+
+
+
 ## 2026-07-20 13:47 (v1.4.1-Release+202607201347)
 
 ### Changed
