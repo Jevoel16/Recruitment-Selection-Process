@@ -112,7 +112,13 @@ async function openInfoModal(id) {
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Civil Status</label>
-                        <input type="text" class="form-control" name="civilStatus" value="${app.civilStatus || ''}" oninput="this.value = this.value.toUpperCase();">
+                        <select class="form-select" name="civilStatus">
+                            <option value="">Select...</option>
+                            <option value="Single" ${(app.civilStatus||'').toUpperCase()==='SINGLE'?'selected':''}>Single</option>
+                            <option value="Married" ${(app.civilStatus||'').toUpperCase()==='MARRIED'?'selected':''}>Married</option>
+                            <option value="Widowed" ${(app.civilStatus||'').toUpperCase()==='WIDOWED'?'selected':''}>Widowed</option>
+                            <option value="Separated" ${(app.civilStatus||'').toUpperCase()==='SEPARATED'?'selected':''}>Separated</option>
+                        </select>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Religion</label>

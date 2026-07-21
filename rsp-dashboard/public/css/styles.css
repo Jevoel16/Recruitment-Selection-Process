@@ -466,11 +466,16 @@ body {
     z-index: 9999 !important; /* Ensure it overlays above tables and sticky headers */
 }
 
-/* Modest expansion for specific wide filters to prevent horizontal overflow */
 .dropdown-narrow-expansion .choices__list--dropdown {
     width: calc(100% + 20px) !important;
     left: -10px !important;
 }
+
+.fit-dropdown-menu .choices__list--dropdown {
+    width: 100% !important;
+    left: 0 !important;
+}
+
 
 .choices__list--dropdown .choices__item--selectable {
     padding: 12px 20px !important;

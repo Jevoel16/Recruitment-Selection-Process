@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-21 10:36 (v1.4.3-Release+202607211036)
+
+### Added
+- **Form Validations**: Made the `Email Address` field strictly required in both the New Applicant Wizard and the Quick Add Modal to ensure communication lines are always secured.
+
+### Changed
+- **Assignment Orders**: Upgraded the Assignment Order DOCX generator and templates to dynamically extract and assign the correct Series Year from the Application Code instead of using a hardcoded year.
+- **UI Adjustments**: Added `fit-dropdown-menu` classes to the `Sex` and `Civil Status` dropdowns in the applicant forms to prevent the dropdown options from clipping.
+
+
+
 ## 2026-07-20 14:03 (v1.4.2-Release+202607201403)
 
 ### Changed

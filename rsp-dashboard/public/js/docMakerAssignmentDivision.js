@@ -45,10 +45,14 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
 
     const { d, dateStr: formattedDate } = await window.getOrSetDocDate(id, 'AssignmentDivision', data);
 
-    let orderNum = "007";
+    let orderNum = "000";
+    let orderYear = new Date().getFullYear().toString();
     if (applicationCode) {
         const parts = applicationCode.split('-');
-        if (parts.length > 0) {
+        if (parts.length === 4) {
+            orderNum = parts[1];
+            orderYear = parts[2];
+        } else if (parts.length > 0) {
             const num = parseInt(parts[parts.length - 1], 10);
             if (!isNaN(num)) orderNum = String(num).padStart(3, '0');
         }
@@ -59,6 +63,7 @@ window.printAssignmentDivision = async function(id, name, office, dateStr, categ
     // Define the data payload for docxtemplater mapping to native Mail Merge fields
     const templateData = {
         "Assignment_Order_No": orderNum,
+        "Assignment_Order_Year": orderYear,
         "DATE": formattedDate,
         "COMPLETE_NAME": name.toUpperCase(),
         "CURRENT_POSITION": rankTitle,
