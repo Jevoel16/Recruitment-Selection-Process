@@ -22,12 +22,14 @@ A web-based platform to digitize the recruitment selection process.
 - **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades, accurate monthly salary mapping (Step 1), and fully editable text-based qualification standards.
 - **Vacancy Publishing & Toggles:** Dynamic checkboxes automatically trigger modal updates inside `Vacancy_Endorsement.docx` parsing, integrated with a global "Off Vacancy" feature to wipe all public positions securely, including bulk toggling for mass status updates.
 - **Vacancy Announcement Tracking:** Advanced filtering capabilities that allow filtering applicants specifically by their vacancy announcement numbers across all Dashboard tabs.
+- **Applicant Status & Email Delivery:** Dynamic cascading dropdowns for precise mass email filtering and enhanced database tracking for `DISQUALIFIED_ARCHIVED` states.
 
 ### Document Generation & Workflows
 - **Pixel-Perfect VER Templates:** Precisely engineered the Request for Publication of Vacant Positions (VER.xlsx) template to natively match official raw files 1:1, explicitly aligning all exact row heights, dynamic dates, font stylings, and exact rich text segmentations via ExcelJS.
 - **Vacancy Endorsement Integration:** Native mapping of `Vacancy_Endorsement.docx` populated via Docxtemplater, combining multi-item iteration with dynamically scaling data modules.
 - **Dynamic Plantilla Initialization:** Auto-generating Plantilla Item fields synchronized dynamically with Vacancy Count values and multi-location assignments.
 - **Enhanced Export Printing:** Adjusted ExcelJS page setup configurations to fix print overcrowding and ensure correct scaling for multi-page CAR, IER, and VER documents.
+- **Server-Side PDF Generation:** Advanced cross-platform background PDF generators and export functions that decouple document creation from mass email dispatch.
 - **Masterlist & Vacancy Dashboard:** Centralized dashboard for managing applicant masterlists alongside dynamic vacancy toggles and slot monitoring.
 - **Multi-Step Applicant Wizard:** Seamless data entry flow for applicant information ranging from Personal details to Education, Training, Experience, and Eligibility (now featuring real-time inline editing capabilities and robust active keystroke validation).
 

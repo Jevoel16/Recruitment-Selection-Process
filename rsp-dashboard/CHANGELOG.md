@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-23 01:15 (v1.5.2-Release+202607230115)
+
+### ADDED
+- **PDF Generation**: Implemented server-side PDF generation strategies and added PDF export functionality for applicant lists.
+- **Email Filtering**: Added dynamic cascading dropdowns in the email modal to improve document template selection logic based on applicant status.
+- **Applicant Status**: Updated database schema and seeders to officially support the `DISQUALIFIED_ARCHIVED` status.
+
+### CHANGED
+- **Dashboard UI**: Fixed browser tab loading issues and corrected UI layout inconsistencies across dashboard views.
+- **Project Maintenance**: Cleaned up the repository by removing obsolete root test scripts, one-off debug files, and legacy PDF files.
+
 ## 2026-07-22 11:00 (v1.5.1-Release+202607221100)
 
 ### ADDED
