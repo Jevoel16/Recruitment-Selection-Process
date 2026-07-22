@@ -19,7 +19,9 @@ const getRemark = (items) => {
     return 'Qualified';
 };
 
-exports.generatePDFForApplicant = async (app, templateName) => {
+let pdfQueue = Promise.resolve();
+
+const doGeneratePDFForApplicant = async (app, templateName) => {
     const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
     fs.mkdirSync(generatedDir, { recursive: true });
 
@@ -153,4 +155,16 @@ $word.Quit()
     try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
     
     return true;
+};
+
+exports.generatePDFForApplicant = (app, templateName) => {
+    const task = () => doGeneratePDFForApplicant(app, templateName);
+    
+    // Add to the sequential queue regardless of previous task success/failure
+    const p = pdfQueue.then(task, task);
+    
+    // Prevent unhandled rejections from stopping the queue
+    pdfQueue = p.catch(() => {});
+    
+    return p;
 };

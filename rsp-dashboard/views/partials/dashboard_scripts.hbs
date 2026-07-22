@@ -360,43 +360,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function filterVacancyTable() {
         const query = document.getElementById('vacancySearch').value.toLowerCase();
-        const selectedCategory = document.getElementById('vacancyCategory').value;
+        const categorySelect = document.getElementById('vacancyCategory');
+        const selectedCategory = categorySelect.value;
         const statusSelect = document.getElementById('vacancyStatus');
         const selectedStatus = statusSelect.value;
 
-        // Determine available statuses for the selected category
+        const availableCategories = new Set();
         let hasVacant = false;
         let hasNonVacant = false;
-        
+
+        // Pass 1: Determine interdependent available dropdown options
         document.querySelectorAll('.vacancy-row').forEach(row => {
+            const title = row.getAttribute('data-title').toLowerCase();
             const category = row.getAttribute('data-category');
-            if (!selectedCategory || category === selectedCategory) {
-                const checkbox = row.querySelector('.vacancy-toggle');
-                if (checkbox && checkbox.checked) hasVacant = true;
+            const checkbox = row.querySelector('.vacancy-toggle');
+            const isVacant = checkbox ? checkbox.checked : false;
+
+            const matchQuery = !query || title.includes(query);
+            const matchCategory = !selectedCategory || category === selectedCategory;
+            let matchStatus = true;
+            if (selectedStatus === 'vacant') matchStatus = isVacant;
+            else if (selectedStatus === 'non-vacant') matchStatus = !isVacant;
+
+            // For Category dropdown: ignore category filter
+            if (matchQuery && matchStatus) {
+                if (category) availableCategories.add(category);
+            }
+
+            // For Status dropdown: ignore status filter
+            if (matchQuery && matchCategory) {
+                if (isVacant) hasVacant = true;
                 else hasNonVacant = true;
             }
         });
-        
-        // Update Status Dropdown options
+
+        // Rebuild Category Dropdown
+        const originalCategoryValue = categorySelect.value;
+        if (!window.originalVacancyCategories) {
+            window.originalVacancyCategories = Array.from(categorySelect.options).map(o => ({ value: o.value, text: o.text }));
+        }
+        categorySelect.innerHTML = '<option value="">All Categories</option>';
+        window.originalVacancyCategories.forEach(opt => {
+            if (opt.value === '' || availableCategories.has(opt.value)) {
+                if (opt.value !== '') categorySelect.insertAdjacentHTML('beforeend', `<option value="${opt.value}">${opt.text}</option>`);
+            }
+        });
+        categorySelect.value = availableCategories.has(originalCategoryValue) ? originalCategoryValue : '';
+        if (window.refreshChoices) window.refreshChoices('vacancyCategory');
+
+        // Rebuild Status Dropdown
         statusSelect.innerHTML = '<option value="">All Statuses</option>';
         if (hasVacant) statusSelect.innerHTML += '<option value="vacant">Vacant</option>';
         if (hasNonVacant) statusSelect.innerHTML += '<option value="non-vacant">Non-Vacant</option>';
         
-        // Restore selected status if it's still available
         if (selectedStatus === 'vacant' && hasVacant) statusSelect.value = 'vacant';
         else if (selectedStatus === 'non-vacant' && hasNonVacant) statusSelect.value = 'non-vacant';
         else statusSelect.value = '';
-        
+        if (window.refreshChoices) window.refreshChoices('vacancyStatus');
+
+        const finalCategory = categorySelect.value;
         const finalStatus = statusSelect.value;
         
-        // Hide/Show Rows
+        // Pass 2: Hide/Show Rows
         document.querySelectorAll('.vacancy-row').forEach(row => {
             const title = row.getAttribute('data-title').toLowerCase();
             const category = row.getAttribute('data-category');
             const checkbox = row.querySelector('.vacancy-toggle');
             const isVacant = checkbox ? checkbox.checked : false;
             
-            const matchCategory = !selectedCategory || category === selectedCategory;
+            const matchCategory = !finalCategory || category === finalCategory;
             const matchQuery = !query || title.includes(query);
             let matchStatus = true;
             if (finalStatus === 'vacant') matchStatus = isVacant;
@@ -407,19 +439,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.style.display = ''; // Reset display style
             } else {
                 row.classList.add('search-hidden-row');
+                row.style.setProperty('display', 'none', 'important');
             }
         });
 
-        // Hide/Show Position Group Wrappers and Nav Links based on visible rows
+        // Pass 3: Hide/Show Position Group Wrappers and Nav Links based on visible rows
         document.querySelectorAll('.vacancy-group-wrapper').forEach(wrapper => {
             const category = wrapper.getAttribute('data-category');
             const group = wrapper.getAttribute('data-group');
-            // Find the corresponding nav pill button
             const navLink = document.querySelector(`.vacancy-group-tab-btn[data-category="${category}"][data-group="${group}"]`);
 
-            if (selectedCategory && category !== selectedCategory) {
+            if (finalCategory && category !== finalCategory) {
                 wrapper.classList.add('search-hidden');
-                if (navLink) navLink.style.display = 'none';
+                wrapper.style.setProperty('display', 'none', 'important');
+                if (navLink) navLink.style.setProperty('display', 'none', 'important');
                 return;
             }
             const rowsInGroup = wrapper.querySelectorAll('.vacancy-row');
@@ -427,10 +460,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (hasVisibleRow) {
                 wrapper.classList.remove('search-hidden');
+                wrapper.style.display = '';
                 if (navLink) navLink.style.display = '';
             } else {
                 wrapper.classList.add('search-hidden');
-                if (navLink) navLink.style.display = 'none';
+                wrapper.style.setProperty('display', 'none', 'important');
+                if (navLink) navLink.style.setProperty('display', 'none', 'important');
             }
         });
 
@@ -465,10 +500,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.vacancy-category-group').forEach(pane => {
             const category = pane.getAttribute('data-category');
             const gridItem = document.querySelector(`.vacancy-category-grid-item[data-category="${category}"]`);
-            const slug = pane.getAttribute('id').replace('v-pills-', '');
             
-            if (selectedCategory && category !== selectedCategory) {
-                if (gridItem) gridItem.style.display = 'none';
+            if (finalCategory && category !== finalCategory) {
+                if (gridItem) gridItem.style.setProperty('display', 'none', 'important');
                 return;
             }
             
@@ -479,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (gridItem) gridItem.style.display = '';
                 if (!firstVisibleTab) firstVisibleTab = pane;
             } else {
-                if (gridItem) gridItem.style.display = 'none';
+                if (gridItem) gridItem.style.setProperty('display', 'none', 'important');
             }
         });
         
@@ -492,13 +526,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        if (firstVisibleTab && (query || selectedCategory)) {
+        if (firstVisibleTab && (query || finalCategory)) {
             const slug = firstVisibleTab.getAttribute('id').replace('v-pills-', '');
             const title = firstVisibleTab.getAttribute('data-category');
             if (typeof showVacancyCategory === 'function') {
                 showVacancyCategory(slug, title);
             }
-        } else if (!query && !selectedCategory && typeof showVacancyCategorySelection === 'function') {
+        } else if (!query && !finalCategory && typeof showVacancyCategorySelection === 'function') {
             showVacancyCategorySelection();
         }
     }
@@ -801,14 +835,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             listContainer.appendChild(tr);
                         });
                         
-                        positionSelect.innerHTML = '<option value="">All Positions</option>';
-                        Array.from(positions).sort().forEach(p => {
-                            positionSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
-                        });
-                        if (window.refreshChoices) window.refreshChoices('emailFilterPosition');
-                        
-                        updateVacancyFilterOptions('');
-                        updateEmailStatusFilterOptions();
+                        updateEmailModalDropdowns();
                     }
                     
                     document.getElementById('emailSearchName').value = '';
@@ -860,74 +887,99 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
-        function updateVacancyFilterOptions(selectedPosition) {
-            const vacancySelect = document.getElementById('emailFilterVacancy');
-            const currentVacancy = vacancySelect.value;
-            
-            vacancySelect.innerHTML = '<option value="">All Vacancies</option>';
-            
+                function updateEmailModalDropdowns() {
+            const search = document.getElementById('emailSearchName').value.toLowerCase();
+            const currentPosition = document.getElementById('emailFilterPosition').value;
+            const currentVacancy = document.getElementById('emailFilterVacancy').value;
+            const currentStatus = document.getElementById('emailFilterStatus').value;
+            const remarksFilterEl = document.getElementById('emailRemarksFilter');
+            const currentRemarks = remarksFilterEl ? remarksFilterEl.value : '';
+
+            const positions = new Set();
             const vacancies = new Set();
+            const statuses = new Set();
+            const remarks = new Set();
+
             globalEmailApplicants.forEach(app => {
-                if (!selectedPosition || String(app.position || '') === selectedPosition) {
+                const nameMatch = `${app.firstName} ${app.lastName}`.toLowerCase().includes(search) || 
+                                  (app.applicationCode || '').toLowerCase().includes(search) || 
+                                  (app.emailAddress || '').toLowerCase().includes(search);
+                const posMatch = !currentPosition || String(app.position || '') === currentPosition;
+                const vacMatch = !currentVacancy || String(app.vacancyAnnouncementNo || '') === currentVacancy;
+                const statusMatch = !currentStatus || String(app.emailCount || 0) === currentStatus;
+                const appStatus = (app.status === 'DISQUALIFIED_ARCHIVED') ? 'DISQUALIFIED' : (app.status || '');
+                const remarksMatch = !currentRemarks || appStatus === currentRemarks;
+
+                // For Position dropdown
+                if (nameMatch && vacMatch && statusMatch && remarksMatch) {
+                    if (app.position) positions.add(app.position);
+                }
+
+                // For Vacancy dropdown
+                if (nameMatch && posMatch && statusMatch && remarksMatch) {
                     if (app.vacancyAnnouncementNo) vacancies.add(String(app.vacancyAnnouncementNo));
                 }
-            });
-            
-            Array.from(vacancies).sort().forEach(v => {
-                vacancySelect.insertAdjacentHTML('beforeend', `<option value="${v}">${v}</option>`);
-            });
-            
-            if (vacancies.has(currentVacancy)) {
-                vacancySelect.value = currentVacancy;
-            } else {
-                vacancySelect.value = "";
-            }
-            if (window.refreshChoices) window.refreshChoices('emailFilterVacancy');
-        }
 
-        function updateEmailStatusFilterOptions() {
-            const position = document.getElementById('emailFilterPosition').value;
-            const vacancy = document.getElementById('emailFilterVacancy').value;
-            const statusSelect = document.getElementById('emailFilterStatus');
-            const currentStatus = statusSelect.value;
-            
-            const emailCounts = new Set();
-            globalEmailApplicants.forEach(app => {
-                const posMatch = !position || String(app.position || '') === position;
-                const vacMatch = !vacancy || String(app.vacancyAnnouncementNo || '') === vacancy;
-                if (posMatch && vacMatch) {
-                    emailCounts.add(app.emailCount || 0);
+                // For Status dropdown
+                if (nameMatch && posMatch && vacMatch && remarksMatch) {
+                    statuses.add(app.emailCount || 0);
+                }
+
+                // For Remarks dropdown
+                if (nameMatch && posMatch && vacMatch && statusMatch) {
+                    if (appStatus === 'QUALIFIED' || appStatus === 'DISQUALIFIED') {
+                        remarks.add(appStatus);
+                    }
                 }
             });
-            
-            statusSelect.innerHTML = '<option value="">All Email Statuses</option>';
-            Array.from(emailCounts).sort((a,b) => a-b).forEach(c => {
+
+            const posSelect = document.getElementById('emailFilterPosition');
+            posSelect.innerHTML = '<option value="">All Positions</option>';
+            Array.from(positions).sort().forEach(p => {
+                posSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
+            });
+            posSelect.value = positions.has(currentPosition) ? currentPosition : '';
+            if (window.refreshChoices) window.refreshChoices('emailFilterPosition');
+
+            const vacSelect = document.getElementById('emailFilterVacancy');
+            vacSelect.innerHTML = '<option value="">All Vacancies</option>';
+            Array.from(vacancies).sort().forEach(v => {
+                vacSelect.insertAdjacentHTML('beforeend', `<option value="${v}">${v}</option>`);
+            });
+            vacSelect.value = vacancies.has(currentVacancy) ? currentVacancy : '';
+            if (window.refreshChoices) window.refreshChoices('emailFilterVacancy');
+
+            const statSelect = document.getElementById('emailFilterStatus');
+            statSelect.innerHTML = '<option value="">All Email Statuses</option>';
+            Array.from(statuses).sort((a,b) => a-b).forEach(c => {
                 const label = c === 0 ? 'Not Sent (0)' : `Sent ${c}x`;
-                statusSelect.insertAdjacentHTML('beforeend', `<option value="${c}">${label}</option>`);
+                statSelect.insertAdjacentHTML('beforeend', `<option value="${c}">${label}</option>`);
             });
-            
-            if (currentStatus !== '') {
-                const exists = Array.from(emailCounts).some(c => String(c) === String(currentStatus));
-                if (exists) {
-                    statusSelect.value = currentStatus;
-                } else {
-                    statusSelect.value = '';
-                }
-            } else {
-                statusSelect.value = '';
-            }
+            statSelect.value = statuses.has(Number(currentStatus)) || (currentStatus === '0' && statuses.has(0)) ? currentStatus : '';
             if (window.refreshChoices) window.refreshChoices('emailFilterStatus');
+
+            if (remarksFilterEl) {
+                remarksFilterEl.innerHTML = '<option value="">All Remarks</option>';
+                Array.from(remarks).sort().forEach(r => {
+                    const label = r === 'QUALIFIED' ? 'Qualified' : 'Disqualified';
+                    remarksFilterEl.insertAdjacentHTML('beforeend', `<option value="${r}">${label}</option>`);
+                });
+                remarksFilterEl.value = remarks.has(currentRemarks) ? currentRemarks : '';
+                if (window.refreshChoices) window.refreshChoices('emailRemarksFilter');
+            }
         }
 
         window.submitBackupSearch = function() {
             document.getElementById('emailFilterPosition').value = '';
-            if (window.refreshChoices) window.refreshChoices('emailFilterPosition');
-            updateVacancyFilterOptions('');
-            updateEmailStatusFilterOptions();
+            document.getElementById('emailFilterVacancy').value = '';
+            document.getElementById('emailFilterStatus').value = '';
+            const remarksEl = document.getElementById('emailRemarksFilter');
+            if (remarksEl) remarksEl.value = '';
             filterEmailApplicants();
         };
 
         function filterEmailApplicants() {
+            updateEmailModalDropdowns();
             const search = document.getElementById('emailSearchName').value.toLowerCase();
             const positionSelect = document.getElementById('emailFilterPosition');
             const position = positionSelect.value;
@@ -945,7 +997,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const posMatch = !position || item.dataset.position === position;
                 const vacMatch = !vacancy || item.dataset.vacancy === vacancy;
                 const statusMatch = !emailStatus || item.dataset.emailCount === emailStatus;
-                const remarksMatch = !remarksFilter || item.dataset.status === remarksFilter;
+                const itemStatus = (item.dataset.status === 'DISQUALIFIED_ARCHIVED') ? 'DISQUALIFIED' : item.dataset.status;
+                const remarksMatch = !remarksFilter || itemStatus === remarksFilter;
                 
                 if (nameMatch && posMatch && vacMatch && statusMatch && remarksMatch) {
                     item.classList.remove('d-none');
@@ -983,8 +1036,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 let hasNonHigherTeaching = false;
                 
                 document.querySelectorAll('.email-applicant-item:not(.d-none)').forEach(item => {
-                    if (item.dataset.status === 'QUALIFIED') hasQualified = true;
-                    if (item.dataset.status && item.dataset.status.includes('DISQUALIFIED')) hasDQ = true;
+                    const status = (item.dataset.status === 'DISQUALIFIED_ARCHIVED') ? 'DISQUALIFIED' : item.dataset.status;
+                    if (status === 'QUALIFIED') hasQualified = true;
+                    if (status && status.includes('DISQUALIFIED')) hasDQ = true;
                     
                     const pos = (item.dataset.position || '').toLowerCase();
                     const isHigher = pos.includes('master teacher') || pos.includes('head teacher') || pos.includes('principal') || pos.includes('supervisor') || pos.includes('guidance');
@@ -1041,6 +1095,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (window.refreshPdfBadges) {
                         window.refreshPdfBadges();
                     }
+                }
+                
+                if (window.refreshChoices) {
+                    window.refreshChoices('emailTemplateSelect');
                 }
             }
         }

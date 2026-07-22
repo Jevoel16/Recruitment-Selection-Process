@@ -44,8 +44,22 @@ async function seedPositionsOnly() {
                     }
                 }
 
+                let plantillaItemValue = null;
+                if (pos.plantillaItem && typeof pos.plantillaItem === 'string') {
+                    if (pos.plantillaItem.trim().startsWith('[')) {
+                        plantillaItemValue = pos.plantillaItem;
+                    } else {
+                        plantillaItemValue = JSON.stringify([{
+                            items: pos.plantillaItem,
+                            parenthetical: '',
+                            assignment: '',
+                            competency: pos.qsCompetency || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation'
+                        }]);
+                    }
+                }
+
                 await connection.query(
-                    'INSERT INTO positions (category, groupName, title, position_code, vacancyAnnouncementNo, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility, qsCompetency, qsEducationLevel, qsTrainingLevel, qsExperienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    'INSERT INTO positions (category, groupName, title, position_code, vacancyAnnouncementNo, salaryGrade, in_vacancy, monthlySalary, vacancyCount, plantillaItem, qsEducation, qsTraining, qsExperience, qsEligibility, qsEducationLevel, qsTrainingLevel, qsExperienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     [
                         pos.category || '', 
                         groupName,
@@ -56,12 +70,11 @@ async function seedPositionsOnly() {
                         pos.in_vacancy || 0, 
                         pos.monthlySalary || '', 
                         pos.vacancyCount || 0, 
-                        pos.plantillaItem || null, 
+                        plantillaItemValue, 
                         pos.qsEducation || '', 
                         pos.qsTraining || '', 
                         pos.qsExperience || '', 
                         pos.qsEligibility || '', 
-                        pos.qsCompetency || null,
                         pos.qsEducationLevel || null, 
                         pos.qsTrainingLevel || null, 
                         pos.qsExperienceLevel || null

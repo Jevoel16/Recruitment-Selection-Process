@@ -83,11 +83,15 @@ exports.getDashboard = async (req, res) => {
 
         let baseQuery = `FROM applicants WHERE 1=1`;
         const queryParams = [];
+        let searchCondition = '';
+        let searchParams = [];
 
         if (searchQuery) {
-            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
+            searchCondition = ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
             const searchPattern = `%${searchQuery}%`;
-            queryParams.push(searchPattern, searchPattern, searchPattern);
+            searchParams.push(searchPattern, searchPattern, searchPattern);
+            baseQuery += searchCondition;
+            queryParams.push(...searchParams);
         }
 
         if (positionFilter) {
@@ -176,7 +180,10 @@ exports.getDashboard = async (req, res) => {
         const showBackup = req.query.tab === 'backup';
         const showCategories = req.query.tab === 'categories';
 
-        const [positionsResult] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
+        let positionQuery = `SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != ''`;
+        if (searchQuery) positionQuery += searchCondition;
+        positionQuery += ` ORDER BY position ASC`;
+        const [positionsResult] = await db.query(positionQuery, searchParams);
         const applicantPositionList = positionsResult.map(p => p.position);
 
         let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL`;
@@ -184,6 +191,10 @@ exports.getDashboard = async (req, res) => {
         if (positionFilter) {
             vacancyQuery += ` AND position = ?`;
             vacancyParams.push(positionFilter);
+        }
+        if (searchQuery) {
+            vacancyQuery += searchCondition;
+            vacancyParams.push(...searchParams);
         }
         vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
         const [vacancies] = await db.query(vacancyQuery, vacancyParams);
@@ -199,6 +210,10 @@ exports.getDashboard = async (req, res) => {
             statusQuery += ` AND vacancyAnnouncementNo = ?`;
             statusParams.push(vacancyFilter);
         }
+        if (searchQuery) {
+            statusQuery += searchCondition;
+            statusParams.push(...searchParams);
+        }
         const [statuses] = await db.query(statusQuery, statusParams);
         let stepListMap = new Map();
         for (let row of statuses) {
@@ -211,13 +226,13 @@ exports.getDashboard = async (req, res) => {
             else if (s === 'ASSIGNED') stepListMap.set('step5_assigned', { value: 'step5_assigned', label: 'Step 5: Assigned' });
             else if (s === 'COMPLETED') stepListMap.set('step5_completed', { value: 'step5_completed', label: 'Step 5: Completed' });
             else if (s === 'PENDING') {
-                const [p] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                const [p] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} ${searchCondition} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
                 if (p.length > 0) stepListMap.set('step1_pending', { value: 'step1_pending', label: 'Step 1: Pending' });
                 
-                const [i] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                const [i] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} ${searchCondition} AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
                 if (i.length > 0) stepListMap.set('step1_in_prog', { value: 'step1_in_prog', label: 'Step 1: In Prog' });
                 
-                const [a] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id) LIMIT 1`, statusParams);
+                const [a] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} ${searchCondition} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id) LIMIT 1`, statusParams);
                 if (a.length > 0) stepListMap.set('step1_assessed', { value: 'step1_assessed', label: 'Step 1: Assessed' });
             }
             else if (s === 'WAITING_FOR_ASSESSMENT') {
@@ -338,11 +353,15 @@ exports.getDashboardPosition = async (req, res, next) => {
 
         let baseQuery = `FROM applicants WHERE 1=1`;
         const queryParams = [];
+        let searchCondition = '';
+        let searchParams = [];
 
         if (searchQuery) {
-            baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
+            searchCondition = ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
             const searchPattern = `%${searchQuery}%`;
-            queryParams.push(searchPattern, searchPattern, searchPattern);
+            searchParams.push(searchPattern, searchPattern, searchPattern);
+            baseQuery += searchCondition;
+            queryParams.push(...searchParams);
         }
 
         if (positionFilter) {
@@ -428,7 +447,10 @@ exports.getDashboardPosition = async (req, res, next) => {
         const showMasterlist = req.query.tab === 'masterlist';
         const showBackup = req.query.tab === 'backup';
 
-        const [positionsResult] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
+        let positionQuery = `SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != ''`;
+        if (searchQuery) positionQuery += searchCondition;
+        positionQuery += ` ORDER BY position ASC`;
+        const [positionsResult] = await db.query(positionQuery, searchParams);
         const applicantPositionList = positionsResult.map(p => p.position);
 
         let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL`;
@@ -436,6 +458,10 @@ exports.getDashboardPosition = async (req, res, next) => {
         if (positionFilter) {
             vacancyQuery += ` AND position = ?`;
             vacancyParams.push(positionFilter);
+        }
+        if (searchQuery) {
+            vacancyQuery += searchCondition;
+            vacancyParams.push(...searchParams);
         }
         vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
         const [vacancies] = await db.query(vacancyQuery, vacancyParams);
@@ -451,6 +477,10 @@ exports.getDashboardPosition = async (req, res, next) => {
             statusQuery += ` AND vacancyAnnouncementNo = ?`;
             statusParams.push(vacancyFilter);
         }
+        if (searchQuery) {
+            statusQuery += searchCondition;
+            statusParams.push(...searchParams);
+        }
         const [statuses] = await db.query(statusQuery, statusParams);
         let stepListMap = new Map();
         for (let row of statuses) {
@@ -463,13 +493,13 @@ exports.getDashboardPosition = async (req, res, next) => {
             else if (s === 'ASSIGNED') stepListMap.set('step5_assigned', { value: 'step5_assigned', label: 'Step 5: Assigned' });
             else if (s === 'COMPLETED') stepListMap.set('step5_completed', { value: 'step5_completed', label: 'Step 5: Completed' });
             else if (s === 'PENDING') {
-                const [p] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                const [p] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} ${searchCondition} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
                 if (p.length > 0) stepListMap.set('step1_pending', { value: 'step1_pending', label: 'Step 1: Pending' });
                 
-                const [i] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
+                const [i] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} ${searchCondition} AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND status != 'PENDING' AND status IS NOT NULL) LIMIT 1`, statusParams);
                 if (i.length > 0) stepListMap.set('step1_in_prog', { value: 'step1_in_prog', label: 'Step 1: In Prog' });
                 
-                const [a] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id) LIMIT 1`, statusParams);
+                const [a] = await db.query(`SELECT 1 FROM applicants WHERE status = 'PENDING' ${positionFilter ? 'AND position = ?' : ''} ${vacancyFilter ? 'AND vacancyAnnouncementNo = ?' : ''} ${searchCondition} AND NOT EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL) UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id AND (status = 'PENDING' OR status IS NULL)) AND EXISTS (SELECT 1 FROM applicant_education WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_training WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_experience WHERE applicant_id = applicants.id UNION ALL SELECT 1 FROM applicant_eligibility WHERE applicant_id = applicants.id) LIMIT 1`, statusParams);
                 if (a.length > 0) stepListMap.set('step1_assessed', { value: 'step1_assessed', label: 'Step 1: Assessed' });
             }
             else if (s === 'WAITING_FOR_ASSESSMENT') {
@@ -569,13 +599,17 @@ exports.getMasterlist = async (req, res) => {
     const vacancyFilter = req.query.vacancy || '';
 
     let baseQuery = `FROM applicants WHERE 1=1`;
-    const queryParams = [];
+        const queryParams = [];
+        let searchCondition = '';
+        let searchParams = [];
 
-    if (searchQuery) {
-        baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
-        const searchPattern = `%${searchQuery}%`;
-        queryParams.push(searchPattern, searchPattern, searchPattern);
-    }
+        if (searchQuery) {
+            searchCondition = ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
+            const searchPattern = `%${searchQuery}%`;
+            searchParams.push(searchPattern, searchPattern, searchPattern);
+            baseQuery += searchCondition;
+            queryParams.push(...searchParams);
+        }
 
     if (positionFilter) {
         baseQuery += ` AND position = ?`;
@@ -645,13 +679,17 @@ exports.getStepPage = async (req, res, next) => {
     const config = stepsConfig[step];
     
     let baseQuery = `FROM applicants WHERE ${config.conditions}`;
-    const queryParams = [];
+        const queryParams = [];
+        let searchCondition = '';
+        let searchParams = [];
 
-    if (searchQuery) {
-        baseQuery += ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
-        const searchPattern = `%${searchQuery}%`;
-        queryParams.push(searchPattern, searchPattern);
-    }
+        if (searchQuery) {
+            searchCondition = ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ?)`;
+            const searchPattern = `%${searchQuery}%`;
+            searchParams.push(searchPattern, searchPattern);
+            baseQuery += searchCondition;
+            queryParams.push(...searchParams);
+        }
 
     if (positionFilter && (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5')) {
         baseQuery += ` AND position = ?`;
@@ -731,7 +769,10 @@ exports.getStepPage = async (req, res, next) => {
         let remarksList = [];
         if (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5') {
             if (req.socket.destroyed) return;
-            const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' AND ${config.conditions} ORDER BY position ASC`);
+            let positionQuery = `SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' AND ${config.conditions}`;
+            if (searchQuery) positionQuery += searchCondition;
+            positionQuery += ` ORDER BY position ASC`;
+            const [positions] = await db.query(positionQuery, searchParams);
             positionList = positions.map(p => p.position);
             
             let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL AND ${config.conditions}`;
@@ -739,6 +780,10 @@ exports.getStepPage = async (req, res, next) => {
             if (positionFilter) {
                 vacancyQuery += ` AND position = ?`;
                 vacancyParams.push(positionFilter);
+            }
+            if (searchQuery) {
+                vacancyQuery += searchCondition;
+                vacancyParams.push(...searchParams);
             }
             vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
             
@@ -750,6 +795,7 @@ exports.getStepPage = async (req, res, next) => {
                 let pParams = [];
                 if (positionFilter) { pQuery += ` AND position = ?`; pParams.push(positionFilter); }
                 if (vacancyFilter) { pQuery += ` AND vacancyAnnouncementNo = ?`; pParams.push(vacancyFilter); }
+                if (searchQuery) { pQuery += searchCondition; pParams.push(...searchParams); }
                 const [allStep1Apps] = await db.query(pQuery, pParams);
                 
                 const remarksSet = new Set();
@@ -812,6 +858,10 @@ exports.getStepPage = async (req, res, next) => {
                 if (vacancyFilter) {
                     remarksQuery += ` AND vacancyAnnouncementNo = ?`;
                     remarksParamsArr.push(vacancyFilter);
+                }
+                if (searchQuery) {
+                    remarksQuery += searchCondition;
+                    remarksParamsArr.push(...searchParams);
                 }
                 remarksQuery += ` ORDER BY ${remarksCol} ASC`;
                 const [remarks] = await db.query(remarksQuery, remarksParamsArr);

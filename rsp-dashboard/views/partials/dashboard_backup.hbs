@@ -116,19 +116,19 @@
                             <div class="col-md-4">
                                 <div class="input-group glass-panel h-100 shadow-sm">
                                     <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="submitBackupSearch()"><i class="bi bi-search text-primary"></i></span>
-                                    <input type="text" class="form-control border-start-0 ps-0" id="emailSearchName" placeholder="Search by name, code, or email..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); submitBackupSearch(); }">
+                                    <input type="text" class="form-control border-start-0 ps-0" id="emailSearchName" placeholder="Search by name, code, or email..." oninput="filterEmailApplicants()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); submitBackupSearch(); }">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
-                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailFilterPosition" onchange="document.getElementById('emailFilterStatus').value=''; updateVacancyFilterOptions(this.value); updateEmailStatusFilterOptions(); filterEmailApplicants();">
+                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailFilterPosition" onchange="document.getElementById('emailFilterStatus').value=''; filterEmailApplicants();">
                                         <option value="">All Positions</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
-                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailFilterVacancy" onchange="updateEmailStatusFilterOptions(); filterEmailApplicants()">
+                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailFilterVacancy" onchange="filterEmailApplicants()">
                                         <option value="">All Vacancies</option>
                                     </select>
                                 </div>

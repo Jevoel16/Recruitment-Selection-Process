@@ -156,17 +156,80 @@ async function seed() {
 
         console.log(`✅ Successfully created ${allApplicantIds.length} applicants via API.`);
 
-        // Distribute applicants into Steps
-        const chunk = Math.floor(allApplicantIds.length / 5);
-        const step2Ids = allApplicantIds.slice(chunk, allApplicantIds.length); 
-        const step3Ids = allApplicantIds.slice(chunk * 2, allApplicantIds.length); 
-        const step4Ids = allApplicantIds.slice(chunk * 3, allApplicantIds.length); 
-        const step5Ids = allApplicantIds.slice(chunk * 4, allApplicantIds.length); 
+        // Distribute applicants: 200 in Step 1 (50 Pending, 75 Qualified, 75 Disqualified)
+        // And the remaining 800 proceed exactly as they did before
+        const pendingIds = allApplicantIds.slice(0, 50); 
+        const qualifiedIds = allApplicantIds.slice(50, 125); 
+        const disqualifiedIds = allApplicantIds.slice(125, 200); 
+        
+        const step2Ids = allApplicantIds.slice(200, allApplicantIds.length); 
+        const step3Ids = allApplicantIds.slice(400, allApplicantIds.length); 
+        const step4Ids = allApplicantIds.slice(600, allApplicantIds.length); 
+        const step5Ids = allApplicantIds.slice(800, allApplicantIds.length); 
+
+        console.log(`⏩ Leaving ${pendingIds.length} applicants as PENDING in Step 1...`);
+
+        console.log(`⏩ Moving ${qualifiedIds.length} applicants to Step 1 (QUALIFIED)...`);
+        for (let i = 0; i < qualifiedIds.length; i += BATCH_SIZE) {
+            const batch = qualifiedIds.slice(i, i + BATCH_SIZE);
+            for (const id of batch) {
+                const details = await fetch(`${API_BASE}/applicants/${id}/details`, { headers: authHeaders }).then(r => r.json());
+                const qualifyDoc = async (type, docs) => {
+                    if (docs && docs.length > 0) {
+                        for (let doc of docs) {
+                            await fetch(`${API_BASE}/applicants/${id}/${type}/${doc.id}/status`, {
+                                method: 'PUT',
+                                headers: authHeaders,
+                                body: JSON.stringify({ status: 'QUALIFIED' })
+                            });
+                        }
+                    }
+                };
+                await qualifyDoc('education', details.education);
+                await qualifyDoc('training', details.training);
+                await qualifyDoc('experience', details.experience);
+                await qualifyDoc('eligibility', details.eligibility);
+
+                await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST', headers: authHeaders });
+                // We intentionally omit /proceed-step2 so they stay in Step 1 but are flagged as QUALIFIED
+            }
+            await delay(100);
+        }
+
+        console.log(`⏩ Moving ${disqualifiedIds.length} applicants to Step 1 (DISQUALIFIED)...`);
+        for (let i = 0; i < disqualifiedIds.length; i += BATCH_SIZE) {
+            const batch = disqualifiedIds.slice(i, i + BATCH_SIZE);
+            for (const id of batch) {
+                const details = await fetch(`${API_BASE}/applicants/${id}/details`, { headers: authHeaders }).then(r => r.json());
+                const disqualifyDoc = async (type, docs) => {
+                    if (docs && docs.length > 0) {
+                        for (let doc of docs) {
+                            await fetch(`${API_BASE}/applicants/${id}/${type}/${doc.id}/status`, {
+                                method: 'PUT',
+                                headers: authHeaders,
+                                body: JSON.stringify({ status: 'DISQUALIFIED' })
+                            });
+                        }
+                    }
+                };
+                await disqualifyDoc('education', details.education);
+                await disqualifyDoc('training', details.training);
+                await disqualifyDoc('experience', details.experience);
+                await disqualifyDoc('eligibility', details.eligibility);
+
+                await fetch(`${API_BASE}/applicants/${id}/disqualify`, { 
+                    method: 'POST', 
+                    headers: authHeaders,
+                    body: JSON.stringify({ reason: 'Failed to submit mandatory requirements.' })
+                });
+            }
+            await delay(100);
+        }
 
         console.log(`⏩ Moving ${step2Ids.length} applicants to Step 2 (Qualifying requirements)...`);
         for (let i = 0; i < step2Ids.length; i += BATCH_SIZE) {
             const batch = step2Ids.slice(i, i + BATCH_SIZE);
-            const batchPromises = batch.map(async id => {
+            for (const id of batch) {
                 const details = await fetch(`${API_BASE}/applicants/${id}/details`, { headers: authHeaders }).then(r => r.json());
                 const qualifyDoc = async (type, docs) => {
                     if (docs && docs.length > 0) {
@@ -186,8 +249,7 @@ async function seed() {
 
                 await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST', headers: authHeaders });
                 await fetch(`${API_BASE}/applicants/${id}/proceed-step2`, { method: 'POST', headers: authHeaders });
-            });
-            await Promise.all(batchPromises);
+            }
             await delay(100);
         }
 
@@ -207,7 +269,7 @@ async function seed() {
 
         for (let i = 0; i < step3Ids.length; i += BATCH_SIZE) {
             const batch = step3Ids.slice(i, i + BATCH_SIZE);
-            const batchPromises = batch.map(async id => {
+            for (const id of batch) {
                 const info = appMap[id] || {};
                 const category = info.category || '';
                 const title = info.posTitle || '';
@@ -265,18 +327,16 @@ async function seed() {
                     headers: authHeaders,
                     body: JSON.stringify({ status: 'ASSESSED' })
                 });
-            });
-            await Promise.all(batchPromises);
+            }
             await delay(100);
         }
 
         console.log(`⏩ Moving ${step4Ids.length} applicants to Step 4 (Requirements phase)...`);
         for (let i = 0; i < step4Ids.length; i += BATCH_SIZE) {
             const batch = step4Ids.slice(i, i + BATCH_SIZE);
-            const batchPromises = batch.map(id => 
-                fetch(`${API_BASE}/applicants/${id}/proceed-requirements`, { method: 'POST', headers: authHeaders })
-            );
-            await Promise.all(batchPromises);
+            for (const id of batch) {
+                await fetch(`${API_BASE}/applicants/${id}/proceed-requirements`, { method: 'POST', headers: authHeaders });
+            }
             await delay(100);
         }
 
@@ -284,7 +344,7 @@ async function seed() {
         const offices = ['Engineering Dept', 'HR Dept', 'Marketing Office', 'Executive Suite', 'Finance Dept'];
         for (let i = 0; i < step5Ids.length; i += BATCH_SIZE) {
             const batch = step5Ids.slice(i, i + BATCH_SIZE);
-            const batchPromises = batch.map(async id => {
+            for (const id of batch) {
                 await fetch(`${API_BASE}/applicants/${id}/requirements/all`, {
                     method: 'POST',
                     headers: authHeaders,
@@ -310,8 +370,7 @@ async function seed() {
                         ccDesignation_4: 'HR Director'
                     })
                 });
-            });
-            await Promise.all(batchPromises);
+            }
             await delay(100);
         }
 
