@@ -9,6 +9,11 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Implemented server-side PDF generation strategies and added PDF exports for applicant lists.
+- Enhanced email modal filtering with dynamic cascading dropdowns for document template selection.
+- Updated database schema and seeders to officially support `DISQUALIFIED_ARCHIVED` status.
+- Cleaned up the project repository by removing obsolete root test scripts and legacy debug files.
+- Fixed browser tab loading issues and corrected UI layout inconsistencies across dashboard views.
 - Decoupled PDF document generation from email dispatch with cross-platform pre-generation support (PowerShell/LibreOffice).
 - The mass email dispatch list now automatically hides "PENDING" applicants to prevent accidental early notifications.
 - Overhauled the mass email dispatch engine to chunk bulk requests and prevent server timeouts.
