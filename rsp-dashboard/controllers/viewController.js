@@ -148,6 +148,7 @@ exports.getDashboard = async (req, res) => {
             else if (stepFilter === 'step5_completed') baseQuery += ` AND status = 'COMPLETED'`;
         }
 
+        if (req.socket.destroyed) return;
         const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
         const totalRecords = countResult[0].total;
         const totalPages = Math.ceil(totalRecords / limit) || 1;
@@ -156,6 +157,7 @@ exports.getDashboard = async (req, res) => {
 
         for (let row of applicants) {
             if (row.status !== 'PENDING') continue;
+            if (req.socket.destroyed) return;
             const [docs] = await db.query(`
                 SELECT status FROM applicant_education WHERE applicant_id = ?
                 UNION ALL SELECT status FROM applicant_training WHERE applicant_id = ?
@@ -586,6 +588,7 @@ exports.getMasterlist = async (req, res) => {
     }
 
     try {
+        if (req.socket.destroyed) return;
         const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
         const totalRecords = countResult[0].total;
         const totalPages = Math.ceil(totalRecords / limit) || 1;
@@ -716,6 +719,7 @@ exports.getStepPage = async (req, res, next) => {
     }
 
     try {
+        if (req.socket.destroyed) return;
         const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
         const totalRecords = countResult[0].total;
         const totalPages = Math.ceil(totalRecords / limit) || 1;
@@ -726,6 +730,7 @@ exports.getStepPage = async (req, res, next) => {
         let vacancyList = [];
         let remarksList = [];
         if (step === 'step1' || step === 'step2' || step === 'step3' || step === 'step4' || step === 'step5') {
+            if (req.socket.destroyed) return;
             const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' AND ${config.conditions} ORDER BY position ASC`);
             positionList = positions.map(p => p.position);
             
@@ -760,6 +765,7 @@ exports.getStepPage = async (req, res, next) => {
                         singleJoinParams.push(vacancyFilter);
                     }
                     const joinParams = [...singleJoinParams, ...singleJoinParams, ...singleJoinParams, ...singleJoinParams];
+                    if (req.socket.destroyed) return;
                     const [docs] = await db.query(`
                         SELECT a.applicant_id, a.status FROM applicant_education a JOIN applicants b ON a.applicant_id = b.id WHERE b.status = 'PENDING'${joinCondition}
                         UNION ALL SELECT a.applicant_id, a.status FROM applicant_training a JOIN applicants b ON a.applicant_id = b.id WHERE b.status = 'PENDING'${joinCondition}

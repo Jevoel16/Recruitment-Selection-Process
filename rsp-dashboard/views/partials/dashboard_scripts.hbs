@@ -1,4 +1,13 @@
 <script>
+window.globalTabAbortController = new AbortController();
+window.getTabAbortSignal = function() {
+    if (window.globalTabAbortController) {
+        window.globalTabAbortController.abort();
+    }
+    window.globalTabAbortController = new AbortController();
+    return window.globalTabAbortController.signal;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Tab retention
     const tabs = document.querySelectorAll('button[data-bs-toggle="pill"]');
@@ -617,7 +626,8 @@ document.addEventListener('DOMContentLoaded', function() {
         async function refreshMetricsTab() {
             metricsDataCache = null;
             try {
-                const response = await fetch('/api/dashboard/metrics');
+                const signal = window.getTabAbortSignal();
+                const response = await fetch('/api/dashboard/metrics', { signal });
                 const data = await response.json();
                 metricsDataCache = data;
                 
@@ -663,6 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             } catch(e) {
+                if (e.name === 'AbortError') return;
                 console.error('Error fetching metrics', e);
             }
         }
@@ -672,7 +683,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const limitText = document.getElementById('dailyEmailLimitText');
                 if (!limitText) return;
                 
-                const response = await fetch('/api/export/email-codes/limits');
+                const signal = window.getTabAbortSignal();
+                const response = await fetch('/api/export/email-codes/limits', { signal });
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
@@ -687,11 +699,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             } catch(e) {
+                if (e.name === 'AbortError') return;
                 console.error('Error fetching email limits', e);
             }
         }
 
-        document.getElementById('dashboardTabs').addEventListener('shown.bs.tab', function (event) {
+        document.getElementById('dashboardTabs').addEventListener('show.bs.tab', function (event) {
             if (event.target.id === 'metrics-tab') {
                 refreshMetricsTab();
             } else if (event.target.id === 'backup-tab') {
@@ -713,7 +726,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function openEmailModal(type = 'codes') {
             currentEmailDispatchType = type;
             try {
-                const response = await fetch('/api/export/email-codes/applicants');
+                const response = await fetch(`/api/export/email-codes/applicants?type=${type}`);
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
@@ -769,6 +782,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <label class="form-check-label fw-bold" for="emailCb${app.id}">
                                         ${app.firstName} ${app.lastName}
                                     </label>
+                                    <div class="mt-1 d-none pdf-ready-badge" id="pdf-ready-${app.id}">
+                                        <span class="badge bg-success"><i class="bi bi-file-earmark-pdf-fill"></i> Pre-generated</span>
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="small fw-bold">${app.applicationCode || 'N/A'}</div>
@@ -797,8 +813,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     document.getElementById('emailSearchName').value = '';
                     document.getElementById('emailFilterStatus').value = '';
+                    const remarksFilterEl = document.getElementById('emailRemarksFilter');
+                    if (remarksFilterEl) remarksFilterEl.value = '';
                     filterEmailApplicants();
                     
+                    if (currentEmailDispatchType === 'docs') {
+                        document.getElementById('emailTemplateContainer').classList.remove('d-none');
+                        window.refreshPdfBadges();
+                    } else {
+                        document.getElementById('emailTemplateContainer').classList.add('d-none');
+                    }
+
                     if (!emailSelectionModal) {
                         emailSelectionModal = new bootstrap.Modal(document.getElementById('emailSelectionModal'));
                     }
@@ -811,6 +836,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.showToast) window.showToast('An error occurred while fetching applicants.', 'danger');
             }
         }
+        
+        window.refreshPdfBadges = async function() {
+            if (currentEmailDispatchType !== 'docs') return;
+            const templateSelect = document.getElementById('emailTemplateSelect');
+            if (!templateSelect) return;
+            const templateName = templateSelect.value;
+            
+            try {
+                const res = await fetch(`/api/export/check-generated-docs?templateName=${encodeURIComponent(templateName)}`);
+                const data = await res.json();
+                
+                document.querySelectorAll('.pdf-ready-badge').forEach(badge => badge.classList.add('d-none'));
+                
+                if (data.success && data.readyIds) {
+                    data.readyIds.forEach(id => {
+                        const badge = document.getElementById(`pdf-ready-${id}`);
+                        if (badge) badge.classList.remove('d-none');
+                    });
+                }
+            } catch(e) {
+                console.error('Error fetching generated docs check:', e);
+            }
+        };
         
         function updateVacancyFilterOptions(selectedPosition) {
             const vacancySelect = document.getElementById('emailFilterVacancy');
@@ -886,6 +934,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const vacancy = document.getElementById('emailFilterVacancy').value;
             const emailStatus = document.getElementById('emailFilterStatus').value;
             
+            const remarksFilterEl = document.getElementById('emailRemarksFilter');
+            const remarksFilter = (currentEmailDispatchType === 'docs' && remarksFilterEl) ? remarksFilterEl.value : '';
+            
             const items = document.querySelectorAll('.email-applicant-item');
             let anyVisible = false;
             
@@ -894,8 +945,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const posMatch = !position || item.dataset.position === position;
                 const vacMatch = !vacancy || item.dataset.vacancy === vacancy;
                 const statusMatch = !emailStatus || item.dataset.emailCount === emailStatus;
+                const remarksMatch = !remarksFilter || item.dataset.status === remarksFilter;
                 
-                if (nameMatch && posMatch && vacMatch && statusMatch) {
+                if (nameMatch && posMatch && vacMatch && statusMatch && remarksMatch) {
                     item.classList.remove('d-none');
                     anyVisible = true;
                 } else {
@@ -913,6 +965,84 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             updateSelectedEmailCount();
+            
+            // Dynamically update the template choices based on the currently visible applicants
+            const templateSelect = document.getElementById('emailTemplateSelect');
+            if (templateSelect) {
+                if (!window.originalEmailTemplates) {
+                    window.originalEmailTemplates = Array.from(templateSelect.options).map(opt => ({
+                        value: opt.value,
+                        text: opt.text,
+                        selected: opt.selected
+                    }));
+                }
+                
+                let hasQualified = false;
+                let hasDQ = false;
+                let hasHigherTeaching = false;
+                let hasNonHigherTeaching = false;
+                
+                document.querySelectorAll('.email-applicant-item:not(.d-none)').forEach(item => {
+                    if (item.dataset.status === 'QUALIFIED') hasQualified = true;
+                    if (item.dataset.status && item.dataset.status.includes('DISQUALIFIED')) hasDQ = true;
+                    
+                    const pos = (item.dataset.position || '').toLowerCase();
+                    const isHigher = pos.includes('master teacher') || pos.includes('head teacher') || pos.includes('principal') || pos.includes('supervisor') || pos.includes('guidance');
+                    if (isHigher) hasHigherTeaching = true;
+                    else hasNonHigherTeaching = true;
+                });
+                
+                let anyVisible = document.querySelectorAll('.email-applicant-item:not(.d-none)').length > 0;
+                const currentValue = templateSelect.value;
+                
+                templateSelect.innerHTML = '';
+                
+                window.originalEmailTemplates.forEach(orig => {
+                    let shouldShow = false;
+                    
+                    if (!anyVisible) {
+                        shouldShow = true; // Show all if nothing is visible
+                    } else {
+                        let matchesStatus = true;
+                        if (orig.value.includes('Notice to Qualified')) {
+                            matchesStatus = hasQualified;
+                        } else if (orig.value.includes('Notice to DQ')) {
+                            matchesStatus = hasDQ;
+                        }
+                        
+                        let matchesTeaching = true;
+                        if (orig.value.includes('Higher Teaching')) {
+                            matchesTeaching = hasHigherTeaching;
+                        }
+                        
+                        shouldShow = matchesStatus && matchesTeaching;
+                    }
+                    
+                    if (shouldShow) {
+                        const opt = document.createElement('option');
+                        opt.value = orig.value;
+                        opt.text = orig.text;
+                        templateSelect.appendChild(opt);
+                    }
+                });
+                
+                // Try to restore previous selection if still available, else pick first valid
+                let found = false;
+                for (let i = 0; i < templateSelect.options.length; i++) {
+                    if (templateSelect.options[i].value === currentValue) {
+                        templateSelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found && templateSelect.options.length > 0) {
+                    templateSelect.selectedIndex = 0;
+                    if (window.refreshPdfBadges) {
+                        window.refreshPdfBadges();
+                    }
+                }
+            }
         }
 
         function toggleSelectAllEmails(checkbox) {
@@ -953,12 +1083,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('confirmEmailCount').innerText = selectedCount;
             document.getElementById('emailConfirmTypeLabel').innerText = currentEmailDispatchType === 'docs' ? 'Step 1 generated docs' : 'application codes';
             
+
             if (currentEmailDispatchType === 'docs') {
                 document.getElementById('emailTemplateContainer').classList.remove('d-none');
-                document.getElementById('preGenerateBtn').classList.remove('d-none');
             } else {
                 document.getElementById('emailTemplateContainer').classList.add('d-none');
-                document.getElementById('preGenerateBtn').classList.add('d-none');
             }
             
             if (!emailConfirmationModal) {
@@ -966,6 +1095,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             emailConfirmationModal.show();
         }
+
 
         window.preGeneratePDFs = async function() {
             const selectedCheckboxes = document.querySelectorAll('.email-applicant-cb:checked');

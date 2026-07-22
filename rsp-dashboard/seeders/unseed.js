@@ -22,6 +22,7 @@ async function unseed() {
         await connection.query('TRUNCATE TABLE applicants');
         await connection.query('TRUNCATE TABLE positions');
         await connection.query('TRUNCATE TABLE logs');
+        await connection.query('TRUNCATE TABLE applicant_email_logs');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         console.log('✅ Successfully flushed data from database.');

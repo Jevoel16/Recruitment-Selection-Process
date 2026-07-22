@@ -1,7 +1,9 @@
 async function fetchDetails(id) {
     const res = await fetch(`/api/applicants/${id}/details`);
     if (!res.ok) throw new Error('Failed to fetch details');
-    return await res.json();
+    const data = await res.json();
+    window.currentApplicantVersion = data.version;
+    return data;
 }
 
 // Reusable deleter

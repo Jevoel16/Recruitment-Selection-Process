@@ -5,6 +5,7 @@ const applicantController = require('../controllers/applicantController');
 const db = require('../db');
 const authController = require('../controllers/authController');
 const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
+const pdfEvents = require('../utils/pdfEvents');
 
 router.use(requireAuth);
 
@@ -47,9 +48,7 @@ router.put('/applicants/:id/info', applicantController.updateInfo);
 router.get('/applicants/:id/details', applicantController.getApplicantDetails);
 router.post('/applicants/:id/doc-date', applicantController.saveDocDate);
 router.put('/applicants/:id/:type/:docId/status', applicantController.updateDocumentStatus);
-router.post('/applicants/:id/lock', applicantController.lockApplicant);
-router.post('/applicants/:id/unlock', applicantController.unlockApplicant);
-router.get('/applicants/:id/lock-stream', applicantController.lockStream);
+// Locking routes removed in favor of Optimistic Locking
 
 // Endpoints for managing applicant educational background records
 router.post('/applicants/:id/education', applicantController.addEducation);
@@ -179,14 +178,22 @@ router.get('/export/email-codes/limits', async (req, res) => {
 // Endpoint to fetch applicants who have emails
 router.get('/export/email-codes/applicants', async (req, res) => {
     try {
+        const { type } = req.query;
+        let statusFilter = "AND a.status != 'PENDING'";
+        
+        if (type === 'docs') {
+            statusFilter = "AND a.status IN ('QUALIFIED', 'DISQUALIFIED')";
+        }
+
+        const emailType = type === 'docs' ? 'docs' : 'codes';
         const query = `
             SELECT a.id, a.firstName, a.lastName, a.emailAddress, a.applicationCode, a.position, a.vacancyAnnouncementNo, a.status,
                    COUNT(l.id) AS emailCount
             FROM applicants a
-            LEFT JOIN applicant_email_logs l ON a.id = l.applicant_id
+            LEFT JOIN applicant_email_logs l ON a.id = l.applicant_id AND l.email_type = '${emailType}'
             WHERE a.emailAddress IS NOT NULL 
               AND a.emailAddress != "" 
-              AND a.status != 'PENDING'
+              ${statusFilter}
             GROUP BY a.id
         `;
         const [applicants] = await db.query(query);
@@ -257,7 +264,7 @@ router.post('/export/email-codes', async (req, res) => {
                 });
                 
                 // Log success
-                await db.query('INSERT INTO applicant_email_logs (applicant_id) VALUES (?)', [applicant.id]);
+                await db.query("INSERT INTO applicant_email_logs (applicant_id, email_type) VALUES (?, 'codes')", [applicant.id]);
                 
                 sentCount++;
             } catch (err) {
@@ -278,6 +285,35 @@ router.post('/export/email-codes', async (req, res) => {
     } catch (error) {
         console.error('Email Application Codes Error:', error);
         res.status(500).json({ success: false, message: 'Failed to send emails' });
+    }
+});
+
+router.get('/export/check-generated-docs', async (req, res) => {
+    try {
+        const { templateName } = req.query;
+        if (!templateName) return res.json({ success: true, readyIds: [] });
+
+        const fs = require('fs');
+        const path = require('path');
+        const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
+        
+        if (!fs.existsSync(generatedDir)) {
+            return res.json({ success: true, readyIds: [] });
+        }
+
+        const files = fs.readdirSync(generatedDir);
+        const safeTemplateName = templateName.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        // Files are named like: 123_Notice_to_DQ.pdf
+        const readyIds = files
+            .filter(f => f.includes(`_${safeTemplateName}.`) && (f.endsWith('.pdf') || f.endsWith('.docx')))
+            .map(f => parseInt(f.split('_')[0]))
+            .filter(id => !isNaN(id));
+
+        res.json({ success: true, readyIds });
+    } catch (error) {
+        console.error('Check generated docs error:', error);
+        res.status(500).json({ success: false, message: 'Failed to check generated docs' });
     }
 });
 
@@ -302,7 +338,8 @@ router.post('/export/pre-generate-docs', async (req, res) => {
         const fs = require('fs');
         const path = require('path');
         const os = require('os');
-        const { execSync } = require('child_process');
+        const util = require('util');
+        const execAsync = util.promisify(require('child_process').exec);
 
         const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
         fs.mkdirSync(generatedDir, { recursive: true });
@@ -427,7 +464,7 @@ $word.Quit()
                         `;
                         const scriptPath = path.join(tempDir, 'convert.ps1');
                         fs.writeFileSync(scriptPath, psScript);
-                        execSync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { stdio: 'ignore', timeout: 60000 });
+                        await execAsync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { timeout: 60000 });
                         
                         if (fs.existsSync(outputPath)) {
                             fs.copyFileSync(outputPath, finalOutputPath);
@@ -437,12 +474,12 @@ $word.Quit()
                     } catch (convErr) {
                         console.warn(`Windows PDF conversion failed for ${appName}. Generating DOCX fallback.`);
                         fs.copyFileSync(inputPath, finalOutputPath.replace('.pdf', '.docx'));
-                        try { execSync('taskkill /F /IM winword.exe /T', { stdio: 'ignore' }); } catch(e) {}
+                        try { await execAsync('taskkill /F /IM winword.exe /T'); } catch(e) {}
                     }
                 } else {
                     // Linux / macOS LibreOffice headless
                     try {
-                        execSync(`libreoffice --headless --convert-to pdf "${inputPath}" --outdir "${tempDir}"`, { stdio: 'ignore', timeout: 60000 });
+                        await execAsync(`libreoffice --headless --convert-to pdf "${inputPath}" --outdir "${tempDir}"`, { timeout: 60000 });
                         const outputPath = path.join(tempDir, baseName + '.pdf');
                         if (fs.existsSync(outputPath)) {
                             fs.copyFileSync(outputPath, finalOutputPath);
@@ -537,7 +574,7 @@ router.post('/export/email-docs', async (req, res) => {
                     attachments: [{ filename: attachmentName, content: attachmentBuf }]
                 });
                 
-                await db.query('INSERT INTO applicant_email_logs (applicant_id) VALUES (?)', [app.id]);
+                await db.query("INSERT INTO applicant_email_logs (applicant_id, email_type) VALUES (?, 'docs')", [app.id]);
                 sentCount++;
             } catch (err) {
                 console.error(`Failed to send doc to ${app.emailAddress}:`, err);
@@ -623,6 +660,25 @@ router.post('/export/convert-to-pdf', async (req, res) => {
         console.error("PDF conversion route error:", err);
         res.status(500).json({ error: 'Internal server error.' });
     }
+});
+
+// SSE endpoint for real-time PDF generation notifications
+router.get('/events/pdf-status', (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    });
+    res.write('data: {"connected":true}\n\n');
+
+    const onPdfDone = (data) => {
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+    pdfEvents.on('pdf-done', onPdfDone);
+
+    req.on('close', () => {
+        pdfEvents.removeListener('pdf-done', onPdfDone);
+    });
 });
 
 module.exports = router;

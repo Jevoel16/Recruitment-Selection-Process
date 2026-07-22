@@ -1,4 +1,28 @@
 const db = require('../db');
+const { generatePDFForApplicant } = require('../utils/pdfGenerator');
+const pdfEvents = require('../utils/pdfEvents');
+
+// Helper for Optimistic Locking
+async function updateVersion(req, res, id) {
+    if (req.method !== 'POST' && req.method !== 'PUT') return true;
+    const clientVersion = req.body.version;
+    if (!clientVersion) return true; // fallback for non-optimistic calls
+    
+    const [rows] = await db.query('SELECT version FROM applicants WHERE id = ?', [id]);
+    if (!rows.length) {
+        res.status(404).json({ error: 'Applicant not found' });
+        return false;
+    }
+    
+    const dbVersion = rows[0].version || 1;
+    if (parseInt(clientVersion) !== dbVersion) {
+        res.status(409).json({ error: 'Conflict: The record was updated by another user. Please refresh.' });
+        return false;
+    }
+    
+    await db.query('UPDATE applicants SET version = version + 1 WHERE id = ?', [id]);
+    return true;
+}
 
 // Maps complex position strings into concise prefix codes (e.g. 'Teacher III' -> 'T3'). 
 // This normalization is strictly required for generating compact, recognizable Application Codes for the tracking system.
@@ -109,9 +133,36 @@ exports.deleteApplicant = async (req, res) => {
 // This is typically invoked from Step 1 or Step 4 when mandatory documents fail verification.
 exports.disqualifyApplicant = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         const { reason } = req.body || {};
         if (reason) await db.query(`UPDATE applicants SET status = 'DISQUALIFIED', disqualificationReason = ? WHERE id = ?`, [reason, req.params.id]);
         else await db.query(`UPDATE applicants SET status = 'DISQUALIFIED' WHERE id = ?`, [req.params.id]);
+        
+        // Generate all DQ template PDFs in the background (sequentially to avoid Word COM conflicts)
+        const dqTemplates = [
+            'Notice to DQ',
+            'Notice to DQ - Higher Teaching',
+            'Notice to DQ - No Omnibus',
+            'Notice to DQ - Not notarized Omnibus'
+        ];
+        db.query('SELECT * FROM applicants WHERE id = ?', [req.params.id]).then(async ([apps]) => {
+            if (apps && apps.length > 0) {
+                let generated = 0, failed = 0;
+                for (const tmpl of dqTemplates) {
+                    try {
+                        await generatePDFForApplicant(apps[0], tmpl);
+                        console.log(`[Auto-PDF] Generated "${tmpl}" for applicant ${apps[0].id}`);
+                        generated++;
+                    } catch (err) {
+                        console.error(`[Auto-PDF] Failed "${tmpl}" for applicant ${apps[0].id}:`, err.message);
+                        failed++;
+                    }
+                }
+                pdfEvents.emit('pdf-done', { applicantId: apps[0].id, name: `${apps[0].firstName} ${apps[0].lastName}`, status: 'DISQUALIFIED', generated, failed, total: dqTemplates.length });
+            }
+        }).catch(err => console.error("DB error:", err));
+
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -121,7 +172,32 @@ exports.disqualifyApplicant = async (req, res) => {
 
 exports.qualifyApplicant = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query(`UPDATE applicants SET status = 'QUALIFIED' WHERE id = ?`, [req.params.id]);
+        
+        // Generate all Qualified template PDFs in the background (sequentially to avoid Word COM conflicts)
+        const qualTemplates = [
+            'Notice to Qualified - Without Date of Assessment',
+            'Notice to Qualified - Higher Teaching'
+        ];
+        db.query('SELECT * FROM applicants WHERE id = ?', [req.params.id]).then(async ([apps]) => {
+            if (apps && apps.length > 0) {
+                let generated = 0, failed = 0;
+                for (const tmpl of qualTemplates) {
+                    try {
+                        await generatePDFForApplicant(apps[0], tmpl);
+                        console.log(`[Auto-PDF] Generated "${tmpl}" for applicant ${apps[0].id}`);
+                        generated++;
+                    } catch (err) {
+                        console.error(`[Auto-PDF] Failed "${tmpl}" for applicant ${apps[0].id}:`, err.message);
+                        failed++;
+                    }
+                }
+                pdfEvents.emit('pdf-done', { applicantId: apps[0].id, name: `${apps[0].firstName} ${apps[0].lastName}`, status: 'QUALIFIED', generated, failed, total: qualTemplates.length });
+            }
+        }).catch(err => console.error("DB error:", err));
+
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -131,6 +207,8 @@ exports.qualifyApplicant = async (req, res) => {
 
 exports.proceedStep2 = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query(`UPDATE applicants SET status = 'WAITING_FOR_ASSESSMENT' WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (error) {
@@ -141,6 +219,8 @@ exports.proceedStep2 = async (req, res) => {
 
 exports.updateStatus = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query(`UPDATE applicants SET status = ? WHERE id = ?`, [req.body.status, req.params.id]);
         res.json({ success: true });
     } catch (error) {
@@ -178,6 +258,8 @@ exports.updateRequirement = async (req, res) => {
 // This calculates and stores points across multiple criteria (Education, Training, Experience, etc.) critical for the Step 3 comparative leaderboard.
 exports.assessApplicant = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         const { education, training, experience, performance, outstandingAccomplishments, applicationOfEducation, applicationOfLD, potential, pbet, ppst_coi, ppst_ncoi, scoreWe, scoreSwst, scoreBei, scorePotPa, scorePotPsa, maxWe, maxSwst, maxBei, maxPotPa, maxPotPsa, isComplete, remarks: customRemarks } = req.body;
         const edu = (education !== undefined && education !== null && education !== '') ? parseFloat(education) : null;
         const trn = (training !== undefined && training !== null && training !== '') ? parseFloat(training) : null;
@@ -224,6 +306,8 @@ exports.assessApplicant = async (req, res) => {
 
 exports.proceedRequirements = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query(`UPDATE applicants SET status = 'WAITING' WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (error) {
@@ -234,6 +318,8 @@ exports.proceedRequirements = async (req, res) => {
 
 exports.toggleAssignmentReq = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query(`UPDATE applicants SET assignmentReqStatus = ? WHERE id = ?`, [req.body.status, req.params.id]);
         res.json({ success: true });
     } catch (error) {
@@ -244,6 +330,8 @@ exports.toggleAssignmentReq = async (req, res) => {
 
 exports.saveDocDate = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         const { docType, dateStr } = req.body;
         if (!docType || !dateStr) return res.status(400).json({ error: "Missing parameters" });
 
@@ -285,6 +373,8 @@ exports.assignApplicant = async (req, res) => {
 
 exports.completeApplicant = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query(`UPDATE applicants SET status = 'COMPLETED' WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (error) {
@@ -309,6 +399,8 @@ exports.updateInfo = async (req, res) => {
 
 exports.addEducation = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [req.params.id, req.body.title, req.body.year_graduated, '']);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -324,6 +416,10 @@ exports.setHighestEducation = async (req, res) => {
 
 exports.deleteEducation = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_education WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         await db.query('DELETE FROM applicant_education WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -331,6 +427,8 @@ exports.deleteEducation = async (req, res) => {
 
 exports.addTraining = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [req.params.id, req.body.title, req.body.hours, '']);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -338,6 +436,10 @@ exports.addTraining = async (req, res) => {
 
 exports.deleteTraining = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_training WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         await db.query('DELETE FROM applicant_training WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -345,6 +447,8 @@ exports.deleteTraining = async (req, res) => {
 
 exports.addExperience = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query('INSERT INTO applicant_experience (applicant_id, details, years, months, digitalCopyLink) VALUES (?, ?, ?, ?, ?)', [req.params.id, req.body.details, req.body.years, req.body.months || 0, '']);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -352,6 +456,10 @@ exports.addExperience = async (req, res) => {
 
 exports.deleteExperience = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_experience WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         await db.query('DELETE FROM applicant_experience WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -359,6 +467,8 @@ exports.deleteExperience = async (req, res) => {
 
 exports.addEligibility = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [req.params.id, req.body.title, req.body.rating, '']);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -366,6 +476,10 @@ exports.addEligibility = async (req, res) => {
 
 exports.deleteEligibility = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_eligibility WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         await db.query('DELETE FROM applicant_eligibility WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
@@ -425,6 +539,8 @@ exports.getApplicantDetails = async (req, res) => {
 // Evaluates overall document readiness afterwards to automatically unlock or lock workflow progression buttons.
 exports.updateDocumentStatus = async (req, res) => {
     try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+
         const { id, type, docId } = req.params;
         const { status } = req.body;
         
@@ -457,88 +573,14 @@ exports.updateDocumentLink = async (req, res) => {
     }
 };
 
-exports.lockApplicant = async (req, res) => {
-    try {
-        const lockedBy = req.userId;
-        const id = req.params.id;
-
-        // Anti-deadlock: Automatically override locks that are older than 10 minutes.
-        const [result] = await db.query(
-            'UPDATE applicants SET lockedBy = ?, lockedAt = NOW() WHERE id = ? AND (lockedBy IS NULL OR lockedBy = ? OR TIMESTAMPDIFF(MINUTE, lockedAt, NOW()) > 10)', 
-            [lockedBy, id, lockedBy]
-        );
-
-        if (result.affectedRows > 0) {
-            return res.json({ success: true });
-        }
-
-        const [rows] = await db.query('SELECT lockedBy FROM applicants WHERE id = ?', [id]);
-        if (rows.length > 0 && rows[0].lockedBy && rows[0].lockedBy !== lockedBy) {
-            return res.status(403).json({ error: "Applicant is currently locked by another user." });
-        }
-
-        res.json({ success: true });
-    } catch (e) { 
-        console.error(e); 
-        res.status(500).json({ error: "Internal server error" }); 
-    }
-};
-
-exports.unlockApplicant = async (req, res) => {
-    try {
-        const lockedBy = req.userId;
-        const [rows] = await db.query('SELECT lockedBy FROM applicants WHERE id = ?', [req.params.id]);
-        if (rows.length > 0) {
-            if (rows[0].lockedBy === lockedBy || !rows[0].lockedBy) {
-                await db.query('UPDATE applicants SET lockedBy = NULL, lockedAt = NULL WHERE id = ?', [req.params.id]);
-                return res.json({ success: true });
-            } else {
-                return res.status(403).json({ error: "Locked by someone else" });
-            }
-        }
-        res.json({ success: true });
-    } catch (e) { 
-        console.error(e); 
-        res.status(500).json({ error: "Internal server error" }); 
-    }
-};
-
-exports.lockStream = async (req, res) => {
-    const id = req.params.id;
-    const lockedBy = req.userId;
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
-
-    // Send an initial connected message
-    res.write('data: connected\n\n');
-
-    // Anti-deadlock heartbeat: Keep updating lockedAt every 5 minutes as long as stream is alive
-    const heartbeatInterval = setInterval(async () => {
-        try {
-            await db.query('UPDATE applicants SET lockedAt = NOW() WHERE id = ? AND lockedBy = ?', [id, lockedBy]);
-            res.write('data: heartbeat\n\n');
-        } catch (err) {
-            console.error('Heartbeat error:', err);
-        }
-    }, 5 * 60 * 1000); // 5 minutes
-
-    req.on('close', async () => {
-        clearInterval(heartbeatInterval);
-        try {
-            // When connection drops, clear the lock if it still belongs to this user
-            await db.query('UPDATE applicants SET lockedBy = NULL, lockedAt = NULL WHERE id = ? AND lockedBy = ?', [id, lockedBy]);
-            console.log(`Lock stream closed for applicant ${id}. Lock released.`);
-        } catch (e) {
-            console.error('Error releasing lock on stream close:', e);
-        }
-    });
-};
+// Pessimistic locking functions removed in favor of Optimistic Locking
 
 exports.updateEducation = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_education WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         const { degree, yearGraduated } = req.body;
         await db.query('UPDATE applicant_education SET degree = ?, yearGraduated = ? WHERE id = ?', [degree, yearGraduated, req.params.id]);
         res.json({ success: true });
@@ -547,6 +589,10 @@ exports.updateEducation = async (req, res) => {
 
 exports.updateTraining = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_training WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         const { title, hours } = req.body;
         await db.query('UPDATE applicant_training SET title = ?, hours = ? WHERE id = ?', [title, hours, req.params.id]);
         res.json({ success: true });
@@ -555,6 +601,10 @@ exports.updateTraining = async (req, res) => {
 
 exports.updateExperience = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_experience WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         const { details, years, months } = req.body;
         await db.query('UPDATE applicant_experience SET details = ?, years = ?, months = ? WHERE id = ?', [details, years, months || 0, req.params.id]);
         res.json({ success: true });
@@ -563,6 +613,10 @@ exports.updateExperience = async (req, res) => {
 
 exports.updateEligibility = async (req, res) => {
     try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_eligibility WHERE id = ?', [req.params.id]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
         const { details, rating } = req.body;
         await db.query('UPDATE applicant_eligibility SET details = ?, rating = ? WHERE id = ?', [details, rating, req.params.id]);
         res.json({ success: true });

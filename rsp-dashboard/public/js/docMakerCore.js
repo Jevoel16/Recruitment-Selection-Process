@@ -144,7 +144,7 @@ window.openGenericDocModal = function(step, id, status, docRemark, name, office,
                 { value: 'Notice to Qualified - Higher Teaching', label: 'Notice to Qualified - Higher Teaching' },
                 { value: 'Notice to Qualified - Without Date of Assessment', label: 'Notice to Qualified - Without Date of Assessment' }
             ];
-        } else if (status === 'DISQUALIFIED' || docRemark === 'Disqualified') {
+        } else if (status === 'DISQUALIFIED' || status === 'DISQUALIFIED_ARCHIVED' || docRemark === 'Disqualified') {
             options = [
                 { value: 'Notice to DQ - Higher Teaching', label: 'Notice to DQ - Higher Teaching' },
                 { value: 'Notice to DQ - No Omnibus', label: 'Notice to DQ - No Omnibus' },

@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logsTab = document.getElementById('logs-tab');
 
     if (usersTab) {
-        usersTab.addEventListener('shown.bs.tab', fetchUsers);
+        usersTab.addEventListener('show.bs.tab', fetchUsers);
         document.getElementById('createUserForm').addEventListener('submit', createUser);
         document.getElementById('editUserForm').addEventListener('submit', updateUser);
         
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (logsTab) {
-        logsTab.addEventListener('shown.bs.tab', fetchLogs);
+        logsTab.addEventListener('show.bs.tab', fetchLogs);
         if (logsTab.classList.contains('active')) {
             fetchLogs();
         }
@@ -26,13 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchUsers() {
     try {
-        const response = await fetch('/api/users');
+        const signal = window.getTabAbortSignal ? window.getTabAbortSignal() : undefined;
+        const response = await fetch('/api/users', { signal });
         const users = await response.json();
         const tbody = document.querySelector('#usersTable tbody');
         tbody.innerHTML = '';
         
+        let html = '';
         users.forEach(user => {
-            tbody.innerHTML += `
+            html += `
                 <tr>
                     <td>${user.name}</td>
                     <td>${user.username}</td>
@@ -47,7 +49,9 @@ async function fetchUsers() {
                 </tr>
             `;
         });
+        tbody.innerHTML = html;
     } catch (e) {
+        if (e.name === 'AbortError') return;
         console.error(e);
     }
 }
@@ -136,14 +140,16 @@ async function executeDeleteUser() {
 
 async function fetchLogs() {
     try {
-        const response = await fetch('/api/logs');
+        const signal = window.getTabAbortSignal ? window.getTabAbortSignal() : undefined;
+        const response = await fetch('/api/logs', { signal });
         const logs = await response.json();
         const tbody = document.querySelector('#logsTable tbody');
         tbody.innerHTML = '';
         
+        let html = '';
         logs.forEach(log => {
             const date = new Date(log.createdAt).toLocaleString();
-            tbody.innerHTML += `
+            html += `
                 <tr>
                     <td><small class="text-muted">${date}</small></td>
                     <td><strong>${log.name}</strong> <br><small class="text-muted">@${log.username}</small></td>
@@ -151,7 +157,9 @@ async function fetchLogs() {
                 </tr>
             `;
         });
+        tbody.innerHTML = html;
     } catch (e) {
+        if (e.name === 'AbortError') return;
         console.error(e);
     }
 }
