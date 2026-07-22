@@ -24,8 +24,8 @@ app.use(morgan('[:localdate] :method :url :status :response-time ms - :res[conte
     skip: function (req, res) { return req.method === 'GET' }
 }));
 app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(identityMiddleware);
 

@@ -123,7 +123,7 @@ async function seed() {
                     religion: religions[Math.floor(Math.random() * religions.length)],
                     disability: disabilities[Math.floor(Math.random() * disabilities.length)],
                     ethnicGroup: ethnicGroups[Math.floor(Math.random() * ethnicGroups.length)],
-                    emailAddress: `${fName}.${lName}${i+j}@example.com`.toLowerCase(),
+                    emailAddress: `jevoel.orbilla@gmail.com`,
                     contactNo: '09' + Math.floor(100000000 + Math.random() * 900000000),
                     pdsLink: 'http://example.com/pds',
                     category: positionObj.category,

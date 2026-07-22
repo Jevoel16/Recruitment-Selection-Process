@@ -30,6 +30,7 @@ window.getOrSetDocDate = async function(id, docType, applicantData) {
 
 window.exportFromTemplate = async (templateUrl, data, filename) => {
     try {
+        window.showToast("Generating document...", "info");
         // Use a static version parameter to allow the browser to cache the 3MB template!
         const response = await fetch(templateUrl + "?v=2.0");
         if (!response.ok) throw new Error("Could not fetch template: " + response.statusText);
@@ -43,13 +44,15 @@ window.exportFromTemplate = async (templateUrl, data, filename) => {
 
         doc.render(data);
 
-        const out = doc.getZip().generate({
+        // Generate blob for DOCX download
+        const outBlob = doc.getZip().generate({
             type: "blob",
             mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         });
 
-        saveAs(out, filename);
-        window.showToast("Document generated successfully.", "success");
+        // Download the DOCX
+        saveAs(outBlob, filename);
+        window.showToast("Word document generated successfully.", "success");
     } catch (error) {
         console.error("Error generating document:", error);
         alert("Failed to generate document from template: " + (error.message || error));

@@ -165,7 +165,8 @@ router.get('/export/email-codes/limits', async (req, res) => {
     try {
         const [logs] = await db.query('SELECT COUNT(*) as sentToday FROM applicant_email_logs WHERE DATE(sent_at) = CURDATE()');
         const sentToday = logs[0].sentToday || 0;
-        const dailyLimit = process.env.DAILY_EMAIL_LIMIT || 500;
+        const singleLimit = parseInt(process.env.DAILY_EMAIL_LIMIT) || 500;
+        const dailyLimit = singleLimit * 2; // Total for both accounts
         const remaining = Math.max(0, dailyLimit - sentToday);
         
         res.json({ success: true, sentToday, dailyLimit, remaining });
@@ -197,7 +198,7 @@ router.get('/export/email-codes/applicants', async (req, res) => {
 // Endpoint to auto email application codes to specific applicants
 router.post('/export/email-codes', async (req, res) => {
     try {
-        const { applicantIds } = req.body;
+        const { applicantIds, accountIndex } = req.body;
         if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
             return res.status(400).json({ success: false, message: 'No applicants selected.' });
         }
@@ -216,14 +217,21 @@ router.post('/export/email-codes', async (req, res) => {
         });
 
         const nodemailer = require('nodemailer');
+        
+        const accIdx = accountIndex || '1';
+        const host = process.env[`SMTP_HOST_${accIdx}`] || process.env.SMTP_HOST || 'smtp.gmail.com';
+        const port = process.env[`SMTP_PORT_${accIdx}`] || process.env.SMTP_PORT || 587;
+        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
+        const pass = process.env[`SMTP_PASS_${accIdx}`] || process.env.SMTP_PASS || 'your-email-password';
+        const gmailName = process.env[`SMTP_GMAILNAME_${accIdx}`] || process.env.SMTP_GMAILNAME || '';
 
         let transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: process.env.SMTP_PORT || 587,
-            secure: process.env.SMTP_PORT == 465, 
+            host: host,
+            port: port,
+            secure: port == 465, 
             auth: {
-                user: process.env.SMTP_USER || 'your-email@gmail.com', 
-                pass: process.env.SMTP_PASS || 'your-email-password'
+                user: user, 
+                pass: pass
             }
         });
 
@@ -239,7 +247,7 @@ router.post('/export/email-codes', async (req, res) => {
             }
             try {
                 let info = await transporter.sendMail({
-                    from: `"${process.env.SMTP_GMAILNAME}" <${process.env.SMTP_USER || 'your-email@gmail.com'}>`,
+                    from: `"${gmailName}" <${user}>`,
                     to: applicant.emailAddress,
                     subject: 'Your Application Code',
                     text: `Hello ${applicant.firstName} ${applicant.lastName},\n\nYour application code for the Recruitment and Selection Process is: ${applicant.applicationCode}\n\nPlease keep this code for your reference.\n\nThank you!`,
@@ -256,7 +264,7 @@ router.post('/export/email-codes', async (req, res) => {
             }
         }
         
-        let message = `Emails sent successfully to ${sentCount} applicants.`;
+        let message = `Application codes sent successfully to ${sentCount} applicants.`;
         if (skippedCount > 0) message += ` Skipped ${skippedCount} applicants (daily limit reached).`;
 
         res.json({ 
@@ -268,6 +276,298 @@ router.post('/export/email-codes', async (req, res) => {
     } catch (error) {
         console.error('Email Application Codes Error:', error);
         res.status(500).json({ success: false, message: 'Failed to send emails' });
+    }
+});
+
+router.post('/export/email-docs', async (req, res) => {
+    try {
+        const { applicantIds, accountIndex, templateName } = req.body;
+        if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
+            return res.status(400).json({ success: false, message: 'No applicants selected.' });
+        }
+        if (!templateName) {
+            return res.status(400).json({ success: false, message: 'No template selected.' });
+        }
+
+        const [applicants] = await db.query('SELECT * FROM applicants WHERE id IN (?) AND emailAddress IS NOT NULL AND emailAddress != ""', [applicantIds]);
+        
+        if (!applicants || applicants.length === 0) {
+            return res.status(404).json({ message: 'No applicants with valid email addresses found among the selection.' });
+        }
+
+        const nodemailer = require('nodemailer');
+        const PizZip = require('pizzip');
+        const Docxtemplater = require('docxtemplater');
+        const fs = require('fs');
+        const path = require('path');
+        
+        const accIdx = accountIndex || '1';
+        const host = process.env[`SMTP_HOST_${accIdx}`] || process.env.SMTP_HOST || 'smtp.gmail.com';
+        const port = process.env[`SMTP_PORT_${accIdx}`] || process.env.SMTP_PORT || 587;
+        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
+        const pass = process.env[`SMTP_PASS_${accIdx}`] || process.env.SMTP_PASS || 'your-email-password';
+        const gmailName = process.env[`SMTP_GMAILNAME_${accIdx}`] || process.env.SMTP_GMAILNAME || '';
+
+        let transporter = nodemailer.createTransport({
+            host: host,
+            port: port,
+            secure: port == 465, 
+            auth: {
+                user: user, 
+                pass: pass
+            }
+        });
+
+        let sentCount = 0;
+        let errors = [];
+
+        // Load the template
+        const templatePath = path.join(__dirname, '..', 'public', 'templates', templateName + '.docx');
+        let content;
+        try {
+            content = fs.readFileSync(templatePath, 'binary');
+        } catch (err) {
+            return res.status(400).json({ success: false, message: 'Template not found: ' + templateName });
+        }
+
+        const cleanText = (txt) => {
+            if (!txt) return '';
+            return String(txt).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+        };
+
+        const getRemark = (items) => {
+            if(!items || items.length === 0) return 'Disqualified';
+            if(items.some(i => i.status === 'DISQUALIFIED')) return 'Disqualified';
+            if(items.some(i => i.status === 'PENDING' || !i.status)) return 'Pending';
+            return 'Qualified';
+        };
+
+        for (const app of applicants) {
+            try {
+                // Fetch extra details
+                const [education] = await db.query('SELECT * FROM applicant_education WHERE applicant_id = ?', [app.id]);
+                const [training] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [app.id]);
+                const [experience] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [app.id]);
+                const [eligibility] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [app.id]);
+                
+                let positionStandards = null;
+                if (app.position) {
+                    const [posRows] = await db.query('SELECT * FROM positions WHERE title = ? LIMIT 1', [app.position]);
+                    if (posRows.length > 0) positionStandards = posRows[0];
+                }
+
+                let appName = 'Unknown Applicant';
+                const fName = app.firstName || '';
+                const mName = app.middleName || '';
+                const lName = app.lastName || '';
+                if (mName && mName.trim() !== '') appName = `${fName} ${mName.trim().charAt(0).toUpperCase()}. ${lName}`.trim();
+                else if (fName || lName) appName = `${fName} ${lName}`.trim();
+                else if (app.name) appName = app.name;
+
+                let addressStr = app.address || 'Iligan City';
+                try {
+                    const parsed = JSON.parse(addressStr);
+                    if (parsed.res_city) addressStr = parsed.res_city;
+                } catch(e) { }
+
+                const sex = app.sex;
+                const title = sex === 'Female' ? 'Madam' : 'Sir';
+                const pos = app.position || 'Position';
+                const appCode = app.applicationCode || '[Application Code]';
+                
+                const reasonText = app.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+                
+                const d = new Date();
+                const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                const remarksDate = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
+
+                const templateData = {
+                    FormattedDate: dateStr,
+                    ApplicantName: appName.toUpperCase(),
+                    Address: addressStr,
+                    Title: title,
+                    Position: pos,
+                    PositionAppliedFor: pos,
+                    ApplicationCode: appCode,
+                    ReasonText: reasonText,
+                    
+                    QSEducation: positionStandards?.qsEducation ? 'Education: ' + cleanText(positionStandards.qsEducation) : '',
+                    AppEducation: cleanText((education || []).map(e => e.degree || e.title).join(', ')) || '',
+                    RmEducation: getRemark(education),
+
+                    QSTraining: positionStandards?.qsTraining ? 'Training: ' + cleanText(positionStandards.qsTraining) : '',
+                    AppTraining: cleanText((training || []).map(e => e.title).join(', ')) || '',
+                    RmTraining: getRemark(training),
+
+                    QSExperience: positionStandards?.qsExperience ? 'Experience: ' + cleanText(positionStandards.qsExperience) : '',
+                    AppExperience: cleanText((experience || []).map(e => e.details).join(', ')) || '',
+                    RmExperience: getRemark(experience),
+
+                    QSEligibility: positionStandards?.qsEligibility ? 'Eligibility: ' + cleanText(positionStandards.qsEligibility) : '',
+                    AppEligibility: cleanText((eligibility || []).map(e => e.title || e.details).join(', ')) || '',
+                    RmEligibility: getRemark(eligibility),
+
+                    Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`
+                };
+
+                const zip = new PizZip(content);
+                const doc = new Docxtemplater(zip, {
+                    paragraphLoop: true,
+                    linebreaks: true,
+                });
+                
+                doc.render(templateData);
+                const buf = doc.getZip().generate({ type: 'nodebuffer' });
+
+                // Convert to PDF for email using MS Word via PowerShell
+                const os = require('os');
+                const { execSync } = require('child_process');
+
+                const tempDir = path.join(os.tmpdir(), 'rsp_email_pdf_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
+                fs.mkdirSync(tempDir, { recursive: true });
+                const baseName = `${templateName.replace(/[^a-zA-Z0-9]/g, '_')}_${appName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const inputPath = path.join(tempDir, baseName + '.docx');
+                const outputPath = path.join(tempDir, baseName + '.pdf');
+                
+                fs.writeFileSync(inputPath, buf);
+                
+                let attachmentBuf = buf;
+                let attachmentName = baseName + '.docx';
+                
+                if (os.platform() === 'win32') {
+                    try {
+                        const psScript = `
+$word = New-Object -ComObject Word.Application
+$word.Visible = $false
+$doc = $word.Documents.Open('${inputPath}')
+$doc.ExportAsFixedFormat('${outputPath}', 17, $false, 0)
+$doc.Close()
+$word.Quit()
+                        `;
+                        const scriptPath = path.join(tempDir, 'convert.ps1');
+                        fs.writeFileSync(scriptPath, psScript);
+                        
+                        execSync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { stdio: 'ignore', timeout: 60000 });
+                        
+                        if (fs.existsSync(outputPath)) {
+                            attachmentBuf = fs.readFileSync(outputPath);
+                            attachmentName = baseName + '.pdf';
+                        } else {
+                            throw new Error('PDF output not found');
+                        }
+                    } catch (convErr) {
+                        console.warn(`Failed to convert ${baseName} to PDF via MS Word for email. Sending DOCX fallback.`);
+                        // Attempt to forcefully kill stuck winword processes if it failed
+                        try { execSync('taskkill /F /IM winword.exe /T', { stdio: 'ignore' }); } catch(e) {}
+                    }
+                }
+                
+                try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+
+                let info = await transporter.sendMail({
+                    from: `"${gmailName}" <${user}>`,
+                    to: app.emailAddress,
+                    subject: 'Your Initial Evaluation Document',
+                    text: `Hello ${app.firstName} ${app.lastName},\n\nPlease find attached your Step 1 Evaluation Document.\n\nThank you!`,
+                    html: `<p>Hello ${app.firstName} ${app.lastName},</p><p>Please find attached your Step 1 Evaluation Document.</p><p>Thank you!</p>`,
+                    attachments: [
+                        {
+                            filename: attachmentName,
+                            content: attachmentBuf
+                        }
+                    ]
+                });
+                
+                await db.query('INSERT INTO applicant_email_logs (applicant_id) VALUES (?)', [app.id]);
+                
+                sentCount++;
+            } catch (err) {
+                console.error(`Failed to send doc to ${app.emailAddress}:`, err);
+                errors.push(app.emailAddress);
+            }
+        }
+        
+        let message = `PDF notices sent successfully to ${sentCount} applicants.`;
+        res.json({ 
+            success: true, 
+            message: message,
+            errors: errors.length > 0 ? errors : undefined
+        });
+
+    } catch (error) {
+        console.error('Email Docs Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to send documents' });
+    }
+});
+
+router.post('/export/convert-to-pdf', async (req, res) => {
+    try {
+        const { filename, docxBase64 } = req.body;
+        if (!docxBase64) return res.status(400).json({ error: 'Missing document data' });
+
+        const fs = require('fs');
+        const path = require('path');
+        const os = require('os');
+        const { exec } = require('child_process');
+        
+        // Find LibreOffice
+        let sofficePath = 'soffice';
+        if (os.platform() === 'win32') {
+            const commonPaths = [
+                'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
+                'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe',
+                'C:\\Program Files\\LibreOffice 5\\program\\soffice.exe'
+            ];
+            let found = false;
+            for (let p of commonPaths) {
+                if (fs.existsSync(p)) {
+                    sofficePath = `"${p}"`;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // If not found in common paths, it will rely on PATH. If that fails, it catches below.
+            }
+        }
+
+        const tempDir = path.join(os.tmpdir(), 'rsp_pdf_convert_' + Date.now());
+        fs.mkdirSync(tempDir, { recursive: true });
+        
+        const safeName = (filename || 'doc').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+        const inputPath = path.join(tempDir, safeName);
+        const outputFilename = safeName.replace('.docx', '.pdf');
+        const outputPath = path.join(tempDir, outputFilename);
+
+        const buffer = Buffer.from(docxBase64, 'base64');
+        fs.writeFileSync(inputPath, buffer);
+
+        const cmd = `${sofficePath} --headless --convert-to pdf --outdir "${tempDir}" "${inputPath}"`;
+        
+        exec(cmd, { timeout: 30000 }, (error, stdout, stderr) => {
+            if (error) {
+                if (error.message && error.message.includes('is not recognized')) {
+                    console.warn("LibreOffice not found. PDF conversion failed, returning 500 to trigger frontend fallback.");
+                } else {
+                    console.error("LibreOffice conversion failed. Returning 500 to trigger frontend fallback.");
+                }
+                // Clean up and return error so frontend can fallback
+                try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+                return res.status(500).json({ error: 'PDF conversion failed.' });
+            }
+            
+            if (fs.existsSync(outputPath)) {
+                res.download(outputPath, outputFilename, (err) => {
+                    try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+                });
+            } else {
+                try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+                res.status(500).json({ error: 'Output PDF not found.' });
+            }
+        });
+    } catch (err) {
+        console.error("PDF conversion route error:", err);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 });
 

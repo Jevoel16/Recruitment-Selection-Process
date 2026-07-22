@@ -9,6 +9,7 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Overhauled the mass email dispatch engine to chunk bulk requests and prevent server timeouts.
 - Made applicant email fields strictly required and upgraded Assignment Orders to dynamically extract the series year.
 - Optimized the responsive layout for filter panels and download buttons across all dashboard workflow steps.
 - Migrated Step 5 Assignment Orders from legacy PDF generation to a dynamic Word Document (.docx) template system.

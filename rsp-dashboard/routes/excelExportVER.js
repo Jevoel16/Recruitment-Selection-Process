@@ -42,6 +42,7 @@ router.get('/ver', async (req, res) => {
                             locItems.forEach(item => {
                                 itemsObj.push({ 
                                     itemNo: item, 
+                                    parenthetical: loc.parenthetical || '',
                                     assignment: loc.dropdown1 || loc.location || (pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City'),
                                     competency: loc.dropdown2 || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation'
                                 });
@@ -53,7 +54,7 @@ router.get('/ver', async (req, res) => {
                     let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
                     let defComp = 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                     locItems.forEach(item => {
-                        itemsObj.push({ itemNo: item, assignment: defAssignment, competency: defComp });
+                        itemsObj.push({ itemNo: item, parenthetical: '', assignment: defAssignment, competency: defComp });
                     });
                 }
             }
@@ -62,7 +63,7 @@ router.get('/ver', async (req, res) => {
                 let defAssignment = pos.category === 'Teaching' ? 'Public Elementary and Secondary Schools in Iligan City' : 'School Division Office of Iligan City';
                 let defComp = 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                 for (let i=0; i<(pos.vacancyCount || 1); i++) {
-                    itemsObj.push({ itemNo: '', assignment: defAssignment, competency: defComp });
+                    itemsObj.push({ itemNo: '', parenthetical: '', assignment: defAssignment, competency: defComp });
                 }
             }
             
@@ -71,10 +72,15 @@ router.get('/ver', async (req, res) => {
                 if (!salary) {
                     salary = sgMap[pos.salaryGrade] || '';
                 }
+                
+                let fullTitle = pos.title || '';
+                if (obj.parenthetical) {
+                    fullTitle += ` (${obj.parenthetical})`;
+                }
 
                 allItems.push({
                     no: count++,
-                    title: pos.title || '',
+                    title: fullTitle,
                     itemNo: obj.itemNo,
                     sg: pos.salaryGrade || '',
                     salary: salary,

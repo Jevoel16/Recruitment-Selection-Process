@@ -95,26 +95,32 @@ exports.exportDoc = async (req, res) => {
             if (title.includes('Teacher') || title.includes('Master Teacher')) {
                 title = title.replace(/\s*\([^)]*\)/g, '').trim();
             }
-            if (!grouped[title]) grouped[title] = [];
-            
-            let items = [];
+            let hasValidParsedItems = false;
             if (pos.plantillaItem && pos.plantillaItem.trim() !== "") {
                 try {
                     const parsed = JSON.parse(pos.plantillaItem);
                     parsed.forEach(loc => {
                         if (loc.items && loc.items.trim() !== "") {
-                            items.push(...loc.items.split(',').map(s => s.trim()).filter(s => s !== ''));
+                            hasValidParsedItems = true;
+                            let locTitle = title;
+                            if (loc.parenthetical) {
+                                locTitle = `${title} (${loc.parenthetical})`;
+                            }
+                            if (!grouped[locTitle]) grouped[locTitle] = [];
+                            grouped[locTitle].push(...loc.items.split(',').map(s => s.trim()).filter(s => s !== ''));
                         }
                     });
                 } catch (e) {
-                    items = pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== '');
+                    if (!grouped[title]) grouped[title] = [];
+                    grouped[title].push(...pos.plantillaItem.split(',').map(s => s.trim()).filter(s => s !== ''));
+                    hasValidParsedItems = true;
                 }
             }
             
-            if (items.length === 0) {
-                items = [""]; 
+            if (!hasValidParsedItems) {
+                if (!grouped[title]) grouped[title] = [];
+                grouped[title].push(""); 
             }
-            grouped[title].push(...items);
         }
         
         const flatEntries = [];

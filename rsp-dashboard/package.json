@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon -e js,hbs,json,css server.js",
-    "start": "nodemon server.js",
+    "start": "nodemon -e js,hbs,json,css server.js",
     "seedPositions": "node seeders/seedPositions.js",
     "seedApplicants": "node seeders/seedApplicants.js",
     "unseed": "node seeders/unseed.js",

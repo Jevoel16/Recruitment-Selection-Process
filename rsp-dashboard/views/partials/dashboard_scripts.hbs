@@ -216,8 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (template) {
                     const clone = template.cloneNode(true);
                     clone.querySelector('.plantilla-items-input').value = '';
-                    clone.querySelector('.plantilla-dropdown-1').value = '';
-                    clone.querySelector('.plantilla-dropdown-2').value = 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
+                    clone.querySelector('.plantilla-parenthetical').value = '';
+                    clone.querySelector('.plantilla-assignment').value = '';
+                    clone.querySelector('.plantilla-competency').value = 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                     clone.querySelector('.remove-plantilla-set').classList.remove('d-none');
                     container.appendChild(clone);
                 }
@@ -246,8 +247,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         parsed.forEach((item, index) => {
                             const clone = template.cloneNode(true);
                             clone.querySelector('.plantilla-items-input').value = item.items || '';
-                            clone.querySelector('.plantilla-dropdown-1').value = item.dropdown1 || '';
-                            clone.querySelector('.plantilla-dropdown-2').value = item.dropdown2 || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
+                            clone.querySelector('.plantilla-parenthetical').value = item.parenthetical || '';
+                            clone.querySelector('.plantilla-assignment').value = item.dropdown1 || item.assignment || '';
+                            clone.querySelector('.plantilla-competency').value = item.dropdown2 || item.competency || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
                             if (index > 0) clone.querySelector('.remove-plantilla-set').classList.remove('d-none');
                             container.appendChild(clone);
                         });
@@ -277,14 +279,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 document.querySelectorAll('.plantilla-set').forEach(setEl => {
                     const rawItems = setEl.querySelector('.plantilla-items-input').value;
-                    const drop1 = setEl.querySelector('.plantilla-dropdown-1').value;
-                    const drop2 = setEl.querySelector('.plantilla-dropdown-2').value;
+                    const parenthetical = setEl.querySelector('.plantilla-parenthetical').value;
+                    const drop1 = setEl.querySelector('.plantilla-assignment').value;
+                    const drop2 = setEl.querySelector('.plantilla-competency').value;
                     
                     if (rawItems.trim()) {
                         const items = rawItems.split(',').map(s => s.trim()).filter(s => s !== '');
                         vacancyCount += items.length;
                         dataArr.push({
                             items: items.join(', '),
+                            parenthetical: parenthetical,
                             dropdown1: drop1,
                             dropdown2: drop2
                         });
@@ -673,12 +677,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.ok && data.success) {
                     limitText.innerHTML = `<strong>${data.remaining}</strong> emails remaining today (Limit: ${data.dailyLimit})`;
+                    const buttons = document.querySelectorAll('button[onclick^="openEmailModal"]');
                     if (data.remaining <= 0) {
                         limitText.classList.replace('text-muted', 'text-danger');
-                        document.querySelector('button[onclick="openEmailModal()"]').disabled = true;
+                        buttons.forEach(btn => btn.disabled = true);
                     } else {
                         limitText.classList.replace('text-danger', 'text-muted');
-                        document.querySelector('button[onclick="openEmailModal()"]').disabled = false;
+                        buttons.forEach(btn => btn.disabled = false);
                     }
                 }
             } catch(e) {
@@ -703,8 +708,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let emailSelectionModal;
         let globalEmailApplicants = [];
+        let currentEmailDispatchType = 'codes'; // 'codes' or 'docs'
 
-        async function openEmailModal() {
+        async function openEmailModal(type = 'codes') {
+            currentEmailDispatchType = type;
             try {
                 const response = await fetch('/api/export/email-codes/applicants');
                 const data = await response.json();
@@ -944,6 +951,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             document.getElementById('confirmEmailCount').innerText = selectedCount;
+            document.getElementById('emailConfirmTypeLabel').innerText = currentEmailDispatchType === 'docs' ? 'Step 1 generated docs' : 'application codes';
+            
+            if (currentEmailDispatchType === 'docs') {
+                document.getElementById('emailTemplateContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('emailTemplateContainer').classList.add('d-none');
+            }
+            
             if (!emailConfirmationModal) {
                 emailConfirmationModal = new bootstrap.Modal(document.getElementById('emailConfirmationModal'));
             }
@@ -951,35 +966,104 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         async function confirmSubmitEmailCodes() {
-            const checkboxes = document.querySelectorAll('.email-applicant-cb:checked');
-            const applicantIds = Array.from(checkboxes).map(cb => cb.value);
+            const selectedCheckboxes = document.querySelectorAll('.email-applicant-cb:checked');
+            const selectedApplicantIds = Array.from(selectedCheckboxes).map(cb => cb.value);
             
-            if (applicantIds.length === 0) return;
-            
+            if (selectedApplicantIds.length === 0) {
+                if (window.showToast) window.showToast('Please select at least one applicant.', 'danger');
+                return;
+            }
+
+            const accountSelect = document.getElementById('emailAccountSelect');
+            if (!accountSelect || !accountSelect.value) {
+                if (window.showToast) window.showToast('Please select an email account.', 'danger');
+                return;
+            }
+
             const btn = document.getElementById('confirmSendEmailBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Preparing...';
             btn.disabled = true;
-            
+
+            const chunkSize = 20;
+            const chunks = [];
+            for (let i = 0; i < selectedApplicantIds.length; i += chunkSize) {
+                chunks.push(selectedApplicantIds.slice(i, i + chunkSize));
+            }
+
+            let hasErrors = false;
+
+            // Warn user if they try to leave the page
+            const handleBeforeUnload = (e) => {
+                e.preventDefault();
+                e.returnValue = 'Emails are currently being sent. Please do not close or refresh the page until the process is complete.';
+            };
+            window.addEventListener('beforeunload', handleBeforeUnload);
+
             try {
-                const response = await fetch('/api/export/email-codes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ applicantIds })
-                });
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    if (window.showToast) window.showToast(data.message, 'success', true);
-                    if (emailConfirmationModal) emailConfirmationModal.hide();
-                    if (emailSelectionModal) emailSelectionModal.hide();
-                } else {
-                    if (window.showToast) window.showToast(data.message || 'Failed to send emails', 'danger');
+                let processedApplicants = 0;
+                const totalApplicants = selectedApplicantIds.length;
+
+                for (let i = 0; i < chunks.length; i++) {
+                    const chunk = chunks[i];
+                    
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Sending... (${processedApplicants}/${totalApplicants})<br><small>Do NOT refresh or close this page</small>`;
+
+                    let endpoint = '/api/export/email-codes';
+                    const payload = { applicantIds: chunk, accountIndex: accountSelect.value };
+
+                    if (currentEmailDispatchType === 'docs') {
+                        endpoint = '/api/export/email-docs';
+                        const templateSelect = document.getElementById('emailTemplateSelect');
+                        if (!templateSelect || !templateSelect.value) {
+                            throw new Error('Please select a template to send.');
+                        }
+                        payload.templateName = templateSelect.value;
+                    }
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    
+                    if (!response.ok || !data.success) {
+                        hasErrors = true;
+                        console.error('Chunk error:', data.message);
+                    }
+                    processedApplicants += chunk.length;
                 }
+
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Finishing up...`;
+                
+                // Final success message
+                let finalMessage = currentEmailDispatchType === 'docs' 
+                    ? `PDF notices processing completed for ${totalApplicants} applicants.`
+                    : `Application codes processing completed for ${totalApplicants} applicants.`;
+                
+                if (hasErrors) {
+                    finalMessage += ' (Some errors occurred, check limits or logs)';
+                    if (window.showToast) window.showToast(finalMessage, 'warning', true);
+                } else {
+                    if (window.showToast) window.showToast(finalMessage, 'success', true);
+                }
+
+                const emailConfirmationModal = bootstrap.Modal.getInstance(document.getElementById('emailConfirmationModal'));
+                const emailSelectionModal = bootstrap.Modal.getInstance(document.getElementById('emailSelectionModal'));
+                if (emailConfirmationModal) emailConfirmationModal.hide();
+                if (emailSelectionModal) emailSelectionModal.hide();
+                
+                // Refresh limits if applicable
+                if (typeof refreshEmailLimits === 'function') refreshEmailLimits();
             } catch (error) {
                 console.error('Error sending emails:', error);
-                if (window.showToast) window.showToast('An error occurred while sending emails.', 'danger');
+                if (window.showToast) window.showToast(error.message || 'An error occurred while sending emails.', 'danger');
             } finally {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }

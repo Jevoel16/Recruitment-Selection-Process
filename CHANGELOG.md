@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-22 10:27 (v1.5.0-Release+202607221027)
+
+### Added
+- **Plantilla Setup**: Added a `Parenthetical Title` text field to the Plantilla setup modal.
+
+### Changed
+- **Email Dispatching**: Refactored the mass email dispatch system to chunk requests (25 applicants per chunk) and added a UI progress tracker. This prevents timeout errors and server overloads when processing bulk email deliveries.
+- **Plantilla Setup**: Replaced the hardcoded drop-down selectors for "Place of Assignment" and "Competency" with open text inputs for greater flexibility.
+
+
+
 ## 2026-07-21 10:36 (v1.4.3-Release+202607211036)
 
 ### Added

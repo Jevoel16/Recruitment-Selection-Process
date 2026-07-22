@@ -23,27 +23,23 @@
                     <input type="hidden" id="plantillaPosId" name="id">
                     <div id="plantillaSetsContainer">
                         <div class="mb-3 border rounded p-3 plantilla-set">
+                            <div class="mb-2">
+                                <label class="form-label fw-semibold small text-secondary">Plantilla Item No.</label>
+                                <textarea class="form-control plantilla-items-input" rows="2" placeholder="e.g. ADOF1-660031-2004, ADOF2-662546-2006"></textarea>
+                            </div>
                             <div class="row g-2 mb-2">
-                                <div class="col-md-7">
-                                    <label class="form-label fw-semibold small text-secondary">Plantilla Item No.</label>
-                                    <textarea class="form-control plantilla-items-input" rows="2" placeholder="Plantilla numbers separated by comma"></textarea>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">Parenthetical Title</label>
+                                    <input type="text" class="form-control plantilla-parenthetical" placeholder="e.g. Clerk I">
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-6">
                                     <label class="form-label fw-semibold small text-secondary">Place of Assignment</label>
-                                    <select class="form-select plantilla-dropdown-1">
-                                        <option value="">Select Location / Assignment</option>
-                                        <option value="Public Elementary School/s in Iligan City">Public Elementary School/s in Iligan City</option>
-                                        <option value="Public Secondary School/s in Iligan City offering Senior High School">Public Secondary School/s in Iligan City offering Senior High School</option>
-                                        <option value="SDO-School Governance and Operations Division- Human Resource Development (HRD)">SDO-School Governance and Operations Division- Human Resource Development (HRD)</option>
-                                        <option value="School Division Office of Iligan City- Personnel Office">School Division Office of Iligan City- Personnel Office</option>
-                                    </select>
+                                    <input type="text" class="form-control plantilla-assignment" placeholder="e.g. Public Elementary School/s in Iligan City">
                                 </div>
                             </div>
                             <div class="mt-2">
                                 <label class="form-label fw-semibold small text-secondary">Competency/ Area of Specialization/ Residency Requirement (if applicable)</label>
-                                <select class="form-select plantilla-dropdown-2">
-                                    <option value="Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation" selected>Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation</option>
-                                </select>
+                                <input type="text" class="form-control plantilla-competency" value="Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation">
                             </div>
                             <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-plantilla-set d-none">Remove</button>
                         </div>
