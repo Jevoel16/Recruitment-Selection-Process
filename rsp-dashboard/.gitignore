@@ -79,3 +79,5 @@ scratch/check.py
 scratch/structure.py
 
 /temp/
+
+*.pdf
