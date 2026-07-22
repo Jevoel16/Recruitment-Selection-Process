@@ -955,8 +955,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (currentEmailDispatchType === 'docs') {
                 document.getElementById('emailTemplateContainer').classList.remove('d-none');
+                document.getElementById('preGenerateBtn').classList.remove('d-none');
             } else {
                 document.getElementById('emailTemplateContainer').classList.add('d-none');
+                document.getElementById('preGenerateBtn').classList.add('d-none');
             }
             
             if (!emailConfirmationModal) {
@@ -964,6 +966,82 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             emailConfirmationModal.show();
         }
+
+        window.preGeneratePDFs = async function() {
+            const selectedCheckboxes = document.querySelectorAll('.email-applicant-cb:checked');
+            const selectedApplicantIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+            
+            if (selectedApplicantIds.length === 0) {
+                if (window.showToast) window.showToast('Please select at least one applicant.', 'danger');
+                return;
+            }
+
+            const templateSelect = document.getElementById('emailTemplateSelect');
+            if (!templateSelect || !templateSelect.value) {
+                if (window.showToast) window.showToast('Please select a template.', 'danger');
+                return;
+            }
+
+            const btn = document.getElementById('preGenerateBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+            btn.disabled = true;
+
+            const chunkSize = 20;
+            const chunks = [];
+            for (let i = 0; i < selectedApplicantIds.length; i += chunkSize) {
+                chunks.push(selectedApplicantIds.slice(i, i + chunkSize));
+            }
+
+            let hasErrors = false;
+            const handleBeforeUnload = (e) => {
+                e.preventDefault();
+                e.returnValue = 'PDFs are currently being generated. Are you sure you want to leave?';
+            };
+            window.addEventListener('beforeunload', handleBeforeUnload);
+
+            try {
+                let processedApplicants = 0;
+                const totalApplicants = selectedApplicantIds.length;
+
+                for (let i = 0; i < chunks.length; i++) {
+                    const chunk = chunks[i];
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Gen... (${processedApplicants}/${totalApplicants})`;
+
+                    const payload = { applicantIds: chunk, templateName: templateSelect.value };
+
+                    const response = await fetch('/api/export/pre-generate-docs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok || !data.success) {
+                        hasErrors = true;
+                        console.error('Chunk error:', data.message);
+                    }
+                    processedApplicants += chunk.length;
+                }
+
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Finishing...`;
+                
+                let finalMessage = `Pre-generation completed for ${totalApplicants} applicants.`;
+                if (hasErrors) {
+                    finalMessage += ' (Some errors occurred, check logs)';
+                    if (window.showToast) window.showToast(finalMessage, 'warning', true);
+                } else {
+                    if (window.showToast) window.showToast(finalMessage, 'success', true);
+                }
+            } catch (error) {
+                console.error('Error pre-generating:', error);
+                if (window.showToast) window.showToast(error.message || 'An error occurred.', 'danger');
+            } finally {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
 
         async function confirmSubmitEmailCodes() {
             const selectedCheckboxes = document.querySelectorAll('.email-applicant-cb:checked');

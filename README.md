@@ -9,6 +9,8 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Decoupled PDF document generation from email dispatch with cross-platform pre-generation support (PowerShell/LibreOffice).
+- The mass email dispatch list now automatically hides "PENDING" applicants to prevent accidental early notifications.
 - Overhauled the mass email dispatch engine to chunk bulk requests and prevent server timeouts.
 - Made applicant email fields strictly required and upgraded Assignment Orders to dynamically extract the series year.
 - Optimized the responsive layout for filter panels and download buttons across all dashboard workflow steps.

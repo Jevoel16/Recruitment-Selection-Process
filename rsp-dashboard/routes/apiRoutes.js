@@ -180,11 +180,13 @@ router.get('/export/email-codes/limits', async (req, res) => {
 router.get('/export/email-codes/applicants', async (req, res) => {
     try {
         const query = `
-            SELECT a.id, a.firstName, a.lastName, a.emailAddress, a.applicationCode, a.position, a.vacancyAnnouncementNo,
+            SELECT a.id, a.firstName, a.lastName, a.emailAddress, a.applicationCode, a.position, a.vacancyAnnouncementNo, a.status,
                    COUNT(l.id) AS emailCount
             FROM applicants a
             LEFT JOIN applicant_email_logs l ON a.id = l.applicant_id
-            WHERE a.emailAddress IS NOT NULL AND a.emailAddress != ""
+            WHERE a.emailAddress IS NOT NULL 
+              AND a.emailAddress != "" 
+              AND a.status != 'PENDING'
             GROUP BY a.id
         `;
         const [applicants] = await db.query(query);
@@ -279,9 +281,9 @@ router.post('/export/email-codes', async (req, res) => {
     }
 });
 
-router.post('/export/email-docs', async (req, res) => {
+router.post('/export/pre-generate-docs', async (req, res) => {
     try {
-        const { applicantIds, accountIndex, templateName } = req.body;
+        const { applicantIds, templateName } = req.body;
         if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
             return res.status(400).json({ success: false, message: 'No applicants selected.' });
         }
@@ -289,37 +291,21 @@ router.post('/export/email-docs', async (req, res) => {
             return res.status(400).json({ success: false, message: 'No template selected.' });
         }
 
-        const [applicants] = await db.query('SELECT * FROM applicants WHERE id IN (?) AND emailAddress IS NOT NULL AND emailAddress != ""', [applicantIds]);
+        const [applicants] = await db.query('SELECT * FROM applicants WHERE id IN (?)', [applicantIds]);
         
         if (!applicants || applicants.length === 0) {
-            return res.status(404).json({ message: 'No applicants with valid email addresses found among the selection.' });
+            return res.status(404).json({ message: 'No applicants found.' });
         }
 
-        const nodemailer = require('nodemailer');
         const PizZip = require('pizzip');
         const Docxtemplater = require('docxtemplater');
         const fs = require('fs');
         const path = require('path');
-        
-        const accIdx = accountIndex || '1';
-        const host = process.env[`SMTP_HOST_${accIdx}`] || process.env.SMTP_HOST || 'smtp.gmail.com';
-        const port = process.env[`SMTP_PORT_${accIdx}`] || process.env.SMTP_PORT || 587;
-        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
-        const pass = process.env[`SMTP_PASS_${accIdx}`] || process.env.SMTP_PASS || 'your-email-password';
-        const gmailName = process.env[`SMTP_GMAILNAME_${accIdx}`] || process.env.SMTP_GMAILNAME || '';
+        const os = require('os');
+        const { execSync } = require('child_process');
 
-        let transporter = nodemailer.createTransport({
-            host: host,
-            port: port,
-            secure: port == 465, 
-            auth: {
-                user: user, 
-                pass: pass
-            }
-        });
-
-        let sentCount = 0;
-        let errors = [];
+        const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
+        fs.mkdirSync(generatedDir, { recursive: true });
 
         // Load the template
         const templatePath = path.join(__dirname, '..', 'public', 'templates', templateName + '.docx');
@@ -341,6 +327,9 @@ router.post('/export/email-docs', async (req, res) => {
             if(items.some(i => i.status === 'PENDING' || !i.status)) return 'Pending';
             return 'Qualified';
         };
+
+        let generatedCount = 0;
+        let errors = [];
 
         for (const app of applicants) {
             try {
@@ -411,31 +400,23 @@ router.post('/export/email-docs', async (req, res) => {
                 };
 
                 const zip = new PizZip(content);
-                const doc = new Docxtemplater(zip, {
-                    paragraphLoop: true,
-                    linebreaks: true,
-                });
-                
+                const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
                 doc.render(templateData);
                 const buf = doc.getZip().generate({ type: 'nodebuffer' });
 
-                // Convert to PDF for email using MS Word via PowerShell
-                const os = require('os');
-                const { execSync } = require('child_process');
-
-                const tempDir = path.join(os.tmpdir(), 'rsp_email_pdf_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
+                const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 fs.mkdirSync(tempDir, { recursive: true });
-                const baseName = `${templateName.replace(/[^a-zA-Z0-9]/g, '_')}_${appName.replace(/[^a-zA-Z0-9]/g, '_')}`;
-                const inputPath = path.join(tempDir, baseName + '.docx');
-                const outputPath = path.join(tempDir, baseName + '.pdf');
                 
+                const baseName = `${app.id}_${templateName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const inputPath = path.join(tempDir, baseName + '.docx');
                 fs.writeFileSync(inputPath, buf);
                 
-                let attachmentBuf = buf;
-                let attachmentName = baseName + '.docx';
-                
+                const finalOutputPath = path.join(generatedDir, baseName + '.pdf');
+
                 if (os.platform() === 'win32') {
+                    // Windows MS Word COM Object
                     try {
+                        const outputPath = path.join(tempDir, baseName + '.pdf');
                         const psScript = `
 $word = New-Object -ComObject Word.Application
 $word.Visible = $false
@@ -446,23 +427,106 @@ $word.Quit()
                         `;
                         const scriptPath = path.join(tempDir, 'convert.ps1');
                         fs.writeFileSync(scriptPath, psScript);
-                        
                         execSync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { stdio: 'ignore', timeout: 60000 });
                         
                         if (fs.existsSync(outputPath)) {
-                            attachmentBuf = fs.readFileSync(outputPath);
-                            attachmentName = baseName + '.pdf';
+                            fs.copyFileSync(outputPath, finalOutputPath);
                         } else {
                             throw new Error('PDF output not found');
                         }
                     } catch (convErr) {
-                        console.warn(`Failed to convert ${baseName} to PDF via MS Word for email. Sending DOCX fallback.`);
-                        // Attempt to forcefully kill stuck winword processes if it failed
+                        console.warn(`Windows PDF conversion failed for ${appName}. Generating DOCX fallback.`);
+                        fs.copyFileSync(inputPath, finalOutputPath.replace('.pdf', '.docx'));
                         try { execSync('taskkill /F /IM winword.exe /T', { stdio: 'ignore' }); } catch(e) {}
+                    }
+                } else {
+                    // Linux / macOS LibreOffice headless
+                    try {
+                        execSync(`libreoffice --headless --convert-to pdf "${inputPath}" --outdir "${tempDir}"`, { stdio: 'ignore', timeout: 60000 });
+                        const outputPath = path.join(tempDir, baseName + '.pdf');
+                        if (fs.existsSync(outputPath)) {
+                            fs.copyFileSync(outputPath, finalOutputPath);
+                        } else {
+                            throw new Error('PDF output not found');
+                        }
+                    } catch (convErr) {
+                        console.warn(`LibreOffice PDF conversion failed for ${appName}. Generating DOCX fallback.`);
+                        fs.copyFileSync(inputPath, finalOutputPath.replace('.pdf', '.docx'));
                     }
                 }
                 
                 try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+                generatedCount++;
+            } catch (err) {
+                console.error(`Failed to pre-generate doc for ${app.id}:`, err);
+                errors.push(app.id);
+            }
+        }
+        
+        let message = `Pre-generated ${generatedCount} PDFs successfully.`;
+        res.json({ success: true, message: message, errors: errors.length > 0 ? errors : undefined });
+    } catch (error) {
+        console.error('Pre-Generate Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to pre-generate documents' });
+    }
+});
+
+router.post('/export/email-docs', async (req, res) => {
+    try {
+        const { applicantIds, accountIndex, templateName } = req.body;
+        if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
+            return res.status(400).json({ success: false, message: 'No applicants selected.' });
+        }
+        if (!templateName) {
+            return res.status(400).json({ success: false, message: 'No template selected.' });
+        }
+
+        const [applicants] = await db.query('SELECT * FROM applicants WHERE id IN (?) AND emailAddress IS NOT NULL AND emailAddress != ""', [applicantIds]);
+        
+        if (!applicants || applicants.length === 0) {
+            return res.status(404).json({ message: 'No applicants with valid email addresses found among the selection.' });
+        }
+
+        const nodemailer = require('nodemailer');
+        const fs = require('fs');
+        const path = require('path');
+        
+        const accIdx = accountIndex || '1';
+        const host = process.env[`SMTP_HOST_${accIdx}`] || process.env.SMTP_HOST || 'smtp.gmail.com';
+        const port = process.env[`SMTP_PORT_${accIdx}`] || process.env.SMTP_PORT || 587;
+        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
+        const pass = process.env[`SMTP_PASS_${accIdx}`] || process.env.SMTP_PASS || 'your-email-password';
+        const gmailName = process.env[`SMTP_GMAILNAME_${accIdx}`] || process.env.SMTP_GMAILNAME || '';
+
+        let transporter = nodemailer.createTransport({
+            host: host,
+            port: port,
+            secure: port == 465, 
+            auth: { user: user, pass: pass }
+        });
+
+        let sentCount = 0;
+        let errors = [];
+        const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
+
+        for (const app of applicants) {
+            try {
+                const baseName = `${app.id}_${templateName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const pdfPath = path.join(generatedDir, baseName + '.pdf');
+                const docxPath = path.join(generatedDir, baseName + '.docx');
+                
+                let attachmentBuf;
+                let attachmentName;
+
+                if (fs.existsSync(pdfPath)) {
+                    attachmentBuf = fs.readFileSync(pdfPath);
+                    attachmentName = 'Notice_of_Evaluation.pdf';
+                } else if (fs.existsSync(docxPath)) {
+                    attachmentBuf = fs.readFileSync(docxPath);
+                    attachmentName = 'Notice_of_Evaluation.docx';
+                } else {
+                    throw new Error(`Pre-generated file not found for Applicant ID ${app.id}. Please click "Pre-Generate PDFs" first.`);
+                }
 
                 let info = await transporter.sendMail({
                     from: `"${gmailName}" <${user}>`,
@@ -470,16 +534,10 @@ $word.Quit()
                     subject: 'Your Initial Evaluation Document',
                     text: `Hello ${app.firstName} ${app.lastName},\n\nPlease find attached your Step 1 Evaluation Document.\n\nThank you!`,
                     html: `<p>Hello ${app.firstName} ${app.lastName},</p><p>Please find attached your Step 1 Evaluation Document.</p><p>Thank you!</p>`,
-                    attachments: [
-                        {
-                            filename: attachmentName,
-                            content: attachmentBuf
-                        }
-                    ]
+                    attachments: [{ filename: attachmentName, content: attachmentBuf }]
                 });
                 
                 await db.query('INSERT INTO applicant_email_logs (applicant_id) VALUES (?)', [app.id]);
-                
                 sentCount++;
             } catch (err) {
                 console.error(`Failed to send doc to ${app.emailAddress}:`, err);
@@ -487,12 +545,8 @@ $word.Quit()
             }
         }
         
-        let message = `PDF notices sent successfully to ${sentCount} applicants.`;
-        res.json({ 
-            success: true, 
-            message: message,
-            errors: errors.length > 0 ? errors : undefined
-        });
+        let message = `Emails sent successfully to ${sentCount} applicants.`;
+        res.json({ success: true, message: message, errors: errors.length > 0 ? errors : undefined });
 
     } catch (error) {
         console.error('Email Docs Error:', error);

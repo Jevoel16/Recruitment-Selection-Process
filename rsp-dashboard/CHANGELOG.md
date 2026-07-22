@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-22 11:00 (v1.5.1-Release+202607221100)
+
+### ADDED
+- **PDF Pre-generation**: Implemented a cross-platform (PowerShell for Windows, LibreOffice for Linux) background PDF generator to decouple document generation from email dispatch.
+- **Email Filtering**: The mass email selection list now automatically filters out applicants who are still `PENDING` in Step 1, ensuring only finalized (Qualified/Disqualified) or advanced applicants are notified.
+
+### CHANGED
+- **Mass Email Dispatch**: Rewrote the document email endpoint to fetch pre-generated PDFs instead of converting them on the fly, reducing server load and making mass email dispatch instant.
+
+
+
 ## 2026-07-22 10:27 (v1.5.0-Release+202607221027)
 
 ### ADDED
