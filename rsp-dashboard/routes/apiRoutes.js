@@ -667,7 +667,8 @@ router.get('/events/pdf-status', (req, res) => {
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
     });
     res.write('data: {"connected":true}\n\n');
 
@@ -676,7 +677,12 @@ router.get('/events/pdf-status', (req, res) => {
     };
     pdfEvents.on('pdf-done', onPdfDone);
 
+    const heartbeat = setInterval(() => {
+        res.write(': heartbeat\n\n');
+    }, 15000);
+
     req.on('close', () => {
+        clearInterval(heartbeat);
         pdfEvents.removeListener('pdf-done', onPdfDone);
     });
 });
