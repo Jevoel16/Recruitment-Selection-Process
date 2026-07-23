@@ -192,9 +192,9 @@ router.get('/export/email-codes/applicants', async (req, res) => {
             FROM applicants a
             LEFT JOIN applicant_email_logs l ON a.id = l.applicant_id AND l.email_type = '${emailType}'
             WHERE a.emailAddress IS NOT NULL 
-              AND a.emailAddress != "" 
+              AND a.emailAddress != '' 
               ${statusFilter}
-            GROUP BY a.id
+            GROUP BY a.id, a.firstName, a.lastName, a.emailAddress, a.applicationCode, a.position, a.vacancyAnnouncementNo, a.status
         `;
         const [applicants] = await db.query(query);
         res.json({ success: true, applicants });
