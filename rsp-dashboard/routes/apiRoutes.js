@@ -241,7 +241,10 @@ router.post('/export/email-codes', async (req, res) => {
             auth: {
                 user: user, 
                 pass: pass
-            }
+            },
+            pool: true,
+            maxConnections: 1,
+            maxMessages: 100
         });
 
         let sentCount = 0;
@@ -539,7 +542,10 @@ router.post('/export/email-docs', async (req, res) => {
             host: host,
             port: port,
             secure: port == 465, 
-            auth: { user: user, pass: pass }
+            auth: { user: user, pass: pass },
+            pool: true,
+            maxConnections: 1,
+            maxMessages: 100
         });
 
         let sentCount = 0;
