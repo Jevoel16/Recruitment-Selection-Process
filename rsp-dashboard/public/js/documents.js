@@ -367,7 +367,13 @@ async function openEligModal(id, isWizard = false) {
             </form>
         `;
         if (isWizard) {
-            html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-success" onclick="window.location.reload()">Finish Wizard <i class="bi bi-check-circle"></i></button></div>`;
+            const posText = (app.position || '').toLowerCase();
+            const isHigherTeaching = posText.includes('teacher ii') || posText.includes('teacher iii') || posText.includes('teacher iv') || posText.includes('teacher v') || posText.includes('teacher vi') || posText.includes('teacher vii') || posText.includes('master teacher');
+            if (isHigherTeaching) {
+                html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-primary" onclick="transitionModal('eligModal', 'openHtPerfCalcModal', ${id})">Next: Performance <i class="bi bi-arrow-right"></i></button></div>`;
+            } else {
+                html += `<div class="d-flex justify-content-end mt-3 pt-3 border-top"><button type="button" class="btn btn-success" onclick="window.location.reload()">Finish Wizard <i class="bi bi-check-circle"></i></button></div>`;
+            }
         }
         document.getElementById('eligModalBody').innerHTML = html;
         

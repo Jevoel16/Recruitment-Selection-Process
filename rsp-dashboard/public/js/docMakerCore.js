@@ -141,14 +141,10 @@ window.openGenericDocModal = function(step, id, status, docRemark, name, office,
         const isQualified = status === 'QUALIFIED' || docRemark === 'Qualified' || ['WAITING_FOR_ASSESSMENT', 'ASSESSED', 'NO_APPEARANCE', 'NEWLY_PROMOTED', 'WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
         if (isQualified) {
             options = [
-                { value: 'Notice to Qualified - Higher Teaching', label: 'Notice to Qualified - Higher Teaching' },
-                { value: 'Notice to Qualified - Without Date of Assessment', label: 'Notice to Qualified - Without Date of Assessment' }
+                { value: 'Notice to Qualified', label: 'Notice to Qualified' }
             ];
         } else if (status === 'DISQUALIFIED' || status === 'DISQUALIFIED_ARCHIVED' || docRemark === 'Disqualified') {
             options = [
-                { value: 'Notice to DQ - Higher Teaching', label: 'Notice to DQ - Higher Teaching' },
-                { value: 'Notice to DQ - No Omnibus', label: 'Notice to DQ - No Omnibus' },
-                { value: 'Notice to DQ - Not notarized Omnibus', label: 'Notice to DQ - Not notarized Omnibus' },
                 { value: 'Notice to DQ', label: 'Notice to DQ' }
             ];
         }
@@ -201,16 +197,8 @@ window.downloadSelectedDoc = function() {
     if(modalInstance) modalInstance.hide();
     
     if (p.step === 1) {
-        if (type === 'Notice to Qualified - Higher Teaching' && window.printInitialEvalQualifiedHigherTeaching) {
-            window.printInitialEvalQualifiedHigherTeaching(p.id);
-        } else if (type === 'Notice to Qualified - Without Date of Assessment' && window.printInitialEvalQualifiedWithoutDate) {
-            window.printInitialEvalQualifiedWithoutDate(p.id);
-        } else if (type === 'Notice to DQ - Higher Teaching' && window.printInitialEvalDQHigherTeaching) {
-            window.printInitialEvalDQHigherTeaching(p.id);
-        } else if (type === 'Notice to DQ - No Omnibus' && window.printInitialEvalDQNoOmnibus) {
-            window.printInitialEvalDQNoOmnibus(p.id);
-        } else if (type === 'Notice to DQ - Not notarized Omnibus' && window.printInitialEvalDQNotNotarized) {
-            window.printInitialEvalDQNotNotarized(p.id);
+        if (type === 'Notice to Qualified' && window.printInitialEvalQualified) {
+            window.printInitialEvalQualified(p.id);
         } else if (type === 'Notice to DQ' && window.printInitialEvalDQ) {
             window.printInitialEvalDQ(p.id);
         }

@@ -497,6 +497,14 @@ function applyExpPoints() {
 }
 
 function openPerfCalcModal() {
+    const posText = document.getElementById('assessmentPosition') ? document.getElementById('assessmentPosition').innerText.toLowerCase() : '';
+    const isHigherTeaching = posText.includes('teacher ii') || posText.includes('teacher iii') || posText.includes('teacher iv') || posText.includes('teacher v') || posText.includes('teacher vi') || posText.includes('teacher vii') || posText.includes('master teacher');
+    
+    if (isHigherTeaching && typeof window.openHtPerfCalcModal === 'function') {
+        window.openHtPerfCalcModal();
+        return;
+    }
+
     bootstrap.Modal.getOrCreateInstance(document.getElementById('perfCalcModal')).show();
     if (typeof setFloatingStandard === 'function') setFloatingStandard('perfCalcModal', 'Performance Rating must be at least Very Satisfactory for the last rating period.');
     togglePerfInputs();
@@ -1117,4 +1125,68 @@ window.applyNcoiPoints = function() {
         if(typeof calculateAssessmentTotal === 'function') calculateAssessmentTotal();
     }
     bootstrap.Modal.getInstance(document.getElementById('ncoiCalcModal')).hide();
+}
+
+window.openHtPerfCalcModal = function(id = null, isWizard = false) {
+    window.htPerfIsWizard = isWizard;
+    window.htPerfApplicantId = id;
+    
+    document.getElementById('htPerfSy1').value = '';
+    document.getElementById('htPerfScore1').value = '';
+    document.getElementById('htPerfGrade1').value = '';
+    document.getElementById('htPerfSy2').value = '';
+    document.getElementById('htPerfScore2').value = '';
+    document.getElementById('htPerfGrade2').value = '';
+    document.getElementById('htPerfSy3').value = '';
+    document.getElementById('htPerfScore3').value = '';
+    document.getElementById('htPerfGrade3').value = '';
+    document.getElementById('calculatedHtPerfPoints').innerText = '0.000';
+    
+    const applyBtn = document.getElementById('htPerfApplyBtn');
+    if(isWizard) {
+        applyBtn.innerHTML = 'Finish Wizard <i class="bi bi-check-circle"></i>';
+        applyBtn.classList.remove('btn-info');
+        applyBtn.classList.add('btn-success');
+    } else {
+        applyBtn.innerHTML = '<i class="bi bi-check-circle"></i> Apply Points';
+        applyBtn.classList.remove('btn-success');
+        applyBtn.classList.add('btn-info');
+    }
+    
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('htPerfCalcModal')).show();
+}
+
+window.calculateHtPerfPoints = function() {
+    let score1 = parseFloat(document.getElementById('htPerfScore1').value) || 0;
+    let score2 = parseFloat(document.getElementById('htPerfScore2').value) || 0;
+    let score3 = parseFloat(document.getElementById('htPerfScore3').value) || 0;
+    
+    let count = 0;
+    let sum = 0;
+    if (!isNaN(parseFloat(document.getElementById('htPerfScore1').value))) { sum += score1; count++; }
+    if (!isNaN(parseFloat(document.getElementById('htPerfScore2').value))) { sum += score2; count++; }
+    if (!isNaN(parseFloat(document.getElementById('htPerfScore3').value))) { sum += score3; count++; }
+    
+    let average = count > 0 ? (sum / count) : 0;
+    
+    // Round to 3 decimal places max
+    average = Math.round(average * 1000) / 1000;
+    
+    document.getElementById('calculatedHtPerfPoints').innerText = average;
+}
+
+window.applyHtPerfPoints = function() {
+    const points = document.getElementById('calculatedHtPerfPoints').innerText;
+    
+    if (window.htPerfIsWizard) {
+        window.location.reload();
+        return;
+    }
+    
+    const input = document.getElementById('performanceInput') || document.querySelector('input[name="performance"]');
+    if(input) {
+        input.value = points;
+        if(typeof calculateAssessmentTotal === 'function') calculateAssessmentTotal();
+    }
+    bootstrap.Modal.getInstance(document.getElementById('htPerfCalcModal')).hide();
 }

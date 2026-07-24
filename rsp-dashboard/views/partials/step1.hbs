@@ -61,6 +61,9 @@
                             <th class="text-center">Edu</th>
                             <th class="text-center">Train</th>
                             <th class="text-center">Exp</th>
+                            {{#if ../showPerfColumn}}
+                            <th class="text-center">Perf</th>
+                            {{/if}}
                             <th class="text-center">Elig</th>
                             <th>Remarks</th>
                             <th class="text-end">Actions</th>
@@ -75,6 +78,15 @@
                             <td class="text-center"><button class="btn btn-sm btn-outline-info shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openEduModal({{this.id}})" title="Education"><i class="bi bi-mortarboard-fill"></i> Education</button></td>
                             <td class="text-center"><button class="btn btn-sm btn-outline-warning shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openTrainModal({{this.id}})" title="Training"><i class="bi bi-award-fill"></i> Training</button></td>
                             <td class="text-center"><button class="btn btn-sm btn-outline-success shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openExpModal({{this.id}})" title="Experience"><i class="bi bi-briefcase-fill"></i> Experience</button></td>
+                            {{#if ../showPerfColumn}}
+                            <td class="text-center">
+                                {{#if this.isHigherTeaching}}
+                                <button class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openHtPerfCalcModal({{this.id}})" title="Performance"><i class="bi bi-graph-up-arrow"></i> Perf</button>
+                                {{else}}
+                                <span class="text-muted small">-</span>
+                                {{/if}}
+                            </td>
+                            {{/if}}
                             <td class="text-center"><button class="btn btn-sm btn-outline-secondary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openEligModal({{this.id}})" title="Eligibility"><i class="bi bi-shield-check"></i> Eligibility</button></td>
                             <td id="remarks-cell-{{this.id}}">
                                 {{#if (eq this.docRemark 'Qualified')}}

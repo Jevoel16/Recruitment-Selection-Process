@@ -19,6 +19,7 @@ A web-based platform to digitize the recruitment selection process.
 - **Seeding Authentication:** Extended JWT expiration handling to ensure smooth, uninterrupted massive local database seeding.
 
 ### Applicant & Vacancy Management
+- **Seeders & Fallbacks:** Updated the default disqualification reason in the seeders and fixed a document generation bug regarding the rejection sentence fallback.
 - **Position Mapping & Qualification Standards:** 72 natively mapped positions complete with their salary grades, accurate monthly salary mapping (Step 1), and fully editable text-based qualification standards.
 - **Vacancy Publishing & Toggles:** Dynamic checkboxes automatically trigger modal updates inside `Vacancy_Endorsement.docx` parsing, integrated with a global "Off Vacancy" feature to wipe all public positions securely, including bulk toggling for mass status updates.
 - **Vacancy Announcement Tracking:** Advanced filtering capabilities that allow filtering applicants specifically by their vacancy announcement numbers across all Dashboard tabs.

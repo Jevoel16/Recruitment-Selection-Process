@@ -43,12 +43,15 @@ window.printInitialEvalDQ = async function(id) {
         return 'Qualified';
     };
 
-    const reasonText = data.disqualificationReason || data.applicant?.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+    let reasonText = data.disqualificationReason || data.applicant?.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+    
+    reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
 
     const remarksDate = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
     const templateData = {
         FormattedDate: dateStr,
+        IEDate: dateStr,
         ApplicantName: appName.toUpperCase(),
         Address: addressStr,
         Title: title,
@@ -76,8 +79,19 @@ window.printInitialEvalDQ = async function(id) {
         Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`
     };
 
-    const templateUrl = "/templates/Notice to DQ.docx";
-    const filename = `Initial_Eval_DQ_${appName.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+    const isHigherTeaching = [
+        'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
+        'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
+    ].includes(String(pos || '').toUpperCase());
+
+    const templateUrl = isHigherTeaching ? "/templates/Notice to DQ - Higher Teaching.docx" : "/templates/Notice to DQ.docx";
+    const noticeType = templateUrl.includes('Higher Teaching') ? 'Notice_to_DQ___Higher_Teaching' : 'Notice_to_DQ';
+
+    const lName = applicantObj.lastName ? applicantObj.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const fName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
+
+    const filename = `${lName}_${fName}_${pCode}_${noticeType}_${id}.docx`;
 
     await window.exportFromTemplate(templateUrl, templateData, filename);
 

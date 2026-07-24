@@ -142,31 +142,7 @@
                             </div>
                         </div>
 
-                        <div class="row g-2 mb-3 d-none" id="emailTemplateContainer">
-                            <div class="col-md-9 fit-dropdown-menu">
-                                <label for="emailTemplateSelect" class="form-label fw-bold small mb-1">Select Document Template:</label>
-                                <div class="glass-panel filter-glass-panel px-2 py-1">
-                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailTemplateSelect" onchange="window.refreshPdfBadges()">
-                                        <option value="Notice to DQ" selected>Notice to DQ</option>
-                                        <option value="Notice to DQ - Higher Teaching">Notice to DQ - Higher Teaching</option>
-                                        <option value="Notice to DQ - No Omnibus">Notice to DQ - No Omnibus</option>
-                                        <option value="Notice to DQ - Not notarized Omnibus">Notice to DQ - Not notarized Omnibus</option>
-                                        <option value="Notice to Qualified - Without Date of Assessment">Notice to Qualified - Without Date of Assessment</option>
-                                        <option value="Notice to Qualified - Higher Teaching">Notice to Qualified - Higher Teaching</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="emailRemarksFilter" class="form-label fw-bold small mb-1">Filter by Remarks:</label>
-                                <div class="glass-panel filter-glass-panel px-2 py-1">
-                                    <select class="form-select bg-transparent border-0 shadow-none custom-ui-select" id="emailRemarksFilter" onchange="filterEmailApplicants()">
-                                        <option value="">All Remarks</option>
-                                        <option value="QUALIFIED">Qualified</option>
-                                        <option value="DISQUALIFIED">Disqualified</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div class="mb-3 d-flex align-items-center justify-content-between">
                             <span class="badge bg-secondary" id="selectedCountBadge">0 Selected</span>

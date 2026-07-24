@@ -117,6 +117,20 @@
         document.getElementById('wizardVacancyAnnouncementNo').value = pos.vacancyAnnouncementNo || '';
         document.getElementById('selectedPositionText').innerHTML = `${cat} > ${pos.title}`;
         document.getElementById('addApplicantTitle').innerHTML = '<i class="bi bi-person-vcard me-2"></i>Applicant Information';
+        
+        const posText = (pos.title || '').toLowerCase();
+        const isHigherTeaching = posText.includes('teacher ii') || posText.includes('teacher iii') || posText.includes('teacher iv') || posText.includes('teacher v') || posText.includes('teacher vi') || posText.includes('teacher vii') || posText.includes('master teacher');
+        
+        if (isHigherTeaching) {
+            document.getElementById('nav-item-performance').classList.remove('d-none');
+            document.getElementById('btn-submit-exp').classList.add('d-none');
+            document.getElementById('btn-next-perf').classList.remove('d-none');
+        } else {
+            document.getElementById('nav-item-performance').classList.add('d-none');
+            document.getElementById('btn-submit-exp').classList.remove('d-none');
+            document.getElementById('btn-next-perf').classList.add('d-none');
+        }
+        
         document.getElementById('wizardStep0').classList.add('d-none');
         document.getElementById('wizardStep1').classList.remove('d-none');
     }
@@ -268,13 +282,7 @@
         }
     });
 
-    window.addEventListener('beforeunload', function (e) {
-        if (isFormDirty) {
-            const confirmationMessage = 'You have unsaved changes. Are you sure you want to leave?';
-            e.returnValue = confirmationMessage;
-            return confirmationMessage;
-        }
-    });
+    // Removed beforeunload listener because draft is safely stored in localStorage.
 
     const addAppForm = document.getElementById('addApplicantStandaloneForm');
     if (addAppForm) {

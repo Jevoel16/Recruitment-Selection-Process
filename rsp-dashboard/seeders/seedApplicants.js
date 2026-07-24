@@ -220,7 +220,7 @@ async function seed() {
                 await fetch(`${API_BASE}/applicants/${id}/disqualify`, { 
                     method: 'POST', 
                     headers: authHeaders,
-                    body: JSON.stringify({ reason: 'Failed to submit mandatory requirements.' })
+                    body: JSON.stringify({ reason: 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.' })
                 });
             }
             await delay(100);

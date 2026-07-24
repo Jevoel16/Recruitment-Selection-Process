@@ -293,9 +293,6 @@ router.post('/export/email-codes', async (req, res) => {
 
 router.get('/export/check-generated-docs', async (req, res) => {
     try {
-        const { templateName } = req.query;
-        if (!templateName) return res.json({ success: true, readyIds: [] });
-
         const fs = require('fs');
         const path = require('path');
         const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
@@ -305,12 +302,16 @@ router.get('/export/check-generated-docs', async (req, res) => {
         }
 
         const files = fs.readdirSync(generatedDir);
-        const safeTemplateName = templateName.replace(/[^a-zA-Z0-9]/g, '_');
         
-        // Files are named like: 123_Notice_to_DQ.pdf
         const readyIds = files
-            .filter(f => f.includes(`_${safeTemplateName}.`) && (f.endsWith('.pdf') || f.endsWith('.docx')))
-            .map(f => parseInt(f.split('_')[0]))
+            .filter(f => (f.endsWith('.pdf') || f.endsWith('.docx')) && (
+                 f.includes('_Notice_to_DQ') || 
+                 f.includes('_Notice_to_Qualified')
+            ))
+            .map(f => {
+                 const match = f.match(/_(\d+)\.(pdf|docx)$/);
+                 return match ? parseInt(match[1]) : NaN;
+            })
             .filter(id => !isNaN(id));
 
         res.json({ success: true, readyIds });
@@ -322,15 +323,17 @@ router.get('/export/check-generated-docs', async (req, res) => {
 
 router.post('/export/pre-generate-docs', async (req, res) => {
     try {
-        const { applicantIds, templateName } = req.body;
+        const { applicantIds } = req.body;
         if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
             return res.status(400).json({ success: false, message: 'No applicants selected.' });
         }
-        if (!templateName) {
-            return res.status(400).json({ success: false, message: 'No template selected.' });
-        }
 
-        const [applicants] = await db.query('SELECT * FROM applicants WHERE id IN (?)', [applicantIds]);
+        const [applicants] = await db.query(`
+            SELECT a.*, p.position_code 
+            FROM applicants a 
+            LEFT JOIN positions p ON a.position = p.title 
+            WHERE a.id IN (?)
+        `, [applicantIds]);
         
         if (!applicants || applicants.length === 0) {
             return res.status(404).json({ message: 'No applicants found.' });
@@ -347,14 +350,7 @@ router.post('/export/pre-generate-docs', async (req, res) => {
         const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
         fs.mkdirSync(generatedDir, { recursive: true });
 
-        // Load the template
-        const templatePath = path.join(__dirname, '..', 'public', 'templates', templateName + '.docx');
-        let content;
-        try {
-            content = fs.readFileSync(templatePath, 'binary');
-        } catch (err) {
-            return res.status(400).json({ success: false, message: 'Template not found: ' + templateName });
-        }
+        const templatesCache = {};
 
         const cleanText = (txt) => {
             if (!txt) return '';
@@ -404,7 +400,34 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 const pos = app.position || 'Position';
                 const appCode = app.applicationCode || '[Application Code]';
                 
-                const reasonText = app.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+                const isHigherTeaching = [
+                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
+                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
+                ].includes(String(pos || '').toUpperCase());
+
+                const isQualified = app.status === 'QUALIFIED' || app.status === 'WAITING_FOR_ASSESSMENT' || app.status === 'ASSESSED' || app.status === 'NO_APPEARANCE' || app.status === 'NEWLY_PROMOTED' || app.status === 'WAITING' || app.status === 'ASSIGNED' || app.status === 'COMPLETED';
+                
+                let resolvedTemplateName = '';
+                if (isQualified) {
+                    resolvedTemplateName = isHigherTeaching ? 'Notice to Qualified - Higher Teaching' : 'Notice to Qualified - Without Date of Assessment';
+                } else {
+                    resolvedTemplateName = isHigherTeaching ? 'Notice to DQ - Higher Teaching' : 'Notice to DQ';
+                }
+
+                if (!templatesCache[resolvedTemplateName]) {
+                    const templatePath = path.join(__dirname, '..', 'public', 'templates', resolvedTemplateName + '.docx');
+                    try {
+                        templatesCache[resolvedTemplateName] = fs.readFileSync(templatePath, 'binary');
+                    } catch (err) {
+                        throw new Error('Template not found: ' + resolvedTemplateName);
+                    }
+                }
+                let content = templatesCache[resolvedTemplateName];
+                
+                let reasonText = app.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+                if (!isQualified) {
+                    reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
+                }
                 
                 const d = new Date();
                 const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -412,6 +435,7 @@ router.post('/export/pre-generate-docs', async (req, res) => {
 
                 const templateData = {
                     FormattedDate: dateStr,
+                    IEDate: dateStr,
                     ApplicantName: appName.toUpperCase(),
                     Address: addressStr,
                     Title: title,
@@ -444,10 +468,14 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 doc.render(templateData);
                 const buf = doc.getZip().generate({ type: 'nodebuffer' });
 
+                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const pCode = (app.position_code || '').replace(/[^a-zA-Z0-9]/g, '');
+                const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
+                
+                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}_${app.id}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 fs.mkdirSync(tempDir, { recursive: true });
-                
-                const baseName = `${app.id}_${templateName.replace(/[^a-zA-Z0-9]/g, '_')}`;
                 const inputPath = path.join(tempDir, baseName + '.docx');
                 fs.writeFileSync(inputPath, buf);
                 
@@ -513,15 +541,17 @@ $word.Quit()
 
 router.post('/export/email-docs', async (req, res) => {
     try {
-        const { applicantIds, accountIndex, templateName } = req.body;
+        const { applicantIds, accountIndex } = req.body;
         if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
             return res.status(400).json({ success: false, message: 'No applicants selected.' });
         }
-        if (!templateName) {
-            return res.status(400).json({ success: false, message: 'No template selected.' });
-        }
 
-        const [applicants] = await db.query('SELECT * FROM applicants WHERE id IN (?) AND emailAddress IS NOT NULL AND emailAddress != ""', [applicantIds]);
+        const [applicants] = await db.query(`
+            SELECT a.*, p.position_code 
+            FROM applicants a 
+            LEFT JOIN positions p ON a.position = p.title 
+            WHERE a.id IN (?) AND a.emailAddress IS NOT NULL AND a.emailAddress != ""
+        `, [applicantIds]);
         
         if (!applicants || applicants.length === 0) {
             return res.status(404).json({ message: 'No applicants with valid email addresses found among the selection.' });
@@ -554,7 +584,27 @@ router.post('/export/email-docs', async (req, res) => {
 
         for (const app of applicants) {
             try {
-                const baseName = `${app.id}_${templateName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                const pos = app.position || '';
+                const isHigherTeaching = [
+                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
+                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
+                ].includes(String(pos).toUpperCase());
+
+                const isQualified = app.status === 'QUALIFIED' || app.status === 'WAITING_FOR_ASSESSMENT' || app.status === 'ASSESSED' || app.status === 'NO_APPEARANCE' || app.status === 'NEWLY_PROMOTED' || app.status === 'WAITING' || app.status === 'ASSIGNED' || app.status === 'COMPLETED';
+                
+                let resolvedTemplateName = '';
+                if (isQualified) {
+                    resolvedTemplateName = isHigherTeaching ? 'Notice to Qualified - Higher Teaching' : 'Notice to Qualified - Without Date of Assessment';
+                } else {
+                    resolvedTemplateName = isHigherTeaching ? 'Notice to DQ - Higher Teaching' : 'Notice to DQ';
+                }
+
+                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const pCode = (app.position_code || '').replace(/[^a-zA-Z0-9]/g, '');
+                const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
+
+                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}_${app.id}`;
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');
                 const docxPath = path.join(generatedDir, baseName + '.docx');
                 

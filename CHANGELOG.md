@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-24 18:41 (v1.5.3-Release+202607241841)
+
+### Changed
+- **Seeders**: Updated the default disqualification reason text in `seedApplicants.js` to match the official DO 7 s. 2023 guidelines.
+- **Document Generation**: Fixed a bug where the concluding rejection sentence ("Thus, we regret...") was omitted from the Initial Evaluation PDF if the user left the custom reason text area blank.
+
 ## 2026-07-23 01:15 (v1.5.2-Release+202607230115)
 
 ### Added

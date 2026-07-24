@@ -9,6 +9,7 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Updated the default disqualification reason in the seeders and fixed a document generation bug regarding the rejection sentence fallback.
 - Implemented server-side PDF generation strategies and added PDF exports for applicant lists.
 - Enhanced email modal filtering with dynamic cascading dropdowns for document template selection.
 - Updated database schema and seeders to officially support `DISQUALIFIED_ARCHIVED` status.

@@ -577,10 +577,30 @@ exports.getAddApplicant = async (req, res) => {
                 frontendMap[row.category] = [];
             }
             groupedPositions[row.category].positions.push(row);
-            frontendMap[row.category].push({
-                title: row.title,
-                vacancyAnnouncementNo: row.vacancyAnnouncementNo || null
-            });
+            
+            const distinctTitles = new Set();
+            if (row.plantillaItem && row.plantillaItem.trim() !== "") {
+                try {
+                    const parsed = JSON.parse(row.plantillaItem);
+                    parsed.forEach(loc => {
+                        let locTitle = row.title;
+                        if (loc.parenthetical) {
+                            locTitle = `${row.title} (${loc.parenthetical})`;
+                        }
+                        distinctTitles.add(locTitle);
+                    });
+                } catch (e) {}
+            }
+            if (distinctTitles.size === 0) {
+                distinctTitles.add(row.title);
+            }
+            
+            for (const title of distinctTitles) {
+                frontendMap[row.category].push({
+                    title: title,
+                    vacancyAnnouncementNo: row.vacancyAnnouncementNo || null
+                });
+            }
         }
         const dynamicPositionsJSON = JSON.stringify(frontendMap).replace(/</g, '\\u003c');
         res.render('add-applicant', { addApplicantActive: true, groupedPositions, dynamicPositionsJSON });
@@ -906,6 +926,8 @@ exports.getStepPage = async (req, res, next) => {
                 applicationOfEducation: row.scoreApplicationOfEducation, applicationOfLD: row.scoreApplicationOfLD,
                 potential: row.scorePotential, total: row.assessmentTotal
             };
+            const pos = (row.position || '').toLowerCase();
+            row.isHigherTeaching = pos.includes('teacher ii') || pos.includes('teacher iii') || pos.includes('teacher iv') || pos.includes('teacher v') || pos.includes('teacher vi') || pos.includes('teacher vii') || pos.includes('master teacher');
             return row;
         });
 
@@ -952,10 +974,12 @@ exports.getStepPage = async (req, res, next) => {
             return true;
         });
 
+        const showPerfColumn = mappedRows.some(r => r.isHigherTeaching);
+
         res.render('index', {
             currentStep: step, [step]: mappedRows, searchQuery, positionFilter, positionList, vacancyFilter, vacancyList, officeFilter, officeList, remarksFilter, remarksList,
             pagination: cleanPagination, step1Active: step === 'step1', step2Active: step === 'step2', step3Active: step === 'step3',
-            step4Active: step === 'step4', step5Active: step === 'step5', offset
+            step4Active: step === 'step4', step5Active: step === 'step5', offset, showPerfColumn
         });
     } catch (error) {
         console.error(error);

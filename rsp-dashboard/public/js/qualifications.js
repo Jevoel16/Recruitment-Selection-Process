@@ -26,7 +26,21 @@ if (qualifyForm) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
-            if (res.ok) window.showToast('Applicant qualified successfully!', 'success', true);
+            if (res.ok) {
+                const ieDate = document.getElementById('qualifyIEDate').value;
+                if (ieDate) {
+                    const d = new Date(ieDate);
+                    const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    try {
+                        await fetch('/api/applicants/' + id + '/doc-date', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ docType: 'InitialEvalQualified', dateStr })
+                        });
+                    } catch(e) { console.error('Failed to save IEDate', e); }
+                }
+                window.showToast('Applicant qualified successfully!', 'success', true);
+            }
         } catch (err) {
             console.error(err);
             window.showToast('Error qualifying applicant', 'danger');

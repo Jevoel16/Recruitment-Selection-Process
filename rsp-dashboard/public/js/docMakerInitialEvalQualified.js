@@ -1,4 +1,4 @@
-window.printInitialEvalQualifiedHigherTeaching = async function(id) {
+window.printInitialEvalQualified = async function(id) {
     const startTimeMs = Date.now();
     let data;
     try {
@@ -9,7 +9,7 @@ window.printInitialEvalQualifiedHigherTeaching = async function(id) {
         return;
     }
 
-    const { d, dateStr } = await window.getOrSetDocDate(id, 'InitialEvalQualifiedHigherTeaching', data);
+    const { d, dateStr } = await window.getOrSetDocDate(id, 'InitialEvalQualified', data);
 
     let appName = 'Unknown Applicant';
     const applicantObj = data.applicant || data;
@@ -47,6 +47,7 @@ window.printInitialEvalQualifiedHigherTeaching = async function(id) {
 
     const templateData = {
         FormattedDate: dateStr,
+        IEDate: dateStr,
         ApplicantName: appName.toUpperCase(),
         Address: addressStr,
         Title: title,
@@ -73,8 +74,19 @@ window.printInitialEvalQualifiedHigherTeaching = async function(id) {
         Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`
     };
 
-    const templateUrl = "/templates/Notice to Qualified - Higher Teaching.docx";
-    const filename = `Initial_Eval_Higher_Teaching_${appName.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+    const isHigherTeaching = [
+        'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
+        'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
+    ].includes(String(pos).toUpperCase());
+
+    const templateUrl = isHigherTeaching ? "/templates/Notice to Qualified - Higher Teaching.docx" : "/templates/Notice to Qualified - Without Date of Assessment.docx";
+    const noticeType = templateUrl.includes('Higher Teaching') ? 'Notice_to_Qualified___Higher_Teaching' : 'Notice_to_Qualified___Without_Date_of_Assessment';
+    
+    const lName = applicantObj.lastName ? applicantObj.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const fName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
+
+    const filename = `${lName}_${fName}_${pCode}_${noticeType}_${id}.docx`;
 
     await window.exportFromTemplate(templateUrl, templateData, filename);
 
