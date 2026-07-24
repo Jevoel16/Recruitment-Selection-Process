@@ -4,7 +4,9 @@
 
 ### CHANGED
 - **Seeders**: Updated the default disqualification reason text in `seedApplicants.js` to match the official DO 7 s. 2023 guidelines.
-- **Document Generation**: Fixed a bug where the concluding rejection sentence ("Thus, we regret...") was omitted from the Initial Evaluation PDF if the user left the custom reason text area blank.
+- **Document Generation**: Fixed a bug where the concluding rejection sentence ("Thus, we regret...") was omitted from the Initial Evaluation PDF if the user left the custom reason text area blank. This has now been addressed in the frontend, the API mass-export, and the background PDF generator.
+- **Document Generation**: The background PDF generator now uses the same filename logic as the frontend (`[LastName]_[FirstName]_[PositionCode]_[NoticeType]_[id]`) and correctly provides the `{IEDate}` parameter.
+- **Cache Busted**: Bumped the script cache-buster in `index_modals.hbs` to resolve browser caching issues with document generation logic.
 
 ## 2026-07-23 01:15 (v1.5.2-Release+202607230115)
 

@@ -63,7 +63,8 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const pos = app.position || 'Position';
     const appCode = app.applicationCode || '[Application Code]';
     
-    const reasonText = app.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+    let reasonText = app.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+    reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
     
     const d = new Date();
     const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -71,6 +72,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
 
     const templateData = {
         FormattedDate: dateStr,
+        IEDate: dateStr,
         ApplicantName: appName.toUpperCase(),
         Address: addressStr,
         Title: title,
@@ -106,7 +108,12 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
     fs.mkdirSync(tempDir, { recursive: true });
     
-    const baseName = `${app.id}_${templateName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const lName = app.lastName ? app.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const fName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const noticeType = templateName.replace(/[^a-zA-Z0-9]/g, '_');
+    const baseName = `${lName}_${fName}_${pCode}_${noticeType}_${app.id}`;
+    
     const inputPath = path.join(tempDir, baseName + '.docx');
     fs.writeFileSync(inputPath, buf);
     
