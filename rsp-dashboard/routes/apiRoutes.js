@@ -483,29 +483,39 @@ router.post('/export/pre-generate-docs', async (req, res) => {
 
                 if (os.platform() === 'win32') {
                     // Windows MS Word COM Object
-                    try {
-                        const outputPath = path.join(tempDir, baseName + '.pdf');
-                        const psScript = `
+                    let success = false;
+                    for (let attempt = 1; attempt <= 3; attempt++) {
+                        try {
+                            const outputPath = path.join(tempDir, baseName + '.pdf');
+                            const psScript = `
 $word = New-Object -ComObject Word.Application
 $word.Visible = $false
 $doc = $word.Documents.Open('${inputPath}')
 $doc.ExportAsFixedFormat('${outputPath}', 17, $false, 0)
 $doc.Close()
 $word.Quit()
-                        `;
-                        const scriptPath = path.join(tempDir, 'convert.ps1');
-                        fs.writeFileSync(scriptPath, psScript);
-                        await execAsync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { timeout: 60000 });
-                        
-                        if (fs.existsSync(outputPath)) {
-                            fs.copyFileSync(outputPath, finalOutputPath);
-                        } else {
-                            throw new Error('PDF output not found');
+                            `;
+                            const scriptPath = path.join(tempDir, 'convert.ps1');
+                            fs.writeFileSync(scriptPath, psScript);
+                            await execAsync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { timeout: 60000 });
+                            
+                            if (fs.existsSync(outputPath)) {
+                                fs.copyFileSync(outputPath, finalOutputPath);
+                                success = true;
+                                break;
+                            } else {
+                                throw new Error('PDF output not found');
+                            }
+                        } catch (convErr) {
+                            console.warn(`Windows PDF conversion attempt ${attempt} failed for ${appName}:`, convErr.message);
+                            try { await execAsync('taskkill /F /IM winword.exe /T'); } catch(e) {}
+                            await new Promise(res => setTimeout(res, 2000));
                         }
-                    } catch (convErr) {
-                        console.warn(`Windows PDF conversion failed for ${appName}. Generating DOCX fallback.`);
-                        fs.copyFileSync(inputPath, finalOutputPath.replace('.pdf', '.docx'));
-                        try { await execAsync('taskkill /F /IM winword.exe /T'); } catch(e) {}
+                    }
+                    
+                    if (!success) {
+                        console.error(`Windows PDF conversion failed after 3 attempts for ${appName}. Aborting.`);
+                        throw new Error('Failed to generate PDF');
                     }
                 } else {
                     // Linux / macOS LibreOffice headless
