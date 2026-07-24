@@ -108,11 +108,11 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
     fs.mkdirSync(tempDir, { recursive: true });
     
-    const lName = app.lastName ? app.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const fName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const safeLName = app.lastName ? app.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const safeFName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
     const noticeType = templateName.replace(/[^a-zA-Z0-9]/g, '_');
-    const baseName = `${lName}_${fName}_${pCode}_${noticeType}_${app.id}`;
+    const baseName = `${safeLName}_${safeFName}_${pCode}_${noticeType}_${app.id}`;
     
     const inputPath = path.join(tempDir, baseName + '.docx');
     fs.writeFileSync(inputPath, buf);
