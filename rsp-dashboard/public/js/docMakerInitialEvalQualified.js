@@ -82,9 +82,37 @@ window.printInitialEvalQualified = async function(id) {
     const templateUrl = isHigherTeaching ? "/templates/Notice to Qualified - Higher Teaching.docx" : "/templates/Notice to Qualified - Without Date of Assessment.docx";
     const noticeType = templateUrl.includes('Higher Teaching') ? 'Notice_to_Qualified___Higher_Teaching' : 'Notice_to_Qualified___Without_Date_of_Assessment';
     
+    const getPosCode = (p) => {
+        if (!p) return 'APP';
+        let cleanPos = p.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+        const match = cleanPos.match(/\s([IVX]+)$/i);
+        let numberSuffix = '';
+        if (match) {
+            const roman = match[1].toUpperCase();
+            const romanMap = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10 };
+            numberSuffix = romanMap[roman] || '';
+            cleanPos = cleanPos.substring(0, cleanPos.length - match[0].length).trim();
+        }
+        let base = '';
+        const upperPos = p.toUpperCase();
+        if (upperPos.includes('ADMINISTRATIVE ASSISTANT')) base = 'ADAS';
+        else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
+        else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
+        else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
+        else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
+        else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+        else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
+        else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
+        else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
+        else if (upperPos.includes('TEACHER')) base = 'T';
+        else if (upperPos.includes('WATCHMAN')) base = 'WCH';
+        else { base = cleanPos.split(/\s+/).map(w => w[0]).join('').toUpperCase(); }
+        return base + numberSuffix;
+    };
+
     const lName = applicantObj.lastName ? applicantObj.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const fName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '[positioncodes]';
+    const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(pos);
 
     const filename = `${lName}_${fName}_${pCode}_${noticeType}.docx`;
 

@@ -110,9 +110,37 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
     fs.mkdirSync(tempDir, { recursive: true });
     
+    const getPosCode = (p) => {
+        if (!p) return 'APP';
+        let cleanPos = p.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+        const match = cleanPos.match(/\s([IVX]+)$/i);
+        let numberSuffix = '';
+        if (match) {
+            const roman = match[1].toUpperCase();
+            const romanMap = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10 };
+            numberSuffix = romanMap[roman] || '';
+            cleanPos = cleanPos.substring(0, cleanPos.length - match[0].length).trim();
+        }
+        let base = '';
+        const upperPos = p.toUpperCase();
+        if (upperPos.includes('ADMINISTRATIVE ASSISTANT')) base = 'ADAS';
+        else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
+        else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
+        else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
+        else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
+        else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+        else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
+        else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
+        else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
+        else if (upperPos.includes('TEACHER')) base = 'T';
+        else if (upperPos.includes('WATCHMAN')) base = 'WCH';
+        else { base = cleanPos.split(/\s+/).map(w => w[0]).join('').toUpperCase(); }
+        return base + numberSuffix;
+    };
+
     const safeLName = app.lastName ? app.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const safeFName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '[positioncodes]';
+    const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(pos);
     const noticeType = templateName.replace(/[^a-zA-Z0-9]/g, '_');
     const baseName = `${safeLName}_${safeFName}_${pCode}_${noticeType}`;
     
