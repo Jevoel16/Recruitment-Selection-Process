@@ -12,9 +12,21 @@ router.get('/car', async (req, res) => {
         if (positionFilter) { baseQuery += ` AND position = ?`; queryParams.push(positionFilter); }
 
         let posData = null;
+        let activeParenthetical = null;
         if (positionFilter) {
-            const [posRows] = await db.query(`SELECT * FROM positions WHERE title = ? LIMIT 1`, [positionFilter]);
-            if (posRows.length > 0) posData = posRows[0];
+            let [posRows] = await db.query(`SELECT * FROM positions WHERE title = ? LIMIT 1`, [positionFilter]);
+            if (posRows.length === 0) {
+                const titleMatch = positionFilter.match(/^(.*?)\s*\((.*?)\)$/);
+                if (titleMatch) {
+                    const baseTitle = titleMatch[1];
+                    activeParenthetical = titleMatch[2];
+                    [posRows] = await db.query(`SELECT * FROM positions WHERE title = ? LIMIT 1`, [baseTitle]);
+                }
+            }
+            if (posRows.length > 0) {
+                posData = posRows[0];
+                posData.activeParenthetical = activeParenthetical;
+            }
         }
 
 

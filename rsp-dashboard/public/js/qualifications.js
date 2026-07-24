@@ -39,7 +39,22 @@ if (qualifyForm) {
                         });
                     } catch(e) { console.error('Failed to save IEDate', e); }
                 }
-                window.showToast('Applicant qualified successfully!', 'success', true);
+                window.showToast('Applicant qualified successfully!', 'success', false);
+                const row = document.getElementById(`applicant-row-${id}`);
+                if (row) {
+                    const actionTd = row.querySelector('.text-end');
+                    if (actionTd) {
+                        const applicantName = document.getElementById('qualifyName').innerText;
+                        actionTd.innerHTML = `<button class="btn btn-sm btn-success action-btn" onclick="openProceedModal(${id}, '${applicantName.replace(/'/g, "\\'")}')" title="Proceed to Step 2"><i class="bi bi-arrow-right-circle"></i> Proceed</button>`;
+                    }
+                    const remarksTd = document.getElementById(`remarks-cell-${id}`);
+                    if (remarksTd) remarksTd.innerHTML = '<span class="badge bg-success">Qualified</span>';
+                }
+                if (typeof window.clearModalStack === 'function') window.clearModalStack();
+                const m1 = bootstrap.Modal.getOrCreateInstance(document.getElementById('qualifyModal'));
+                m1.hide();
+                const m2 = bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal'));
+                m2.hide();
             }
         } catch (err) {
             console.error(err);

@@ -9,6 +9,8 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Fixed Applicant UI jitter by targeting specific row IDs during updates in Step 1.
+- Adjusted the Vacancy System logic and Excel export tools to explicitly account for Parenthetical Titles.
 - Updated the default disqualification reason in the seeders and fixed a document generation bug regarding the rejection sentence fallback.
 - Implemented server-side PDF generation strategies and added PDF exports for applicant lists.
 - Enhanced email modal filtering with dynamic cascading dropdowns for document template selection.

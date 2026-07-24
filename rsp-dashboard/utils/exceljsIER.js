@@ -20,18 +20,90 @@ const calculateAge = (birthdate) => {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
 };
 
-async function generateIERExcelJS(exportType, positionFilter, posData, applicants, allEdu, allTrain, allExp, allElig) {
+
+async function generateIERExcelJS(exportType, positionFilter, allPositions, applicants, allEdu, allTrain, allExp, allElig) {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'RSP Dashboard';
     workbook.created = new Date();
 
-    const sheet = workbook.addWorksheet('IER', {
+    const groups = {};
+    for (const app of applicants) {
+        const p = app.position || 'Unknown Position';
+        const v = app.vacancyAnnouncementNo || 'Unknown Vacancy';
+        const key = `${p} | ${v}`;
+        if (!groups[key]) groups[key] = { position: p, vacancy: v, applicants: [] };
+        groups[key].applicants.push(app);
+    }
+    
+    if (applicants.length === 0 && positionFilter) {
+        groups[`${positionFilter} | `] = { position: positionFilter, vacancy: '', applicants: [] };
+    }
+
+    if (Object.keys(groups).length === 0) {
+        workbook.addWorksheet('IER');
+    }
+
+    for (const key of Object.keys(groups)) {
+        const group = groups[key];
+        const pFilter = group.position;
+        const vAnnounce = group.vacancy;
+        const groupApplicants = group.applicants;
+
+        let posData = null;
+        let activeParenthetical = null;
+        let pFound = allPositions.find(x => x.title === pFilter);
+        if (!pFound) {
+            const titleMatch = pFilter.match(/^(.*?)\s*\((.*?)\)$/);
+            if (titleMatch) {
+                const baseTitle = titleMatch[1];
+                activeParenthetical = titleMatch[2];
+                pFound = allPositions.find(x => x.title === baseTitle);
+            }
+        }
+        if (pFound) {
+            posData = { ...pFound, activeParenthetical };
+            if (!posData.monthlySalary && posData.salaryGrade) {
+                const sgMap = {
+                    '3': '16,610', '4': '17,506', '6': '19,716', '8': '22,423',
+                    '9': '24,329', '10': '26,917', '11': '31,705', '12': '33,947',
+                    '13': '36,125', '14': '38,764', '15': '40,000', '16': '45,694',
+                    '18': '53,818', '19': '59,153', '21': '73,303', '22': '81,796',
+                    '25': '110,000', '26': '120,000'
+                };
+                posData.monthlySalary = sgMap[posData.salaryGrade] || '';
+            }
+        } else {
+            posData = { vacancyAnnouncementNo: vAnnounce };
+        }
+
+        let sheetName = pFilter.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 15).trim();
+        if (vAnnounce) {
+            sheetName += `_${vAnnounce.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 10).trim()}`;
+        }
+        if (!sheetName) sheetName = 'IER';
+        
+        let origSheetName = sheetName.substring(0, 28);
+        let counter = 1;
+        while(workbook.getWorksheet(sheetName)) {
+            sheetName = `${origSheetName}_${counter}`;
+            counter++;
+        }
+
+        generateIERSheet(workbook, exportType, sheetName, pFilter, posData, groupApplicants, allEdu, allTrain, allExp, allElig);
+    }
+
+    return await workbook.xlsx.writeBuffer();
+}
+
+
+function generateIERSheet(workbook, exportType, sheetName, positionFilter, posData, applicants, allEdu, allTrain, allExp, allElig) {
+    const sheet = workbook.addWorksheet(sheetName, {
         pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true },
         headerFooter: { oddFooter: '&RPage &P', evenFooter: '&RPage &P' }
     });
     sheet.pageSetup.margins = { left: 0.1181, right: 0.1181, top: 0.1575, bottom: 0.5, header: 0, footer: 0.2 };
 
-    const vAnnounce = posData?.vacancyAnnouncement || '';
+    const vAnnounce = posData?.vacancyAnnouncementNo || '';
     const pItem = posData?.plantillaItem || '';
     const sGrade = posData?.salaryGrade || '';
     let mSalary = posData?.monthlySalary || '';
@@ -129,7 +201,15 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
             if (Array.isArray(parsed)) {
                 let all = [];
                 parsed.forEach(p => {
-                    if (p.items) all.push(...p.items.split(',').map(s => s.trim()).filter(s => s));
+                    if (posData.activeParenthetical) {
+                        if (p.parenthetical === posData.activeParenthetical && p.items) {
+                            all.push(...p.items.split(',').map(s => s.trim()).filter(s => s));
+                        }
+                    } else {
+                        if ((!p.parenthetical || p.parenthetical.trim() === '') && p.items) {
+                            all.push(...p.items.split(',').map(s => s.trim()).filter(s => s));
+                        }
+                    }
                 });
                 pItemsArr = all;
             } else {
@@ -378,8 +458,6 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
         count++;
     }
 
-
-
     const d = new Date();
     const currentDateStr = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
@@ -448,8 +526,7 @@ async function generateIERExcelJS(exportType, positionFilter, posData, applicant
     sheet.mergeCells(`B${r}:${maxColLetter}${r}`);
     sheet.getCell(`B${r}`).value = 'b) If the information does not apply to the applicant, please put N/A.';
     sheet.getCell(`B${r}`).font = notesFont;
-
-    return await workbook.xlsx.writeBuffer();
 }
+
 
 module.exports = { generateIERExcelJS };

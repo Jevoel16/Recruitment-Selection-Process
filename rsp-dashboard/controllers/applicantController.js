@@ -28,7 +28,8 @@ async function updateVersion(req, res, id) {
 // This normalization is strictly required for generating compact, recognizable Application Codes for the tracking system.
 function getShortenedPosition(position) {
     if (!position) return 'APP';
-    let cleanPos = position.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    let noParens = position.replace(/\s*\(.*?\)/g, '');
+    let cleanPos = noParens.replace(/[^a-zA-Z0-9 ]/g, '').trim();
     const match = cleanPos.match(/\s([IVX]+)$/i);
     let numberSuffix = '';
     if (match) {
@@ -83,7 +84,7 @@ exports.createApplicant = async (req, res) => {
         
         const applicantId = result.insertId;
         
-        const vacNoStr = vacancyAnnouncementNo ? String(vacancyAnnouncementNo).padStart(3, '0') : '000';
+        const vacNoStr = vacancyAnnouncementNo ? String(vacancyAnnouncementNo).trim().toUpperCase() : '000';
         
         const [rows] = await db.query(
             "SELECT applicationCode FROM applicants WHERE applicationCode LIKE ? AND id != ? ORDER BY id DESC LIMIT 1",

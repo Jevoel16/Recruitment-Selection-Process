@@ -101,7 +101,15 @@ async function generateCARExcelJS(exportType, positionFilter, posData, applicant
             if (Array.isArray(parsed)) {
                 let all = [];
                 parsed.forEach(p => {
-                    if (p.items) all.push(...p.items.split(',').map(s => s.trim()).filter(s => s));
+                    if (posData.activeParenthetical) {
+                        if (p.parenthetical === posData.activeParenthetical && p.items) {
+                            all.push(...p.items.split(',').map(x => x.trim()).filter(x => x !== ''));
+                        }
+                    } else {
+                        if ((!p.parenthetical || p.parenthetical.trim() === '') && p.items) {
+                            all.push(...p.items.split(',').map(x => x.trim()).filter(x => x !== ''));
+                        }
+                    }
                 });
                 itemsArray = all;
             } else {

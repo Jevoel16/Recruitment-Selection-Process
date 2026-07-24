@@ -322,7 +322,27 @@ window.confirmSummaryDisqualify = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason })
     })
-        .then(res => res.ok ? window.showToast('Successfully disqualified', 'success', true) : window.showToast('Error disqualifying', 'danger'))
+        .then(res => {
+            if (res.ok) {
+                window.showToast('Successfully disqualified', 'success', false);
+                const row = document.getElementById(`applicant-row-${id}`);
+                if (row) {
+                    const actionTd = row.querySelector('.text-end');
+                    if (actionTd) {
+                        actionTd.innerHTML = `<button class="btn btn-sm btn-outline-danger action-btn ms-1" onclick="removeApplicantFromStep1(${id})" title="Remove from Step 1"><i class="bi bi-x-circle"></i> Remove</button>`;
+                    }
+                    const remarksTd = document.getElementById(`remarks-cell-${id}`);
+                    if (remarksTd) remarksTd.innerHTML = '<span class="badge bg-danger">Disqualified</span>';
+                }
+                if (typeof window.clearModalStack === 'function') window.clearModalStack();
+                const m1 = bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryDisqualifyModal'));
+                m1.hide();
+                const m2 = bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal'));
+                m2.hide();
+            } else {
+                window.showToast('Error disqualifying', 'danger');
+            }
+        })
         .catch(err => console.error(err));
 }
 

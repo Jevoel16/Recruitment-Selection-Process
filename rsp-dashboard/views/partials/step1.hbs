@@ -71,7 +71,7 @@
                     </thead>
                     <tbody>
                         {{#each step1}}
-                        <tr>
+                        <tr id="applicant-row-{{this.id}}">
                             <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
                             <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                             <td class="text-center"><button class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openInfoModal({{this.id}})" title="Personal Info"><i class="bi bi-person-badge"></i> Info</button></td>

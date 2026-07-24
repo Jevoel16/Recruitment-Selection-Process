@@ -77,4 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    window.clearModalStack = function() {
+        modalStack.length = 0;
+    };
 });
