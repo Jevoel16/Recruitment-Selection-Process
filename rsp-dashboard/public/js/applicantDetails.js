@@ -305,7 +305,7 @@ window.disqualifyFromSummary = () => {
     const reasonMainInput = document.getElementById('summaryDisqualifyReasonMain');
     
     if (reasonMainInput) {
-        reasonMainInput.value = 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+        reasonMainInput.value = 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications. Thus, we regret that you cannot proceed for the next stage of the selection process for this position.';
     }
     
     bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryDisqualifyModal')).show();

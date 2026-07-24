@@ -43,9 +43,12 @@ window.printInitialEvalDQ = async function(id) {
         return 'Qualified';
     };
 
-    let reasonText = data.disqualificationReason || data.applicant?.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
+    const dbReason = data.disqualificationReason || data.applicant?.disqualificationReason;
+    let reasonText = dbReason || `While your qualifications made a favorable impression, we regret to inform you that you did not meet the minimum QS set for ${pos} position.`;
     
-    reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
+    if (dbReason && !dbReason.includes('we regret')) {
+        reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
+    }
 
     const remarksDate = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
@@ -89,7 +92,7 @@ window.printInitialEvalDQ = async function(id) {
 
     const lName = applicantObj.lastName ? applicantObj.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const fName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '[positioncodes]';
 
     const filename = `${lName}_${fName}_${pCode}_${noticeType}.docx`;
 

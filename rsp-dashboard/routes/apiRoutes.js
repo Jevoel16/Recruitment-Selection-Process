@@ -424,8 +424,8 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 }
                 let content = templatesCache[resolvedTemplateName];
                 
-                let reasonText = app.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
-                if (!isQualified) {
+                let reasonText = app.disqualificationReason || `While your qualifications made a favorable impression, we regret to inform you that you did not meet the minimum QS set for ${pos} position.`;
+                if (app.disqualificationReason && !app.disqualificationReason.includes('we regret')) {
                     reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
                 }
                 
@@ -470,10 +470,10 @@ router.post('/export/pre-generate-docs', async (req, res) => {
 
                 const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const pCode = (app.position_code || '').replace(/[^a-zA-Z0-9]/g, '');
+                const pCode = app.position_code ? app.position_code.replace(/[^a-zA-Z0-9]/g, '') : '[positioncodes]';
                 const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
                 
-                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}_${app.id}`;
+                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 fs.mkdirSync(tempDir, { recursive: true });
                 const inputPath = path.join(tempDir, baseName + '.docx');
@@ -601,10 +601,10 @@ router.post('/export/email-docs', async (req, res) => {
 
                 const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const pCode = (app.position_code || '').replace(/[^a-zA-Z0-9]/g, '');
+                const pCode = app.position_code ? app.position_code.replace(/[^a-zA-Z0-9]/g, '') : '[positioncodes]';
                 const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
 
-                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}_${app.id}`;
+                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}`;
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');
                 const docxPath = path.join(generatedDir, baseName + '.docx');
                 

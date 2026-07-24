@@ -63,8 +63,10 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const pos = app.position || 'Position';
     const appCode = app.applicationCode || '[Application Code]';
     
-    let reasonText = app.disqualificationReason || 'Pursuant to Section 21 of DO 7 s. 2023 provides that "Individuals who failed to submit complete mandatory documents (Items 20.a to 20.j) on the set deadline indicated in the official memorandum shall not be included in the pool of official applicants.” and upon reviewing your submitted documents, you failed to meet the complete mandatory requirements or qualifications.';
-    reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
+    let reasonText = app.disqualificationReason || `While your qualifications made a favorable impression, we regret to inform you that you did not meet the minimum QS set for ${pos} position.`;
+    if (app.disqualificationReason && !app.disqualificationReason.includes('we regret')) {
+        reasonText += ` Thus, we regret that you cannot proceed for the next stage of the selection process for ${pos} position.`;
+    }
     
     const d = new Date();
     const dateStr = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -110,7 +112,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     
     const safeLName = app.lastName ? app.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const safeFName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '[positioncodes]';
     const noticeType = templateName.replace(/[^a-zA-Z0-9]/g, '_');
     const baseName = `${safeLName}_${safeFName}_${pCode}_${noticeType}`;
     
