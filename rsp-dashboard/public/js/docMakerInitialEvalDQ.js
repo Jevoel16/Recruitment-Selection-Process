@@ -91,7 +91,7 @@ window.printInitialEvalDQ = async function(id) {
     const fName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
 
-    const filename = `${lName}_${fName}_${pCode}_${noticeType}_${id}.docx`;
+    const filename = `${lName}_${fName}_${pCode}_${noticeType}.docx`;
 
     await window.exportFromTemplate(templateUrl, templateData, filename);
 

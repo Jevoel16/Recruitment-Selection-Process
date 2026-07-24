@@ -112,7 +112,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const safeFName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : '';
     const noticeType = templateName.replace(/[^a-zA-Z0-9]/g, '_');
-    const baseName = `${safeLName}_${safeFName}_${pCode}_${noticeType}_${app.id}`;
+    const baseName = `${safeLName}_${safeFName}_${pCode}_${noticeType}`;
     
     const inputPath = path.join(tempDir, baseName + '.docx');
     fs.writeFileSync(inputPath, buf);

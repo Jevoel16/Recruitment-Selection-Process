@@ -139,27 +139,27 @@ exports.disqualifyApplicant = async (req, res) => {
         if (reason) await db.query(`UPDATE applicants SET status = 'DISQUALIFIED', disqualificationReason = ? WHERE id = ?`, [reason, req.params.id]);
         else await db.query(`UPDATE applicants SET status = 'DISQUALIFIED' WHERE id = ?`, [req.params.id]);
         
-        // Generate all DQ template PDFs in the background (sequentially to avoid Word COM conflicts)
-        const dqTemplates = [
-            'Notice to DQ',
-            'Notice to DQ - Higher Teaching',
-            'Notice to DQ - No Omnibus',
-            'Notice to DQ - Not notarized Omnibus'
-        ];
         db.query('SELECT * FROM applicants WHERE id = ?', [req.params.id]).then(async ([apps]) => {
             if (apps && apps.length > 0) {
+                const app = apps[0];
+                const isHigherTeaching = [
+                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
+                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
+                ].includes(String(app.position || '').toUpperCase());
+                
+                const targetTmpl = isHigherTeaching ? 'Notice to DQ - Higher Teaching' : 'Notice to DQ';
                 let generated = 0, failed = 0;
-                for (const tmpl of dqTemplates) {
-                    try {
-                        await generatePDFForApplicant(apps[0], tmpl);
-                        console.log(`[Auto-PDF] Generated "${tmpl}" for applicant ${apps[0].id}`);
-                        generated++;
-                    } catch (err) {
-                        console.error(`[Auto-PDF] Failed "${tmpl}" for applicant ${apps[0].id}:`, err.message);
-                        failed++;
-                    }
+                
+                try {
+                    await generatePDFForApplicant(app, targetTmpl);
+                    console.log(`[Auto-PDF] Generated "${targetTmpl}" for applicant ${app.id}`);
+                    generated++;
+                } catch (err) {
+                    console.error(`[Auto-PDF] Failed "${targetTmpl}" for applicant ${app.id}:`, err.message);
+                    failed++;
                 }
-                pdfEvents.emit('pdf-done', { applicantId: apps[0].id, name: `${apps[0].firstName} ${apps[0].lastName}`, status: 'DISQUALIFIED', generated, failed, total: dqTemplates.length });
+                
+                pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: 'DISQUALIFIED', generated, failed, total: 1 });
             }
         }).catch(err => console.error("DB error:", err));
 
@@ -176,25 +176,27 @@ exports.qualifyApplicant = async (req, res) => {
 
         await db.query(`UPDATE applicants SET status = 'QUALIFIED' WHERE id = ?`, [req.params.id]);
         
-        // Generate all Qualified template PDFs in the background (sequentially to avoid Word COM conflicts)
-        const qualTemplates = [
-            'Notice to Qualified - Without Date of Assessment',
-            'Notice to Qualified - Higher Teaching'
-        ];
         db.query('SELECT * FROM applicants WHERE id = ?', [req.params.id]).then(async ([apps]) => {
             if (apps && apps.length > 0) {
+                const app = apps[0];
+                const isHigherTeaching = [
+                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
+                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
+                ].includes(String(app.position || '').toUpperCase());
+                
+                const targetTmpl = isHigherTeaching ? 'Notice to Qualified - Higher Teaching' : 'Notice to Qualified - Without Date of Assessment';
                 let generated = 0, failed = 0;
-                for (const tmpl of qualTemplates) {
-                    try {
-                        await generatePDFForApplicant(apps[0], tmpl);
-                        console.log(`[Auto-PDF] Generated "${tmpl}" for applicant ${apps[0].id}`);
-                        generated++;
-                    } catch (err) {
-                        console.error(`[Auto-PDF] Failed "${tmpl}" for applicant ${apps[0].id}:`, err.message);
-                        failed++;
-                    }
+                
+                try {
+                    await generatePDFForApplicant(app, targetTmpl);
+                    console.log(`[Auto-PDF] Generated "${targetTmpl}" for applicant ${app.id}`);
+                    generated++;
+                } catch (err) {
+                    console.error(`[Auto-PDF] Failed "${targetTmpl}" for applicant ${app.id}:`, err.message);
+                    failed++;
                 }
-                pdfEvents.emit('pdf-done', { applicantId: apps[0].id, name: `${apps[0].firstName} ${apps[0].lastName}`, status: 'QUALIFIED', generated, failed, total: qualTemplates.length });
+                
+                pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: 'QUALIFIED', generated, failed, total: 1 });
             }
         }).catch(err => console.error("DB error:", err));
 
