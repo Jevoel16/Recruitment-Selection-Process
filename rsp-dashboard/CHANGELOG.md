@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-07-25 15:05 (v1.5.5-Release+202607251505)
+
+### Changed
+- **UI Enhancements**: Implemented Mobile UI optimizations with responsive table layouts and data-labels across dashboard views.
+- **Position Title**: Customized Position Title Formatting across various controllers.
+- **Staff Categories**: Corrected School Staff Categories in admin logic and seeders.
+- **Repository Maintenance**: Cleaned up obsolete temporary files.
+
+## 2026-07-24 23:30 (v1.5.4-Release+202607242330)
+
+### Added
+- **UI Enhancements**: Added an `id` to applicant rows in Step 1 to allow precise targeting and prevent UI jitter during row updates.
+- **Excel Exports**: Updated CAR and IER Excel generator utilities to handle Parenthetical Titles explicitly and improve grouping by positions.
+
+### Changed
+- **Vacancy Tracking**: Applied vacancy system logic adjustments across applicant and position controllers.
+- **Repository Maintenance**: Removed temporary bug-fixing scripts (`fix2.js`, `fix_excel.js`) from the repository.
+
 ## 2026-07-24 18:41 (v1.5.3-Release+202607241841)
 
 ### CHANGED

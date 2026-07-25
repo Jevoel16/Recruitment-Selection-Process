@@ -4,6 +4,12 @@ const db = require('../db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
+function validatePassword(password) {
+    // Minimum 8 characters, at least one letter and one number
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+    return regex.test(password);
+}
+
 function hashPassword(password) {
     return crypto.createHash('sha256').update(password).digest('hex');
 }
@@ -68,6 +74,10 @@ exports.createUser = async (req, res) => {
             return res.status(403).json({ error: 'You do not have permission to create this role.' });
         }
 
+        if (!validatePassword(password)) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one letter and one number.' });
+        }
+
         const [rows] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
         if (rows.length > 0) return res.status(400).json({ error: 'Username already exists' });
         
@@ -110,6 +120,9 @@ exports.updateUser = async (req, res) => {
         }
 
         if (password) {
+            if (!validatePassword(password)) {
+                return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one letter and one number.' });
+            }
             await db.query(`UPDATE users SET role = ?, can_access_step2 = ?, password = ? WHERE id = ?`, 
                 [role, can_access_step2 ? 1 : 0, hashPassword(password), id]);
         } else {

@@ -1,9 +1,15 @@
 <div class="tab-pane fade {{#if (eq user.role 'superadmin')}}show active{{/if}}" id="users" role="tabpanel">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-semibold">Manage Users</h4>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
-            <i class="bi bi-person-plus"></i> Create User
-        </button>
+        <div class="d-flex gap-3 align-items-center">
+            <div class="input-group glass-panel shadow-sm" style="width: 250px;">
+                <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="document.getElementById('userSearchInput').focus()"><i class="bi bi-search text-primary"></i></span>
+                <input type="text" class="form-control border-start-0 ps-0" id="userSearchInput" placeholder="Search users...">
+            </div>
+            <button class="btn btn-primary shadow-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                <i class="bi bi-person-plus"></i> Create User
+            </button>
+        </div>
     </div>
 
     <div class="table-responsive bg-white rounded-3 shadow-sm border p-3">
@@ -44,13 +50,30 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Password</label>
-                        <input type="password" name="password" class="form-control form-control-sm" required>
+                        <div class="input-group input-group-sm">
+                            <input type="password" name="password" id="createPassword" class="form-control" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="createPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text small text-muted" style="font-size: 0.75rem;">Min 8 chars, 1 letter, 1 number.</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small text-muted mb-1">Confirm Password</label>
+                        <div class="input-group input-group-sm">
+                            <input type="password" name="confirmPassword" id="createConfirmPassword" class="form-control" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="createConfirmPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small text-muted mb-1">Role</label>
                         <select name="role" class="form-select form-select-sm custom-ui-select">
                             <option value="evaluator">Evaluator</option>
+                            {{#if (eq user.role 'superadmin')}}
                             <option value="admin">Admin</option>
+                            {{/if}}
                         </select>
                     </div>
                     <div class="form-check form-switch mb-0">
@@ -82,7 +105,9 @@
                         <label class="form-label small text-muted mb-1">Role</label>
                         <select name="role" id="editUserRole" class="form-select form-select-sm custom-ui-select">
                             <option value="evaluator">Evaluator</option>
+                            {{#if (eq user.role 'superadmin')}}
                             <option value="admin">Admin</option>
+                            {{/if}}
                         </select>
                     </div>
                     <div class="form-check form-switch mb-3">
@@ -91,7 +116,22 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Reset Password</label>
-                        <input type="password" name="password" class="form-control form-control-sm" placeholder="Leave blank to keep">
+                        <div class="input-group input-group-sm">
+                            <input type="password" name="password" id="editPassword" class="form-control" placeholder="Leave blank to keep">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="editPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text small text-muted" style="font-size: 0.75rem;">Min 8 chars, 1 letter, 1 number.</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small text-muted mb-1">Confirm Password</label>
+                        <div class="input-group input-group-sm">
+                            <input type="password" name="confirmPassword" id="editConfirmPassword" class="form-control" placeholder="Leave blank to keep">
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="editConfirmPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

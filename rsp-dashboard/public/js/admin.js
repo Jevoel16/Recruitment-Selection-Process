@@ -14,6 +14,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (usersTab.classList.contains('active')) {
             fetchUsers();
         }
+
+        const searchInput = document.getElementById('userSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                document.querySelectorAll('#usersTable tbody tr').forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('bi-eye', 'bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('bi-eye-slash', 'bi-eye');
+                }
+            });
+        });
     }
 
     if (logsTab) {
@@ -62,6 +88,20 @@ async function createUser(e) {
     const data = Object.fromEntries(formData.entries());
     data.can_access_step2 = formData.get('can_access_step2') === 'on';
 
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+    
+    if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+    }
+    
+    const strengthRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!strengthRegex.test(password)) {
+        alert("Password must be at least 8 characters long and contain at least one letter and one number.");
+        return;
+    }
+
     try {
         const res = await fetch('/api/users', {
             method: 'POST',
@@ -93,10 +133,27 @@ async function updateUser(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const id = document.getElementById('editUserId').value;
+    
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+    
+    if (password) {
+        if (password !== confirmPassword) {
+            alert("Passwords do not match.");
+            return;
+        }
+        
+        const strengthRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+        if (!strengthRegex.test(password)) {
+            alert("Password must be at least 8 characters long and contain at least one letter and one number.");
+            return;
+        }
+    }
+
     const data = {
         role: formData.get('role'),
         can_access_step2: formData.get('can_access_step2') === 'on',
-        password: formData.get('password') || undefined
+        password: password || undefined
     };
 
     try {

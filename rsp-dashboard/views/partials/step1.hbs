@@ -72,14 +72,14 @@
                     <tbody>
                         {{#each step1}}
                         <tr id="applicant-row-{{this.id}}">
-                            <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                            <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
-                            <td class="text-center"><button class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openInfoModal({{this.id}})" title="Personal Info"><i class="bi bi-person-badge"></i> Info</button></td>
-                            <td class="text-center"><button class="btn btn-sm btn-outline-info shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openEduModal({{this.id}})" title="Education"><i class="bi bi-mortarboard-fill"></i> Education</button></td>
-                            <td class="text-center"><button class="btn btn-sm btn-outline-warning shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openTrainModal({{this.id}})" title="Training"><i class="bi bi-award-fill"></i> Training</button></td>
-                            <td class="text-center"><button class="btn btn-sm btn-outline-success shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openExpModal({{this.id}})" title="Experience"><i class="bi bi-briefcase-fill"></i> Experience</button></td>
+                            <td data-label="Application Code"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                            <td data-label="Applicant Name" class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
+                            <td data-label="Info" class="text-center"><button class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openInfoModal({{this.id}})" title="Personal Info"><i class="bi bi-person-badge"></i> Info</button></td>
+                            <td data-label="Education" class="text-center"><button class="btn btn-sm btn-outline-info shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openEduModal({{this.id}})" title="Education"><i class="bi bi-mortarboard-fill"></i> Education</button></td>
+                            <td data-label="Training" class="text-center"><button class="btn btn-sm btn-outline-warning shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openTrainModal({{this.id}})" title="Training"><i class="bi bi-award-fill"></i> Training</button></td>
+                            <td data-label="Experience" class="text-center"><button class="btn btn-sm btn-outline-success shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openExpModal({{this.id}})" title="Experience"><i class="bi bi-briefcase-fill"></i> Experience</button></td>
                             {{#if ../showPerfColumn}}
-                            <td class="text-center">
+                            <td data-label="Performance" class="text-center">
                                 {{#if this.isHigherTeaching}}
                                 <button class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openHtPerfCalcModal({{this.id}})" title="Performance"><i class="bi bi-graph-up-arrow"></i> Perf</button>
                                 {{else}}
@@ -87,8 +87,8 @@
                                 {{/if}}
                             </td>
                             {{/if}}
-                            <td class="text-center"><button class="btn btn-sm btn-outline-secondary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openEligModal({{this.id}})" title="Eligibility"><i class="bi bi-shield-check"></i> Eligibility</button></td>
-                            <td id="remarks-cell-{{this.id}}">
+                            <td data-label="Eligibility" class="text-center"><button class="btn btn-sm btn-outline-secondary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openEligModal({{this.id}})" title="Eligibility"><i class="bi bi-shield-check"></i> Eligibility</button></td>
+                            <td data-label="Remarks" id="remarks-cell-{{this.id}}">
                                 {{#if (eq this.docRemark 'Qualified')}}
                                     <span class="badge bg-success">Qualified</span>
                                 {{else if (eq this.docRemark 'Disqualified')}}
@@ -101,7 +101,7 @@
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 {{/if}}
                             </td>
-                            <td class="text-end">
+                            <td data-label="Actions" class="text-end">
                                 {{#if (eq this.status 'PENDING')}}
                                 <button class="btn btn-sm btn-primary action-btn" data-name="{{titleCase this.name}}" onclick="openSummaryModal({{this.id}}, this.getAttribute('data-name'))" title="Evaluate Applicant"><i class="bi bi-card-checklist"></i> Evaluate</button>
                                 {{/if}}

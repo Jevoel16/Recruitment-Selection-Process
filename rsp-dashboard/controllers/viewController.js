@@ -186,15 +186,17 @@ exports.getDashboard = async (req, res) => {
         const [positionsResult] = await db.query(positionQuery, searchParams);
         const applicantPositionList = positionsResult.map(p => p.position);
 
-        let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL`;
+        let vacancyQuery;
         let vacancyParams = [];
         if (positionFilter) {
-            vacancyQuery += ` AND position = ?`;
+            vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM positions WHERE vacancyAnnouncementNo IS NOT NULL AND title = ?`;
             vacancyParams.push(positionFilter);
-        }
-        if (searchQuery) {
-            vacancyQuery += searchCondition;
-            vacancyParams.push(...searchParams);
+        } else {
+            vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL`;
+            if (searchQuery) {
+                vacancyQuery += searchCondition;
+                vacancyParams.push(...searchParams);
+            }
         }
         vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
         const [vacancies] = await db.query(vacancyQuery, vacancyParams);
@@ -795,15 +797,17 @@ exports.getStepPage = async (req, res, next) => {
             const [positions] = await db.query(positionQuery, searchParams);
             positionList = positions.map(p => p.position);
             
-            let vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL AND ${config.conditions}`;
+            let vacancyQuery;
             let vacancyParams = [];
             if (positionFilter) {
-                vacancyQuery += ` AND position = ?`;
+                vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM positions WHERE vacancyAnnouncementNo IS NOT NULL AND title = ?`;
                 vacancyParams.push(positionFilter);
-            }
-            if (searchQuery) {
-                vacancyQuery += searchCondition;
-                vacancyParams.push(...searchParams);
+            } else {
+                vacancyQuery = `SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL AND ${config.conditions}`;
+                if (searchQuery) {
+                    vacancyQuery += searchCondition;
+                    vacancyParams.push(...searchParams);
+                }
             }
             vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
             

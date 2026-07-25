@@ -404,7 +404,9 @@ exports.addEducation = async (req, res) => {
     try {
         if (!(await updateVersion(req, res, req.params.id))) return;
 
-        await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [req.params.id, req.body.title, req.body.year_graduated, '']);
+        const degree = req.body.title || '';
+        const yearGrad = req.body.year_graduated ? parseInt(req.body.year_graduated, 10) : 0;
+        await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [req.params.id, degree, yearGrad, '']);
         res.json({ success: true });
     } catch (error) { console.error(error); res.status(500).json({ error: "Internal server error" }); }
 };
@@ -584,10 +586,11 @@ exports.updateEducation = async (req, res) => {
         if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
         if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
 
-        const { degree, yearGraduated } = req.body;
-        await db.query('UPDATE applicant_education SET degree = ?, yearGraduated = ? WHERE id = ?', [degree, yearGraduated, req.params.id]);
+        const degree = req.body.degree || '';
+        const yearGrad = req.body.yearGraduated ? parseInt(req.body.yearGraduated, 10) : 0;
+        await db.query('UPDATE applicant_education SET degree = ?, yearGraduated = ? WHERE id = ?', [degree, yearGrad, req.params.id]);
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: "Internal server error" }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: "Internal server error" }); }
 };
 
 exports.updateTraining = async (req, res) => {

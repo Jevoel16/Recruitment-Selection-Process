@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-25 15:05 (v1.5.5-Release+202607251505)
+
+### Changed
+- **UI Enhancements**: Implemented Mobile UI optimizations with responsive table layouts and data-labels across dashboard views.
+- **Position Title**: Customized Position Title Formatting across various controllers.
+- **Staff Categories**: Corrected School Staff Categories in admin logic and seeders.
+- **Repository Maintenance**: Cleaned up obsolete temporary files.
+
 ## 2026-07-24 23:30 (v1.5.4-Release+202607242330)
 
 ### Added

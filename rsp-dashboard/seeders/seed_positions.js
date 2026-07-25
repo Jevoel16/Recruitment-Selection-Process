@@ -176,7 +176,7 @@ const positionsData = [
         "qsExperienceLevel": null
     },
     {
-        "category": "Teaching",
+        "category": "School Administration",
         "title": "Head Teacher V",
         "salaryGrade": "18",
         "in_vacancy": 0,
@@ -208,7 +208,7 @@ const positionsData = [
         "qsExperienceLevel": null
     },
     {
-        "category": "Teaching",
+        "category": "School Administration",
         "title": "Head Teacher III",
         "salaryGrade": "16",
         "in_vacancy": 0,
@@ -240,7 +240,7 @@ const positionsData = [
         "qsExperienceLevel": null
     },
     {
-        "category": "Teaching",
+        "category": "School Administration",
         "title": "Head Teacher I",
         "salaryGrade": "14",
         "in_vacancy": 0,

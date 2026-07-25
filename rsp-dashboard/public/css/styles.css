@@ -582,3 +582,93 @@ select.custom-ui-select option {
     background-color: var(--white) !important;
     box-shadow: inset 0 0 0 2px var(--primary) !important;
 }
+
+/* Responsive Sidebar */
+.responsive-sidebar {
+    width: 280px;
+    z-index: 1050;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;
+}
+
+@media (max-width: 767.98px) {
+    .responsive-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+    }
+    .responsive-sidebar.show {
+        transform: translateX(0);
+    }
+    .sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        backdrop-filter: blur(4px);
+    }
+    .sidebar-backdrop.show {
+        display: block !important;
+    }
+    /* Adjust main content for mobile top nav */
+    .main-content {
+        padding-top: 70px !important; 
+    }
+    
+    /* Mobile Tables to Cards */
+    .custom-table thead {
+        display: none;
+    }
+    .custom-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        padding: 1rem;
+        border: 1px solid color-mix(in srgb, var(--black) 10%, transparent);
+    }
+    .custom-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+        text-align: right !important;
+    }
+    .custom-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-align: left;
+        color: var(--primary);
+        flex: 1;
+    }
+    .custom-table tbody td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+    
+    /* Reset Choices.js dropdown width on mobile so it doesn't overflow */
+    .choices__list--dropdown {
+        width: 100% !important;
+        left: 0 !important;
+    }
+}
+
+/* Enhanced Glassmorphism & Buttons */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 10px 30px rgba(30, 27, 75, 0.08);
+}
+
+/* Hide scrollbar for horizontal scrolling elements */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}

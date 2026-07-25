@@ -1,10 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sidebarToggle = document.getElementById('sidebarToggle');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
     const sidebar = document.getElementById('mainSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
+    }
+
+    if (mobileMenuToggle && sidebar && backdrop) {
+        function openSidebar() {
+            sidebar.classList.add('show');
+            backdrop.classList.add('show');
+        }
+        function closeSidebar() {
+            sidebar.classList.remove('show');
+            backdrop.classList.remove('show');
+        }
+
+        mobileMenuToggle.addEventListener('click', openSidebar);
+        if (mobileMenuClose) mobileMenuClose.addEventListener('click', closeSidebar);
+        backdrop.addEventListener('click', closeSidebar);
     }
 });
 

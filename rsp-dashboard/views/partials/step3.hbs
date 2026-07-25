@@ -67,16 +67,16 @@
                     <tbody>
                         {{#each step3}}
                         <tr>
-                            <td class="ps-4"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                            <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
-                            <td>{{this.position}}</td>
-                            <td class="text-center">
+                            <td data-label="Application Code" class="ps-4"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                            <td data-label="Applicant Name" class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
+                            <td data-label="Position">{{this.position}}</td>
+                            <td data-label="Score Summary" class="text-center">
                                 <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{titleCase this.name}}', true)" title="View Summary">
                                     <i class="bi bi-eye"></i> View
                                 </button>
                             </td>
-                            <td class="fw-bold text-primary text-center">#{{incOffset @index ../offset}}</td>
-                            <td class="text-center fw-bold {{#if (eq this.status 'NO_APPEARANCE')}}text-danger{{else if (eq this.status 'NEWLY_PROMOTED')}}text-danger{{else}}text-success{{/if}} fs-5">
+                            <td data-label="Rank" class="fw-bold text-primary text-center">#{{incOffset @index ../offset}}</td>
+                            <td data-label="Total" class="text-center fw-bold {{#if (eq this.status 'NO_APPEARANCE')}}text-danger{{else if (eq this.status 'NEWLY_PROMOTED')}}text-danger{{else}}text-success{{/if}} fs-5">
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
                                     0
                                 {{else if (eq this.status 'NEWLY_PROMOTED')}}
@@ -89,7 +89,7 @@
                                     {{/unless}}
                                 {{/if}}
                             </td>
-                            <td class="text-center">
+                            <td data-label="Remarks" class="text-center">
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
                                     <span class="badge bg-danger">No Appearance</span>
                                 {{else if (eq this.status 'NEWLY_PROMOTED')}}
@@ -98,7 +98,7 @@
                                     <span class="badge bg-success">Assessed</span>
                                 {{/if}}
                             </td>
-                            <td class="text-end pe-4">
+                            <td data-label="Action" class="text-end pe-4">
                                 {{#if (eq this.status 'ASSESSED')}}
                                 <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{titleCase this.name}}')" title="Move to Step 4"><i class="bi bi-arrow-right-circle"></i> Move</button>
                                 {{/if}}

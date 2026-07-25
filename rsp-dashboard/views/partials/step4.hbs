@@ -60,22 +60,22 @@
                     <tbody>
                         {{#each step4}}
                         <tr id="applicant-row-{{this.id}}">
-                            <td><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
-                            <td class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
-                            <td>{{this.position}}</td>
-                            <td class="text-center">
+                            <td data-label="Application Code"><span class="badge bg-secondary font-monospace">{{this.applicationCode}}</span></td>
+                            <td data-label="Applicant Name" class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
+                            <td data-label="Position">{{this.position}}</td>
+                            <td data-label="Document" class="text-center">
                                 <button class="btn btn-sm btn-outline-primary action-btn" onclick="window.openGenericDocModal(4, {{this.id}}, '', '', `{{titleCase this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC">
                                     <i class="bi bi-file-earmark-word"></i> DOC
                                 </button>
                             </td>
-                            <td class="text-center">
+                            <td data-label="Remarks" class="text-center">
                                 {{#if (eq this.assignmentReqStatus 'COMPLETE')}}
                                     <span id="requirements-status-{{this.id}}" class="badge" style="background-color: purple; color: white;">Generated</span>
                                 {{else}}
                                     <span id="requirements-status-{{this.id}}" class="badge bg-warning text-dark">Pending</span>
                                 {{/if}}
                             </td>
-                            <td class="text-end pe-4">
+                            <td data-label="Action" class="text-end pe-4">
                                 <button id="assign-btn-{{this.id}}" class="btn btn-sm btn-primary action-btn" {{#if (eq this.assignmentReqStatus 'INCOMPLETE')}}disabled title="Must generate Notice of Requirements first"{{else}}title="Move to Step 5"{{/if}} onclick="openAssignModal({{this.id}}, '{{titleCase this.name}}')"><i class="bi bi-arrow-right-circle"></i> Move</button>
                             </td>
                         </tr>

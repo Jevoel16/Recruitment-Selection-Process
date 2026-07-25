@@ -118,11 +118,11 @@ window.printInitialEvalDQ = async function(id) {
         return base + numberSuffix;
     };
 
-    const lName = applicantObj.lastName ? applicantObj.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const fName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const cleanLName = applicantObj.lastName ? applicantObj.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
+    const cleanFName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(pos);
 
-    const filename = `${lName}_${fName}_${pCode}_${noticeType}.docx`;
+    const filename = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}.docx`;
 
     await window.exportFromTemplate(templateUrl, templateData, filename);
 

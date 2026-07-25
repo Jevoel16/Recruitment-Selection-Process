@@ -1,11 +1,11 @@
 {{> header}}
 
 <div class="glass-panel p-4 mb-0 shadow-sm rounded-4 d-print-none">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <h2 class="fw-semibold mb-0">Dashboard</h2>
         
-        <!-- Dashboard Tabs -->
-        <ul class="nav nav-pills gap-2" id="dashboardTabs" role="tablist">
+        <!-- Desktop Dashboard Tabs -->
+        <ul class="nav nav-pills gap-2 d-none d-md-flex" id="dashboardTabs" role="tablist">
             {{#unless (eq user.role "superadmin")}}
             <li class="nav-item" role="presentation">
                 <button class="nav-link {{#unless selectedPosition}}{{#unless showMasterlist}}{{#unless showCategories}}{{#unless showBackup}}active{{/unless}}{{/unless}}{{/unless}}{{/unless}} fw-bold px-4 py-2 rounded-pill shadow-sm" id="metrics-tab" data-bs-toggle="pill" data-bs-target="#metrics" type="button" role="tab"><i class="bi bi-graph-up me-2"></i> Metrics</button>
@@ -34,6 +34,25 @@
             </li>
             {{/if}}
         </ul>
+
+        <!-- Mobile Dropdown Dashboard Tabs -->
+        <div class="d-md-none w-100">
+            <select class="form-select custom-ui-select fw-bold shadow-sm rounded-pill" onchange="const triggerEl = document.querySelector(this.value); const tab = new bootstrap.Tab(triggerEl); tab.show();">
+                {{#unless (eq user.role "superadmin")}}
+                <option value="#metrics-tab" {{#unless selectedPosition}}{{#unless showMasterlist}}{{#unless showCategories}}{{#unless showBackup}}selected{{/unless}}{{/unless}}{{/unless}}{{/unless}}>Metrics</option>
+                <option value="#categories-tab" {{#if selectedPosition}}selected{{/if}} {{#if showCategories}}selected{{/if}}>Vacancy Setup</option>
+                <option value="#masterlist-tab" {{#if showMasterlist}}selected{{/if}}>Masterlist</option>
+                <option value="#backup-tab" {{#if showBackup}}selected{{/if}}>Backup</option>
+                {{/unless}}
+                
+                {{#if (eq user.role "admin")}}
+                <option value="#users-tab">Manage Users</option>
+                {{else if (eq user.role "superadmin")}}
+                <option value="#users-tab" selected>Manage Users</option>
+                <option value="#logs-tab">Logs</option>
+                {{/if}}
+            </select>
+        </div>
     </div>
     
     <div class="tab-content" id="dashboardTabsContent">

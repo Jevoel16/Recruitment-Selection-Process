@@ -9,6 +9,8 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Implemented Mobile UI optimizations using responsive table layouts and data-labels.
+- Corrected School Staff Categories and customized Position Title Formatting.
 - Fixed Applicant UI jitter by targeting specific row IDs during updates in Step 1.
 - Adjusted the Vacancy System logic and Excel export tools to explicitly account for Parenthetical Titles.
 - Updated the default disqualification reason in the seeders and fixed a document generation bug regarding the rejection sentence fallback.
