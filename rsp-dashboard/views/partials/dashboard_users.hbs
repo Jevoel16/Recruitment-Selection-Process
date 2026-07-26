@@ -1,32 +1,43 @@
 <div class="tab-pane fade {{#if (eq user.role 'superadmin')}}show active{{/if}}" id="users" role="tabpanel">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-semibold">Manage Users</h4>
-        <div class="d-flex gap-3 align-items-center">
-            <div class="input-group glass-panel shadow-sm" style="width: 250px;">
-                <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="document.getElementById('userSearchInput').focus()"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" class="form-control border-start-0 ps-0" id="userSearchInput" placeholder="Search users...">
-            </div>
-            <button class="btn btn-primary shadow-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                <i class="bi bi-person-plus"></i> Create User
-            </button>
+    <div class="glass-panel p-4 rounded-4 shadow-sm h-100 position-relative">
+        <div class="mb-3">
+            <form class="row g-2" onsubmit="event.preventDefault();">
+                <div class="col-md-3">
+                    <div class="input-group glass-panel h-100 shadow-sm">
+                        <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="document.getElementById('userSearchInput').focus()"><i class="bi bi-search text-primary"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="userSearchInput" placeholder="Search users...">
+                    </div>
+                </div>
+                <!-- Hidden element to force the exact same row height as Masterlist's filter dropdowns -->
+                <div class="col-md-7 d-flex">
+                    <div class="glass-panel filter-glass-panel px-2 py-1 invisible" style="width: 1px;">
+                        <select class="form-select border-0 shadow-none bg-transparent custom-ui-select"><option></option></select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-primary h-100 w-100 fw-bold shadow-sm rounded-3" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                        <i class="bi bi-person-plus-fill me-1"></i> Create User
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
 
-    <div class="table-responsive bg-white rounded-3 shadow-sm border p-3">
-        <table class="table table-hover align-middle mb-0" id="usersTable">
-            <thead class="table-light">
-                <tr>
-                    <th>Name</th>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Step 2 & Step 3 Access</th>
-                    <th class="text-center pe-4 ps-3 text-nowrap">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Populated by JS -->
-            </tbody>
-        </table>
+        <div class="rounded-4 shadow-sm border border-light table-responsive-wrapper bg-white">
+            <table class="table table-hover align-middle mb-0 bg-white custom-table" id="usersTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="px-4">Name</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Step 2 & Step 3 Access</th>
+                        <th class="text-center pe-4 ps-3 text-nowrap">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

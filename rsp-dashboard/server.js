@@ -144,6 +144,9 @@ async function ensureAdminSystem() {
     }
 }
 
+const cron = require('node-cron');
+const backupManager = require('./utils/backupManager');
+
 async function startServer() {
     try {
         await ensureRequirementColumns();
@@ -152,6 +155,19 @@ async function startServer() {
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });
+
+        // Setup Automated Daily Backup
+        cron.schedule('1 12 * * *', async () => {
+            console.log('[Cron] Starting automated daily backup...');
+            try {
+                await backupManager.generateDailyBackups();
+                await backupManager.cleanupOldBackups();
+                console.log('[Cron] Automated backup completed successfully.');
+            } catch (err) {
+                console.error('[Cron] Failed to run automated backup:', err);
+            }
+        });
+
     } catch (error) {
         console.error('Failed to initialize requirement columns:', error.message);
         process.exit(1);

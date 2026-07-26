@@ -1195,4 +1195,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.disabled = false;
             }
         }
+        function setBackupModalType(type) {
+            const label = document.getElementById('automatedBackupModalLabel');
+            const freshBtn = document.getElementById('generateFreshBackupBtn');
+            
+            if (type === 'JSON') {
+                label.textContent = 'JSON Format Backups';
+                freshBtn.href = '/api/export/backup';
+            } else {
+                label.textContent = 'CSV Format Backups';
+                freshBtn.href = '/api/export/backup/csv';
+            }
+            
+            loadAutomatedBackups(type);
+        }
+
+        async function loadAutomatedBackups(filterType) {
+            const listEl = document.getElementById('modal-automated-backups-list');
+            if (!listEl) return;
+            
+            listEl.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Loading automated backups...</td></tr>`;
+            
+            try {
+                const response = await fetch('/api/export/backup/automated/list');
+                const allBackups = await response.json();
+                const backups = allBackups.filter(b => b.type === filterType);
+                
+                if (backups.length === 0) {
+                    listEl.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No ${filterType} backups found yet.</td></tr>`;
+                    return;
+                }
+                
+                let html = '';
+                for (const backup of backups) {
+                    const date = new Date(backup.date).toLocaleString();
+                    const size = (backup.size / 1024).toFixed(2) + ' KB';
+                    
+                    html += `
+                        <tr>
+                            <td class="ps-4 pe-3 text-nowrap">${date}</td>
+                            <td class="fw-medium px-3">${backup.filename}</td>
+                            <td class="px-4 text-nowrap"><span class="badge ${backup.type === 'JSON' ? 'bg-primary' : 'bg-success'}">${backup.type}</span></td>
+                            <td class="px-4 text-nowrap">${size}</td>
+                            <td class="text-center pe-4 ps-3 text-nowrap">
+                                <a href="/api/export/backup/automated/download/${encodeURIComponent(backup.filename)}" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm">
+                                    <i class="bi bi-download me-1"></i> Download
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }
+                listEl.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load automated backups', error);
+                listEl.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Failed to load backups.</td></tr>`;
+            }
+        }
     </script>

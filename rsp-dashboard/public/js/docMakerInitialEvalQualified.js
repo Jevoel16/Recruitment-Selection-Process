@@ -123,7 +123,7 @@ window.printInitialEvalQualified = async function(id) {
     const vacNoStr = data.vacancyAnnouncementNo || applicantObj.vacancyAnnouncementNo || '000';
     const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
 
-    const filename = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}.docx`;
+    const filename = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}_${applicantObj.id}.docx`;
 
     await window.exportFromTemplate(templateUrl, templateData, filename);
 

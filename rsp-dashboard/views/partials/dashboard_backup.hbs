@@ -14,14 +14,14 @@
                                 </div>
                             </div>
                             <div class="d-flex flex-column gap-3 mt-4">
-                                <button class="btn btn-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/export/backup'">
+                                <button class="btn btn-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#automatedBackupModal" onclick="setBackupModalType('JSON')">
                                     <i class="bi bi-filetype-json fs-5 me-2"></i>
                                     <div class="text-start ms-2">
                                         <div class="fw-bold">JSON Format</div>
                                         <div class="small opacity-75" style="line-height:1;">Best for system restore</div>
                                     </div>
                                 </button>
-                                <button class="btn btn-outline-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" onclick="window.location.href='/api/export/backup/csv'">
+                                <button class="btn btn-outline-success rounded-pill px-4 py-2 shadow-sm d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#automatedBackupModal" onclick="setBackupModalType('CSV (Zipped)')">
                                     <i class="bi bi-filetype-csv fs-5 me-2"></i>
                                     <div class="text-start ms-2">
                                         <div class="fw-bold">CSV Format (ZIP)</div>
@@ -100,6 +100,10 @@
                 </div>
             </div>
         </div>
+
+        </div>
+        
+
 
         <!-- Email Selection Modal -->
         <div class="modal fade" id="emailSelectionModal" tabindex="-1" aria-labelledby="emailSelectionModalLabel" aria-hidden="true">
@@ -211,6 +215,44 @@
                         <button type="button" class="btn text-white rounded-pill px-4" style="background-color: #6f42c1;" id="confirmSendEmailBtn" onclick="confirmSubmitEmailCodes()">
                             <i class="bi bi-send-fill me-2"></i> Yes, Send Emails
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automated Backup Modal -->
+        <div class="modal fade" id="automatedBackupModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="automatedBackupModalLabel">Automated Backups</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <p class="text-muted small mb-0">Select a daily backup to download, or generate a fresh one right now.</p>
+                            <a href="#" id="generateFreshBackupBtn" class="btn btn-sm btn-primary rounded-pill px-3">
+                                <i class="bi bi-cloud-arrow-down-fill me-1"></i> Generate Fresh Backup Now
+                            </a>
+                        </div>
+                        <div class="rounded-4 shadow-sm border border-light table-responsive-wrapper bg-white">
+                            <table class="table table-hover align-middle mb-0 bg-white custom-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4 pe-3 text-nowrap">Date</th>
+                                        <th class="px-3 w-100">File Name</th>
+                                        <th class="px-4 text-nowrap">Format</th>
+                                        <th class="px-4 text-nowrap">Size</th>
+                                        <th class="text-center pe-4 ps-3 text-nowrap">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-automated-backups-list">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">Loading automated backups...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

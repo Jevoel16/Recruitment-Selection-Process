@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-26 22:11 (v1.5.6-Release+202607262211)
+
+### Added
+- **Database Backups**: Implemented automated daily backups and JSON format backups alongside the existing CSV format.
+
+### Changed
+- **Repository Maintenance**: Cleaned up unused backup files (`exceljsIER.js.bak`) and temporary configuration files.
+
 ## 2026-07-25 15:05 (v1.5.5-Release+202607251505)
 
 ### Changed

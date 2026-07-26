@@ -26,8 +26,12 @@ exports.updatePosition = async (req, res) => {
         
         // Use a parameterized update query to save the changes to the position profile.
         // It's critical to capture the 'id' correctly to ensure we don't overwrite other positions.
+        let finalVacNo = vacancyAnnouncementNo;
+        if (!finalVacNo || String(finalVacNo).trim() === '') {
+            finalVacNo = '0';
+        }
         await db.query(`UPDATE positions SET vacancyAnnouncementNo=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsEducationLevel=?, qsTraining=?, qsTrainingLevel=?, qsExperience=?, qsExperienceLevel=?, qsEligibility=? WHERE id=?`, 
-            [vacancyAnnouncementNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, id]);
+            [finalVacNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, id]);
         res.json({ success: true });
     } catch (e) {
         console.error(e);

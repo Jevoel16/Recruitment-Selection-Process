@@ -5,18 +5,31 @@
  * @param {boolean} reload - Whether to reload the page after showing the toast
  */
 window.showToast = function(message, type = 'info', reload = false) {
-    const toastEl = document.getElementById('globalToast');
-    const toastMsg = document.getElementById('globalToastMessage');
+    const container = document.querySelector('.toast-container');
+    const template = document.getElementById('globalToastTemplate');
     
-    if (!toastEl || !toastMsg) {
+    if (!template || !container) {
         console.warn('Toast elements not found. Message:', message);
         alert(message);
         if (reload) window.location.reload();
         return;
     }
 
-    toastEl.className = 'toast align-items-center text-white border-0';
-    
+    // Maintain max 5 toasts (remove oldest if needed)
+    const activeToasts = container.querySelectorAll('.toast:not(#globalToastTemplate)');
+    if (activeToasts.length >= 5) {
+        const oldestToast = activeToasts[0];
+        const bsToast = bootstrap.Toast.getInstance(oldestToast);
+        if (bsToast) bsToast.hide();
+        else oldestToast.remove();
+    }
+
+    // Clone the template
+    const toastEl = template.cloneNode(true);
+    toastEl.removeAttribute('id'); // Remove id from clone
+    toastEl.style.display = ''; // Remove display:none
+    const toastMsg = toastEl.querySelector('.global-toast-message');
+
     switch (type) {
         case 'success': toastEl.classList.add('bg-success'); break;
         case 'danger': toastEl.classList.add('bg-danger'); break;
@@ -25,9 +38,14 @@ window.showToast = function(message, type = 'info', reload = false) {
     }
 
     toastMsg.innerHTML = message;
+    container.appendChild(toastEl);
     
     const toast = new bootstrap.Toast(toastEl, { delay: 1500 });
     
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+
     if (reload) {
         window.isReloading = true;
         // Hide any open modals immediately so they don't linger while the toast waits to reload

@@ -77,14 +77,19 @@ exports.createApplicant = async (req, res) => {
         let positionCode = getShortenedPosition(position);
         const currentYear = new Date().getFullYear();
 
+        let finalVacNo = vacancyAnnouncementNo;
+        if (!finalVacNo || String(finalVacNo).trim() === '') {
+            finalVacNo = '0';
+        }
+
         const [result] = await db.query(
             'INSERT INTO applicants (firstName, lastName, middleName, nameExtension, applicationType, district, category, position, vacancyAnnouncementNo, applicationCode, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-            [firstName, lastName, middleName || '', nameExtension || '', applicationType || 'Walk-in', district || null, category || null, position || null, vacancyAnnouncementNo || null, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
+            [firstName, lastName, middleName || '', nameExtension || '', applicationType || 'Walk-in', district || null, category || null, position || null, finalVacNo, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
         );
         
         const applicantId = result.insertId;
         
-        const vacNoStr = vacancyAnnouncementNo ? String(vacancyAnnouncementNo).trim().toUpperCase() : '000';
+        const vacNoStr = (finalVacNo === '0') ? '000' : String(finalVacNo).trim().toUpperCase();
         
         const [rows] = await db.query(
             "SELECT applicationCode FROM applicants WHERE applicationCode LIKE ? AND id != ? ORDER BY id DESC LIMIT 1",
@@ -344,7 +349,7 @@ exports.assessApplicant = async (req, res) => {
             WHERE id = ?`, 
             [edu, trn, exp, prf, oac, aoe, ald, pot, pb, ppc, ppnc, sWe, sSwst, sBei, sPotPa, sPotPsa, mWe, mSwst, mBei, mPotPa, mPotPsa, finalTotal, assessmentRemarks, customRemarks, req.params.id]
         );
-        const delayMs = req.headers['x-is-seeding'] === 'true' ? 10800000 : 120000; // 3 hours vs 2 mins
+        const delayMs = req.headers['x-is-seeding'] === 'true' ? 3600000 : 60000; // 1 hour vs 1 min
         queuePregeneratedDocsDeletion(req.params.id, delayMs);
         res.json({ success: true });
     } catch (error) {
@@ -678,7 +683,7 @@ exports.updateEligibility = async (req, res) => {
 exports.noAppearanceApplicant = async (req, res) => {
     try {
         await db.query(`UPDATE applicants SET status = 'NO_APPEARANCE', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, scorePbet = 0, scorePpstCoi = 0, scorePpstNcoi = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
-        const delayMs = req.headers['x-is-seeding'] === 'true' ? 10800000 : 120000;
+        const delayMs = req.headers['x-is-seeding'] === 'true' ? 3600000 : 60000;
         queuePregeneratedDocsDeletion(req.params.id, delayMs);
         res.json({ success: true });
     } catch (error) {
@@ -690,7 +695,7 @@ exports.noAppearanceApplicant = async (req, res) => {
 exports.newlyPromotedApplicant = async (req, res) => {
     try {
         await db.query(`UPDATE applicants SET status = 'NEWLY_PROMOTED', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, scorePbet = 0, scorePpstCoi = 0, scorePpstNcoi = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
-        const delayMs = req.headers['x-is-seeding'] === 'true' ? 10800000 : 120000;
+        const delayMs = req.headers['x-is-seeding'] === 'true' ? 3600000 : 60000;
         queuePregeneratedDocsDeletion(req.params.id, delayMs);
         res.json({ success: true });
     } catch (error) {
@@ -725,10 +730,12 @@ async function processDeletionQueue() {
                 const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const prefix = `${cleanLName}_${cleanFName}_`;
+                const suffixPdf = `_${appId}.pdf`;
+                const suffixDocx = `_${appId}.docx`;
                 
                 const files = await fs.readdir(generatedDir).catch(() => []);
                 for (const file of files) {
-                    if (file.startsWith(prefix)) {
+                    if (file.startsWith(prefix) && (file.endsWith(suffixPdf) || file.endsWith(suffixDocx))) {
                         try {
                             await fs.unlink(path.join(generatedDir, file));
                         } catch (unlinkErr) {
@@ -761,7 +768,7 @@ async function processDeletionQueue() {
     isDeleting = false;
 }
 
-function queuePregeneratedDocsDeletion(appId, delayMs = 120000) {
+function queuePregeneratedDocsDeletion(appId, delayMs = 60000) {
     deletionQueue.push({ appId, retries: 0 });
     setTimeout(processDeletionQueue, delayMs); 
 }

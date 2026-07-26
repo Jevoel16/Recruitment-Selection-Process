@@ -152,7 +152,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const vacNoStr = app.vacancyAnnouncementNo || '000';
     const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
     
-    const baseName = `${safeLName}_${safeFName}_${combinedCode}_${noticeType}`;
+    const baseName = `${safeLName}_${safeFName}_${combinedCode}_${noticeType}_${app.id}`;
     
     const inputPath = path.join(tempDir, baseName + '.docx');
     fs.writeFileSync(inputPath, buf);

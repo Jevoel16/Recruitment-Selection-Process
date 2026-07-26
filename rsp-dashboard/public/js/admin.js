@@ -19,10 +19,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 const query = this.value.toLowerCase();
-                document.querySelectorAll('#usersTable tbody tr').forEach(row => {
+                let visibleCount = 0;
+                document.querySelectorAll('#usersTable tbody tr:not(#noUsersRow)').forEach(row => {
                     const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(query) ? '' : 'none';
+                    const isVisible = text.includes(query);
+                    row.style.display = isVisible ? '' : 'none';
+                    if (isVisible) visibleCount++;
                 });
+
+                const tbody = document.querySelector('#usersTable tbody');
+                let noUsersRow = document.getElementById('noUsersRow');
+
+                if (visibleCount === 0) {
+                    if (!noUsersRow) {
+                        tbody.insertAdjacentHTML('beforeend', `
+                            <tr id="noUsersRow">
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                    No users found matching the criteria.
+                                </td>
+                            </tr>
+                        `);
+                    } else {
+                        noUsersRow.style.display = '';
+                    }
+                } else if (noUsersRow) {
+                    noUsersRow.style.display = 'none';
+                }
             });
         }
 
@@ -59,23 +82,40 @@ async function fetchUsers() {
         tbody.innerHTML = '';
         
         let html = '';
-        users.forEach(user => {
-            html += `
-                <tr>
-                    <td>${user.name}</td>
-                    <td>${user.username}</td>
-                    <td><span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${user.role}</span></td>
-                    <td>${user.can_access_step2 ? '<i class="bi bi-check-circle-fill text-success"></i> Yes' : '<i class="bi bi-x-circle-fill text-danger"></i> No'}</td>
-                    <td class="text-center pe-4 ps-3 text-nowrap">
-                        <div class="d-flex justify-content-center align-items-center gap-2">
-                            <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openEditUser(${user.id}, '${user.role}', ${user.can_access_step2})" title="Edit User"><i class="bi bi-pencil"></i> Edit</button>
-                            <button class="btn btn-sm btn-danger action-btn shadow-sm px-2 py-1" onclick="deleteUser(${user.id})" title="Delete User"><i class="bi bi-trash"></i> Delete</button>
-                        </div>
+        if (users.length === 0) {
+            html = `
+                <tr id="noUsersRow">
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        No users found matching the criteria.
                     </td>
                 </tr>
             `;
-        });
+        } else {
+            users.forEach(user => {
+                html += `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.username}</td>
+                        <td><span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${user.role}</span></td>
+                        <td>${user.can_access_step2 ? '<i class="bi bi-check-circle-fill text-success"></i> Yes' : '<i class="bi bi-x-circle-fill text-danger"></i> No'}</td>
+                        <td class="text-center pe-4 ps-3 text-nowrap">
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openEditUser(${user.id}, '${user.role}', ${user.can_access_step2})" title="Edit User"><i class="bi bi-pencil"></i> Edit</button>
+                                <button class="btn btn-sm btn-danger action-btn shadow-sm px-2 py-1" onclick="deleteUser(${user.id})" title="Delete User"><i class="bi bi-trash"></i> Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
         tbody.innerHTML = html;
+        
+        // Re-apply search filter if there's an active search query
+        const searchInput = document.getElementById('userSearchInput');
+        if (searchInput && searchInput.value) {
+            searchInput.dispatchEvent(new Event('input'));
+        }
     } catch (e) {
         if (e.name === 'AbortError') return;
         console.error(e);

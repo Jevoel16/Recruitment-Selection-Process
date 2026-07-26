@@ -6,6 +6,9 @@ const db = require('../db');
 const authController = require('../controllers/authController');
 const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
 const pdfEvents = require('../utils/pdfEvents');
+const backupManager = require('../utils/backupManager');
+const path = require('path');
+const fs = require('fs');
 
 router.use(requireAuth);
 
@@ -83,24 +86,13 @@ router.put('/eligibility/:id', applicantController.updateEligibility);
 // JSON Database Backup Endpoint
 router.get('/export/backup', async (req, res) => {
     try {
-        const [applicants] = await db.query('SELECT * FROM applicants');
-        const [education] = await db.query('SELECT * FROM applicant_education');
-        const [experience] = await db.query('SELECT * FROM applicant_experience');
-        const [training] = await db.query('SELECT * FROM applicant_training');
-        const [eligibility] = await db.query('SELECT * FROM applicant_eligibility');
-        
+        const data = await backupManager.fetchDatabaseData();
         const backupData = {
             metadata: {
                 timestamp: new Date().toISOString(),
-                totalApplicants: applicants.length
+                totalApplicants: data.applicants.length
             },
-            data: {
-                applicants,
-                education,
-                experience,
-                training,
-                eligibility
-            }
+            data: data
         };
 
         const dateStr = new Date().toISOString().split('T')[0];
@@ -113,40 +105,19 @@ router.get('/export/backup', async (req, res) => {
     }
 });
 
-// Helper for CSV conversion
-function jsonToCsv(jsonArray) {
-    if (!jsonArray || !jsonArray.length) return '';
-    const keys = Object.keys(jsonArray[0]);
-    const header = keys.join(',');
-    const rows = jsonArray.map(obj => {
-        return keys.map(k => {
-            let val = obj[k];
-            if (val === null || val === undefined) return '';
-            val = String(val).replace(/"/g, '""');
-            if (val.search(/("|,|\n)/g) >= 0) val = `"${val}"`;
-            return val;
-        }).join(',');
-    });
-    return [header, ...rows].join('\n');
-}
-
 // CSV Database Backup Endpoint (Zip of CSVs)
 router.get('/export/backup/csv', async (req, res) => {
     try {
-        const [applicants] = await db.query('SELECT * FROM applicants');
-        const [education] = await db.query('SELECT * FROM applicant_education');
-        const [experience] = await db.query('SELECT * FROM applicant_experience');
-        const [training] = await db.query('SELECT * FROM applicant_training');
-        const [eligibility] = await db.query('SELECT * FROM applicant_eligibility');
+        const data = await backupManager.fetchDatabaseData();
         
         const PizZip = require('pizzip');
         const zip = new PizZip();
         
-        zip.file('applicants.csv', jsonToCsv(applicants));
-        zip.file('education.csv', jsonToCsv(education));
-        zip.file('experience.csv', jsonToCsv(experience));
-        zip.file('training.csv', jsonToCsv(training));
-        zip.file('eligibility.csv', jsonToCsv(eligibility));
+        zip.file('applicants.csv', backupManager.jsonToCsv(data.applicants));
+        zip.file('education.csv', backupManager.jsonToCsv(data.education));
+        zip.file('experience.csv', backupManager.jsonToCsv(data.experience));
+        zip.file('training.csv', backupManager.jsonToCsv(data.training));
+        zip.file('eligibility.csv', backupManager.jsonToCsv(data.eligibility));
         
         const content = zip.generate({ type: 'nodebuffer' });
         const dateStr = new Date().toISOString().split('T')[0];
@@ -157,6 +128,32 @@ router.get('/export/backup/csv', async (req, res) => {
     } catch (error) {
         console.error('CSV Backup Export Error:', error);
         res.status(500).send('Failed to generate CSV backup');
+    }
+});
+
+// Automated Backups List Endpoint
+router.get('/export/backup/automated/list', async (req, res) => {
+    try {
+        const backups = await backupManager.listBackups();
+        res.json(backups);
+    } catch (error) {
+        console.error('Failed to list backups:', error);
+        res.status(500).send('Failed to list automated backups');
+    }
+});
+
+// Automated Backups Download Endpoint
+router.get('/export/backup/automated/download/:filename', async (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const filePath = path.join(backupManager.BACKUP_DIR, filename);
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).send('Backup file not found');
+        }
+        res.download(filePath);
+    } catch (error) {
+        console.error('Failed to download backup:', error);
+        res.status(500).send('Failed to download backup');
     }
 });
 
@@ -511,7 +508,7 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 const vacNoStr = app.vacancyAnnouncementNo || '000';
                 const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
                 
-                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}`;
+                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}_${app.id}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 fs.mkdirSync(tempDir, { recursive: true });
                 const inputPath = path.join(tempDir, baseName + '.docx');
@@ -688,7 +685,7 @@ router.post('/export/email-docs', async (req, res) => {
                 const vacNoStr = app.vacancyAnnouncementNo || '000';
                 const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
 
-                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}`;
+                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}_${app.id}`;
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');
                 const docxPath = path.join(generatedDir, baseName + '.docx');
                 
