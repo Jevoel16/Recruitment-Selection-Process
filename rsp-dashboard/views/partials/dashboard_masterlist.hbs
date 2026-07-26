@@ -85,13 +85,7 @@
                                 </td>
                                 <td data-label="Action" class="text-center pe-4 ps-3 text-nowrap">
                                     <div class="d-flex justify-content-center align-items-center gap-2">
-                                        {{#if (eq this.status 'DISQUALIFIED')}}
-                                        <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="window.openGenericDocModal(1, {{this.id}}, '{{this.status}}', '{{this.docRemark}}', `{{titleCase this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC (Eval)"><i class="bi bi-file-earmark-word"></i> DOC</button>
-                                        {{/if}}
-                                        {{#if (eq this.status 'DISQUALIFIED_ARCHIVED')}}
-                                        <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="window.openGenericDocModal(1, {{this.id}}, '{{this.status}}', '{{this.docRemark}}', `{{titleCase this.name}}`, '', '', `{{this.applicationCode}}`, '', '')" title="Generate DOC (Eval)"><i class="bi bi-file-earmark-word"></i> DOC</button>
-                                        {{/if}}
-                                        <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openUpdateStatusModal({{this.id}}, '{{titleCase this.name}}', '{{this.status}}')" title="Update Status"><i class="bi bi-pencil"></i> Update</button>
+                                        <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openUpdateStatusModal({{this.id}}, '{{titleCase this.name}}', '{{this.status}}', '{{this.docRemark}}', '{{this.applicationCode}}')" title="Update Status"><i class="bi bi-pencil"></i> Update</button>
                                         <button class="btn btn-sm btn-danger action-btn shadow-sm px-2 py-1" onclick="deleteApplicant({{this.id}})" title="Delete Applicant"><i class="bi bi-trash"></i> Delete</button>
                                     </div>
                                 </td>

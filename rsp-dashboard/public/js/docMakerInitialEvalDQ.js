@@ -122,7 +122,16 @@ window.printInitialEvalDQ = async function(id) {
     const cleanFName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(pos);
 
-    const filename = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}.docx`;
+    let incrementStr = '1';
+    if (applicantObj.applicationCode && applicantObj.applicationCode.includes('-')) {
+        const parts = applicantObj.applicationCode.split('-');
+        const parsedInc = parseInt(parts[parts.length - 1], 10);
+        if (!isNaN(parsedInc)) incrementStr = parsedInc.toString();
+    }
+    const vacNoStr = data.vacancyAnnouncementNo || applicantObj.vacancyAnnouncementNo || '000';
+    const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
+
+    const filename = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}.docx`;
 
     await window.exportFromTemplate(templateUrl, templateData, filename);
 

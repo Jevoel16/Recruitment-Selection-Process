@@ -142,7 +142,17 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const safeFName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(pos);
     const noticeType = templateName.replace(/[^a-zA-Z0-9]/g, '_');
-    const baseName = `${safeLName}_${safeFName}_${pCode}_${noticeType}`;
+    
+    let incrementStr = '1';
+    if (app.applicationCode && app.applicationCode.includes('-')) {
+        const parts = app.applicationCode.split('-');
+        const parsedInc = parseInt(parts[parts.length - 1], 10);
+        if (!isNaN(parsedInc)) incrementStr = parsedInc.toString();
+    }
+    const vacNoStr = app.vacancyAnnouncementNo || '000';
+    const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
+    
+    const baseName = `${safeLName}_${safeFName}_${combinedCode}_${noticeType}`;
     
     const inputPath = path.join(tempDir, baseName + '.docx');
     fs.writeFileSync(inputPath, buf);
@@ -151,7 +161,10 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
 
     if (os.platform() === 'win32') {
         let success = false;
-        for (let attempt = 1; attempt <= 3; attempt++) {
+        let attempt = 1;
+        const maxRetries = 20;
+        
+        while (!success && attempt <= maxRetries) {
             try {
                 const outputPath = path.join(tempDir, baseName + '.pdf');
                 const psScript = `
@@ -169,7 +182,6 @@ $word.Quit()
                 if (fs.existsSync(outputPath)) {
                     fs.copyFileSync(outputPath, finalOutputPath);
                     success = true;
-                    break;
                 } else {
                     throw new Error('PDF output not found');
                 }
@@ -177,24 +189,38 @@ $word.Quit()
                 console.warn(`Windows PDF conversion attempt ${attempt} failed for ${appName}:`, convErr.message);
                 try { await execAsync('taskkill /F /IM winword.exe /T'); } catch(e) {}
                 await new Promise(res => setTimeout(res, 2000));
+                attempt++;
             }
         }
         
         if (!success) {
-            console.error(`Windows PDF conversion failed after 3 attempts for ${appName}. Aborting.`);
+            console.error(`Windows PDF conversion failed after ${maxRetries} attempts for ${appName}. Aborting.`);
             throw new Error('Failed to generate PDF');
         }
     } else {
-        try {
-            await execAsync(`libreoffice --headless --convert-to pdf "${inputPath}" --outdir "${tempDir}"`, { timeout: 60000 });
-            const outputPath = path.join(tempDir, baseName + '.pdf');
-            if (fs.existsSync(outputPath)) {
-                fs.copyFileSync(outputPath, finalOutputPath);
-            } else {
-                throw new Error('PDF output not found');
+        let success = false;
+        let attempt = 1;
+        const maxRetries = 20;
+        
+        while (!success && attempt <= maxRetries) {
+            try {
+                await execAsync(`libreoffice --headless --convert-to pdf "${inputPath}" --outdir "${tempDir}"`, { timeout: 60000 });
+                const outputPath = path.join(tempDir, baseName + '.pdf');
+                if (fs.existsSync(outputPath)) {
+                    fs.copyFileSync(outputPath, finalOutputPath);
+                    success = true;
+                } else {
+                    throw new Error('PDF output not found');
+                }
+            } catch (convErr) {
+                console.warn(`LibreOffice PDF conversion attempt ${attempt} failed for ${appName}:`, convErr.message);
+                await new Promise(res => setTimeout(res, 2000));
+                attempt++;
             }
-        } catch (convErr) {
-            console.warn(`LibreOffice PDF conversion failed for ${appName}. Generating DOCX fallback.`);
+        }
+        
+        if (!success) {
+            console.warn(`LibreOffice PDF conversion failed after ${maxRetries} attempts for ${appName}. Generating DOCX fallback.`);
             fs.copyFileSync(inputPath, finalOutputPath.replace('.pdf', '.docx'));
         }
     }

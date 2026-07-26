@@ -416,7 +416,7 @@ window.launchFromUnified = function(type) {
 
 
 
-window.openUpdateStatusModal = async function(id, name, currentStatus) {
+window.openUpdateStatusModal = async function(id, name, currentStatus, docRemark, applicationCode) {
     if (!(await window.acquireLock(id))) return;
     document.getElementById('updateStatusId').value = id;
     document.getElementById('updateStatusName').innerText = name;
@@ -426,6 +426,32 @@ window.openUpdateStatusModal = async function(id, name, currentStatus) {
         select.value = currentStatus;
     } else {
         select.value = 'PENDING';
+    }
+    
+    const pregenBtn = document.getElementById('pregeneratePdfBtn');
+    if (pregenBtn) {
+        const step1And2Statuses = ['PENDING', 'QUALIFIED', 'DISQUALIFIED', 'DISQUALIFIED_ARCHIVED', 'WAITING_FOR_ASSESSMENT'];
+        if (step1And2Statuses.includes(currentStatus)) {
+            pregenBtn.style.display = 'inline-block';
+            pregenBtn.onclick = async () => {
+                try {
+                    const res = await fetch(`/api/applicants/${id}/pregenerate-pdf`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (res.ok) {
+                        window.showToast('Pregeneration started...', 'info', false);
+                    } else {
+                        window.showToast('Failed to start pregeneration', 'danger', false);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    window.showToast('Error starting pregeneration', 'danger', false);
+                }
+            };
+        } else {
+            pregenBtn.style.display = 'none';
+        }
     }
     
     bootstrap.Modal.getOrCreateInstance(document.getElementById('updateStatusModal')).show();

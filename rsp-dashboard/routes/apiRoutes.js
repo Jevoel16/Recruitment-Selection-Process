@@ -33,6 +33,7 @@ router.post('/applicants', applicantController.createApplicant);
 router.delete('/applicants/:id', applicantController.deleteApplicant);
 router.post('/applicants/:id/disqualify', applicantController.disqualifyApplicant);
 router.post('/applicants/:id/qualify', applicantController.qualifyApplicant);
+router.post('/applicants/:id/pregenerate-pdf', applicantController.pregeneratePdf);
 router.post('/applicants/:id/proceed-step2', applicantController.proceedStep2);
 router.put('/applicants/:id/status', applicantController.updateStatus);
 router.post('/applicants/:id/requirements/all', applicantController.toggleAllRequirements);
@@ -501,7 +502,16 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 const pCode = app.position_code ? app.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(app.position);
                 const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
                 
-                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}`;
+                let incrementStr = '1';
+                if (app.applicationCode && app.applicationCode.includes('-')) {
+                    const parts = app.applicationCode.split('-');
+                    const parsedInc = parseInt(parts[parts.length - 1], 10);
+                    if (!isNaN(parsedInc)) incrementStr = parsedInc.toString();
+                }
+                const vacNoStr = app.vacancyAnnouncementNo || '000';
+                const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
+                
+                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 fs.mkdirSync(tempDir, { recursive: true });
                 const inputPath = path.join(tempDir, baseName + '.docx');
@@ -669,7 +679,16 @@ router.post('/export/email-docs', async (req, res) => {
                 const pCode = app.position_code ? app.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(app.position);
                 const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
 
-                const baseName = `${cleanLName}_${cleanFName}_${pCode}_${noticeType}`;
+                let incrementStr = '1';
+                if (app.applicationCode && app.applicationCode.includes('-')) {
+                    const parts = app.applicationCode.split('-');
+                    const parsedInc = parseInt(parts[parts.length - 1], 10);
+                    if (!isNaN(parsedInc)) incrementStr = parsedInc.toString();
+                }
+                const vacNoStr = app.vacancyAnnouncementNo || '000';
+                const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
+
+                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}`;
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');
                 const docxPath = path.join(generatedDir, baseName + '.docx');
                 
@@ -678,10 +697,10 @@ router.post('/export/email-docs', async (req, res) => {
 
                 if (fs.existsSync(pdfPath)) {
                     attachmentBuf = fs.readFileSync(pdfPath);
-                    attachmentName = 'Notice_of_Evaluation.pdf';
+                    attachmentName = `${cleanLName}_${cleanFName}_Notice_of_Evaluation.pdf`;
                 } else if (fs.existsSync(docxPath)) {
                     attachmentBuf = fs.readFileSync(docxPath);
-                    attachmentName = 'Notice_of_Evaluation.docx';
+                    attachmentName = `${cleanLName}_${cleanFName}_Notice_of_Evaluation.docx`;
                 } else {
                     throw new Error(`Pre-generated file not found for Applicant ID ${app.id}. Please click "Pre-Generate PDFs" first.`);
                 }
@@ -802,8 +821,13 @@ router.get('/events/pdf-status', (req, res) => {
         res.write(': heartbeat\n\n');
     }, 15000);
 
+    const recycleTimer = setTimeout(() => {
+        res.end();
+    }, 45000);
+
     req.on('close', () => {
         clearInterval(heartbeat);
+        clearTimeout(recycleTimer);
         pdfEvents.removeListener('pdf-done', onPdfDone);
     });
 });

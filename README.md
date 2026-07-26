@@ -9,6 +9,10 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Implemented robust PDF generation fallback and an automated background document deletion queue.
+- Resolved 504 Gateway Time-outs during bulk email dispatch and stabilized SSE connection polling.
+- Improved database seeder headers to scale background processes for over 1000+ applicants.
+- Restructured generated PDF filenames to include increments and vacancy numbers.
 - Implemented Mobile UI optimizations using responsive table layouts and data-labels.
 - Corrected School Staff Categories and customized Position Title Formatting.
 - Fixed Applicant UI jitter by targeting specific row IDs during updates in Step 1.

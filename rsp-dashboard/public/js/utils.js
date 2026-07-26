@@ -24,7 +24,7 @@ window.showToast = function(message, type = 'info', reload = false) {
         default: toastEl.classList.add('bg-info');
     }
 
-    toastMsg.textContent = message;
+    toastMsg.innerHTML = message;
     
     const toast = new bootstrap.Toast(toastEl, { delay: 1500 });
     

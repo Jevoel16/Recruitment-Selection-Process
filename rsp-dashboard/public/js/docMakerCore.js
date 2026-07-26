@@ -161,6 +161,11 @@ window.openGenericDocModal = function(step, id, status, docRemark, name, office,
         ];
     }
 
+    if (options.length === 1) {
+        window.downloadSelectedDoc(options[0].value);
+        return;
+    }
+
     if (selectEl.choicesInstance) {
         selectEl.choicesInstance.destroy();
         delete selectEl.choicesInstance;
@@ -188,13 +193,15 @@ window.openGenericDocModal = function(step, id, status, docRemark, name, office,
     modal.show();
 };
 
-window.downloadSelectedDoc = function() {
-    const type = document.getElementById('docTypeSelect').value;
+window.downloadSelectedDoc = function(forceType) {
+    const type = typeof forceType === 'string' ? forceType : document.getElementById('docTypeSelect').value;
     const p = currentGenericDocParams;
     
     const modalEl = document.getElementById('docTypeModal');
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-    if(modalInstance) modalInstance.hide();
+    if (modalEl) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if(modalInstance) modalInstance.hide();
+    }
     
     if (p.step === 1) {
         if (type === 'Notice to Qualified' && window.printInitialEvalQualified) {

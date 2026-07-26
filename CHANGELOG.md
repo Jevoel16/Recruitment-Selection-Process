@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-26 17:15 (v1.5.6-Release+202607261715)
+
+### Added
+- **Background Deletion Queue**: Added an automated background deletion queue in the applicant controller that safely retries deleting pre-generated initial evaluation documents once an applicant transitions to Step 3, No Appearance, or Newly Promoted.
+- **Seeder Optimizations**: Added an `x-is-seeding` header to the database seeders, granting them a generous 3-hour delay on the document deletion queue to allow thousands of PDFs to generate uninterrupted in the background.
+
+### Changed
+- **PDF Generation**: Increased the background PDF conversion loops (PowerShell and LibreOffice) to support up to 20 retry attempts with a 2-second delay before falling back to `.docx`.
+- **Document Naming Convention**: Updated API routes and PDF generator utilities to strictly follow the `[LastName]_[FirstName]_[PosCode]-[Increment]-[VacancyNo]_[NoticeType].pdf` filename structure.
+- **Email Dispatch**: Resolved `504 Gateway Time-out` and `SyntaxError` crashes during massive email dispatches by reducing batch chunk sizes to 5 and implementing SSE connection recycling in the backup tab UI.
+- **Toast Notifications**: Replaced `textContent` with `innerHTML` in the global `utils.js` Toast system to properly render bolded applicant names and Bootstrap UI icons.
 ## 2026-07-25 15:05 (v1.5.5-Release+202607251505)
 
 ### Changed

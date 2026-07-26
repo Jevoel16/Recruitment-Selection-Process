@@ -7,7 +7,7 @@ const positionsData = require('./seed_positions.js');
 // --- SETTINGS ---
 const CATEGORY_MODE = 'specific'; // 'specific' or 'random'
 const SPECIFIC_CATEGORIES = ['Non-Teaching'];
-const TOTAL_APPLICANTS = 1000;
+const TOTAL_APPLICANTS = 401;
 const API_BASE = `http://localhost:${process.env.PORT || 3000}/api`;
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -85,7 +85,8 @@ async function seed() {
         
         const authHeaders = { 
             'Content-Type': 'application/json',
-            'Cookie': `auth=${token}`
+            'Cookie': `auth=${token}`,
+            'x-is-seeding': 'true'
         };
 
         // Batch generation to avoid socket exhaustion

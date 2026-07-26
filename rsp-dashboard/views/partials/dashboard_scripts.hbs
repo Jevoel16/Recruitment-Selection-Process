@@ -1041,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
             btn.disabled = true;
 
-            const chunkSize = 20;
+            const chunkSize = 5;
             const chunks = [];
             for (let i = 0; i < selectedApplicantIds.length; i += chunkSize) {
                 chunks.push(selectedApplicantIds.slice(i, i + chunkSize));
@@ -1117,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Preparing...';
             btn.disabled = true;
 
-            const chunkSize = 20;
+            const chunkSize = 5;
             const chunks = [];
             for (let i = 0; i < selectedApplicantIds.length; i += chunkSize) {
                 chunks.push(selectedApplicantIds.slice(i, i + chunkSize));
