@@ -106,6 +106,18 @@ CREATE TABLE IF NOT EXISTS applicant_education (
     FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS applicant_performance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    applicant_id INT NOT NULL,
+    group_id VARCHAR(50) NOT NULL,
+    ratingPeriod VARCHAR(255) NOT NULL,
+    rating FLOAT NOT NULL,
+    letterGrade VARCHAR(50) DEFAULT NULL,
+    status ENUM('PENDING', 'QUALIFIED', 'DISQUALIFIED') DEFAULT 'PENDING',
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS applicant_training (
     id INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id INT NOT NULL,
@@ -157,6 +169,7 @@ CREATE TABLE IF NOT EXISTS positions (
     qsExperience TEXT DEFAULT NULL,
     qsExperienceLevel INT DEFAULT NULL,
     qsEligibility TEXT DEFAULT NULL,
+    qsPerformance TEXT DEFAULT NULL,
     in_vacancy BOOLEAN DEFAULT FALSE,
     vacancyCount INT DEFAULT 1,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -2,12 +2,24 @@ const db = require('../db');
 
 exports.createPosition = async (req, res) => {
     try {
-        const { title, category, salaryGrade, monthlySalary, position_code } = req.body;
-        if (!title || !category || !position_code) return res.status(400).json({ error: "Missing required fields" });
+        const { title, category, salaryGrade, monthlySalary, groupName, position_code } = req.body;
+        if (!title || !category || !position_code) {
+            return res.status(400).json({ error: 'Title, Category, and Position Code are required' });
+        }
 
-        await db.query(`INSERT INTO positions (title, category, salaryGrade, monthlySalary, groupName, position_code) VALUES (?, ?, ?, ?, ?, ?)`, 
-            [title, category, salaryGrade || null, monthlySalary || null, 'Other', position_code]);
-        res.json({ success: true });
+        let computedGroupName = groupName;
+        if (!computedGroupName || computedGroupName === 'Other') {
+            computedGroupName = title;
+            const regex = /^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX|X)(?:\s+(.*))?$/i;
+            const match = title.match(regex);
+            if (match) {
+                computedGroupName = match[1] + (match[3] ? " " + match[3] : "");
+            }
+        }
+
+        const [result] = await db.query(`INSERT INTO positions (title, category, salaryGrade, monthlySalary, groupName, position_code) VALUES (?, ?, ?, ?, ?, ?)`, 
+            [title, category, salaryGrade || null, monthlySalary || null, computedGroupName, position_code]);
+        res.json({ success: true, insertId: result.insertId });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "Internal server error" });
@@ -17,7 +29,7 @@ exports.createPosition = async (req, res) => {
 // This ensures that the dynamic vacancy dashboard accurately reflects real-time Civil Service criteria.
 exports.updatePosition = async (req, res) => {
     try {
-        const { id, vacancyAnnouncementNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility } = req.body;
+        const { id, vacancyAnnouncementNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsTraining, qsExperience, qsEligibility, qsPerformance } = req.body;
         
         let { qsEducationLevel, qsTrainingLevel, qsExperienceLevel } = req.body;
         qsEducationLevel = qsEducationLevel ? parseInt(qsEducationLevel, 10) : null;
@@ -30,8 +42,8 @@ exports.updatePosition = async (req, res) => {
         if (!finalVacNo || String(finalVacNo).trim() === '') {
             finalVacNo = '0';
         }
-        await db.query(`UPDATE positions SET vacancyAnnouncementNo=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsEducationLevel=?, qsTraining=?, qsTrainingLevel=?, qsExperience=?, qsExperienceLevel=?, qsEligibility=? WHERE id=?`, 
-            [finalVacNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, id]);
+        await db.query(`UPDATE positions SET vacancyAnnouncementNo=?, plantillaItem=?, salaryGrade=?, monthlySalary=?, qsEducation=?, qsEducationLevel=?, qsTraining=?, qsTrainingLevel=?, qsExperience=?, qsExperienceLevel=?, qsEligibility=?, qsPerformance=? WHERE id=?`, 
+            [finalVacNo, plantillaItem, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, qsPerformance, id]);
         res.json({ success: true });
     } catch (e) {
         console.error(e);
@@ -283,7 +295,7 @@ exports.exportDoc = async (req, res) => {
         });
         
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-        res.setHeader('Content-Disposition', 'attachment; filename=Vacancy_Endorsement.docx');
+        res.setHeader('Content-Disposition', 'attachment; filename=Vacancy_Publication.docx');
         res.send(buf);
         
     } catch (e) {

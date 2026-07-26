@@ -160,10 +160,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.querySelectorAll('.position-info-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                document.getElementById('positionInfoModalTitle').innerText = this.getAttribute('data-title');
+                const title = this.getAttribute('data-title');
+                document.getElementById('positionInfoModalTitle').innerText = title;
                 document.getElementById('modalPosId').value = this.getAttribute('data-id');
                 document.getElementById('modalPosVacancy').value = this.getAttribute('data-vacancy');
-                                const plantillaStr = this.getAttribute('data-plantilla') || '';
+                
+                // Show QS Performance field only for Higher Teaching
+                const isHigherTeaching = title && (
+                    title.toLowerCase().includes('teacher ii') || 
+                    title.toLowerCase().includes('teacher iii') || 
+                    title.toLowerCase().includes('teacher iv') || 
+                    title.toLowerCase().includes('teacher v') || 
+                    title.toLowerCase().includes('teacher vi') || 
+                    title.toLowerCase().includes('teacher vii') || 
+                    title.toLowerCase().includes('master teacher')
+                );
+                const perfContainer = document.getElementById('qsPerformanceContainer');
+                if (perfContainer) {
+                    perfContainer.style.display = isHigherTeaching ? 'block' : 'none';
+                }
+
+                const plantillaStr = this.getAttribute('data-plantilla') || '';
                 const pHidden = document.getElementById('modalPosPlantillaHidden');
                 if(pHidden) pHidden.value = plantillaStr;
                 
@@ -211,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('modalPosExp').value = this.getAttribute('data-exp');
                 document.getElementById('modalPosExpLevel').value = this.getAttribute('data-exp-level') || '';
                 document.getElementById('modalPosElig').value = this.getAttribute('data-elig');
+                document.getElementById('modalPosPerf').value = this.getAttribute('data-perf') || '';
             });
         });
     });
@@ -722,7 +740,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    limitText.innerHTML = `<strong>${data.remaining}</strong> emails remaining today (Limit: ${data.dailyLimit})`;
+                    limitText.innerHTML = `<strong>${data.remaining}</strong> emails remaining in the last 24h (Limit: ${data.dailyLimit})`;
                     const buttons = document.querySelectorAll('button[onclick^="openEmailModal"]');
                     if (data.remaining <= 0) {
                         limitText.classList.replace('text-muted', 'text-danger');

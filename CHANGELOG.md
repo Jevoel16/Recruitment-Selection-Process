@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-27 (v1.5.7-Release)
+
+### Fixed
+- **Seeder Issues**: Fixed `seedApplicants.js` script to properly evaluate `performance` records for higher teaching positions. Fixed a bug where existing positions were duplicated during seeding, and QS fields (Education, Training, etc.) were accidentally flushed/wiped out by the seeder API.
+- **Document Generation**: Fixed a docxtemplater "Multi error" when generating Step 5 Assignment Orders by correcting malformed XML brackets inside the DOCX templates (`Assignment Order - Division Office.docx` and `Assignment Order - School-Based.docx`).
+- **Initial Evaluation Notice Labels**: Removed redundant labels like "Education: Education: ..." from Initial Evaluation notices. Configured the document generator to properly output empty strings instead of the literal word "undefined" when data is missing.
+
 ## 2026-07-26 17:15 (v1.5.6-Release+202607261715)
 
 ### Added

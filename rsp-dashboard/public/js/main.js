@@ -95,7 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const cell = document.getElementById(`remarks-cell-${id}`);
             if (cell && data.status === 'PENDING') {
-                const allDocs = [...(data.education || []), ...(data.training || []), ...(data.experience || []), ...(data.eligibility || [])];
+                const allDocs = [
+                    ...(data.education || []), 
+                    ...(data.training || []), 
+                    ...(data.experience || []), 
+                    ...(data.eligibility || []),
+                    ...(data.performance || [])
+                ];
                 
                 if (allDocs.length === 0) {
                     cell.innerHTML = '<span class="badge bg-warning text-dark">Pending</span>';
@@ -113,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err) { console.error(err); }
     };
 
-    ['eduModal', 'trainModal', 'expModal', 'eligModal'].forEach(modalId => {
+    ['eduModal', 'trainModal', 'expModal', 'eligModal', 'perfModal'].forEach(modalId => {
         const el = document.getElementById(modalId);
         if (el) {
             el.addEventListener('hidden.bs.modal', updateRowRemarks);

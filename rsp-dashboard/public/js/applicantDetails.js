@@ -215,6 +215,8 @@ async function openSummaryModal(id, name, hideActions = false) {
                     if (expStr.length > 0) {
                         docTitle += ` <span class="text-muted fst-italic">(${expStr.join(', ')})</span>`;
                     }
+                } else if (typeName === 'performance records') {
+                    docTitle = `${item.ratingPeriod} - Rating: ${item.rating} ${item.letterGrade ? `(${item.letterGrade})` : ''}`;
                 }
                 
                 return `<li class="list-group-item d-flex justify-content-between align-items-center small">
@@ -224,6 +226,16 @@ async function openSummaryModal(id, name, hideActions = false) {
             }).join('');
         };
         
+        const isHigherTeaching = data.position && (
+            data.position.toLowerCase().includes('teacher ii') || 
+            data.position.toLowerCase().includes('teacher iii') || 
+            data.position.toLowerCase().includes('teacher iv') || 
+            data.position.toLowerCase().includes('teacher v') || 
+            data.position.toLowerCase().includes('teacher vi') || 
+            data.position.toLowerCase().includes('teacher vii') || 
+            data.position.toLowerCase().includes('master teacher')
+        );
+
         let html = `
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -242,8 +254,17 @@ async function openSummaryModal(id, name, hideActions = false) {
                     <h6 class="border-bottom pb-1">Eligibility</h6>
                     <ul class="list-group list-group-flush">${generateList(data.eligibility, 'eligibility')}</ul>
                 </div>
-            </div>
         `;
+        
+        if (isHigherTeaching) {
+            html += `
+                <div class="col-md-6 mb-3">
+                    <h6 class="border-bottom pb-1">Performance</h6>
+                    <ul class="list-group list-group-flush">${generateList(data.performance, 'performance records')}</ul>
+                </div>
+            `;
+        }
+        html += `</div>`;
         document.getElementById('summaryDetails').innerHTML = html;
         
         const checkPending = (items) => {
@@ -255,8 +276,8 @@ async function openSummaryModal(id, name, hideActions = false) {
             return items.some(item => item.status === 'DISQUALIFIED');
         };
         
-        const hasPending = checkPending(data.education) || checkPending(data.training) || checkPending(data.experience) || checkPending(data.eligibility);
-        const hasDisqualified = checkDisqualified(data.education) || checkDisqualified(data.training) || checkDisqualified(data.experience) || checkDisqualified(data.eligibility);
+        const hasPending = checkPending(data.education) || checkPending(data.training) || checkPending(data.experience) || checkPending(data.eligibility) || (isHigherTeaching && checkPending(data.performance));
+        const hasDisqualified = checkDisqualified(data.education) || checkDisqualified(data.training) || checkDisqualified(data.experience) || checkDisqualified(data.eligibility) || (isHigherTeaching && checkDisqualified(data.performance));
         
         const sumQualifyBtn = document.getElementById('summaryQualifyBtn');
         const sumDisqualifyBtn = document.getElementById('summaryDisqualifyBtn');
@@ -347,7 +368,7 @@ window.confirmSummaryDisqualify = () => {
 }
 
 
-window.openApplicantDetailsModal = async function(id, name, assignedOffice, category, appCode, status) {
+window.openApplicantDetailsModal = async function(id, name, assignedOffice, category, appCode, status, position) {
     if (!(await window.acquireLock(id))) return;
     document.getElementById('unifiedModalId').value = id;
     document.getElementById('unifiedModalName').innerText = name;
@@ -356,7 +377,15 @@ window.openApplicantDetailsModal = async function(id, name, assignedOffice, cate
     document.getElementById('unifiedModalAppCode').value = appCode || '';
     document.getElementById('unifiedModalStatus').value = status || '';
 
+    const btnPerf = document.getElementById('unifiedBtnPerf');
+    if (btnPerf) {
+        const posUpper = String(position || '').toUpperCase();
+        const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper) || category === 'School Administration';
+        btnPerf.style.display = isHigherTeaching ? 'inline-block' : 'none';
+    }
+
     const hasStep2 = ['WAITING_FOR_ASSESSMENT', 'ASSESSED', 'WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
+    const hasStep3To5 = ['ASSESSED', 'NO_APPEARANCE', 'NEWLY_PROMOTED', 'WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
     const hasStep4 = ['WAITING', 'ASSIGNED', 'COMPLETED'].includes(status);
     const hasStep5 = ['ASSIGNED', 'COMPLETED'].includes(status);
 
@@ -376,7 +405,7 @@ window.openApplicantDetailsModal = async function(id, name, assignedOffice, cate
     }
     if (btnReq) btnReq.disabled = !hasStep4;
     if (btnPdf) btnPdf.disabled = !hasStep5;
-    if (btnStep1Pdf) btnStep1Pdf.disabled = (status === 'PENDING');
+    if (btnStep1Pdf) btnStep1Pdf.disabled = (status === 'PENDING') || hasStep3To5;
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById('unifiedDetailsModal')).show();
 }
@@ -397,6 +426,7 @@ window.launchFromUnified = function(type) {
         case 'train': openTrainModal(id); break;
         case 'exp': openExpModal(id); break;
         case 'elig': openEligModal(id); break;
+        case 'perf': if (typeof openPerfModal === 'function') openPerfModal(id); break;
         case 'step1_summary': openSummaryModal(id, name, true); break;
         case 'step1_pdf': 
             const s1 = document.getElementById('unifiedModalStatus').value;
@@ -410,6 +440,21 @@ window.launchFromUnified = function(type) {
         case 'generate_pdf': 
             window.openGenericDocModal(5, id, '', '', name, assignedOffice, category, appCode, '', ''); 
             break;
+    }
+}
+
+window.triggerPregenerate = async function(id) {
+    try {
+        window.showToast('Pregenerating PDFs...', 'info', false);
+        const res = await fetch(`/api/applicants/${id}/pregenerate-pdf`, { method: 'POST' });
+        if (res.ok) {
+            window.showToast('PDF pregeneration triggered successfully.', 'success', false);
+        } else {
+            window.showToast('Failed to trigger pregeneration.', 'danger');
+        }
+    } catch(err) {
+        console.error(err);
+        window.showToast('Error connecting to server.', 'danger');
     }
 }
 

@@ -37,11 +37,13 @@ async function initDb() {
                 await connection.query(`ALTER TABLE applicant_email_logs ADD COLUMN email_type VARCHAR(20) DEFAULT 'codes'`);
                 console.log('✅ Successfully added missing email_type column.');
             } catch (err) {
-                if (err.code === 'ER_DUP_FIELDNAME') {
-                    // Column already exists, safe to ignore
-                } else {
-                    console.warn('⚠️ Non-critical migration note:', err.message);
-                }
+                if (err.code !== 'ER_DUP_FIELDNAME') console.warn('⚠️ Non-critical migration note:', err.message);
+            }
+            try {
+                await connection.query(`ALTER TABLE positions ADD COLUMN qsPerformance TEXT DEFAULT NULL`);
+                console.log('✅ Successfully added missing qsPerformance column.');
+            } catch (err) {
+                if (err.code !== 'ER_DUP_FIELDNAME') console.warn('⚠️ Non-critical migration note:', err.message);
             }
         }
 

@@ -38,15 +38,15 @@ async function generateVERExcelJS(items) {
     const colWidths = [
         4.33,  // A No
         14.33, // B Position
-        12.0,  // C Plantilla
+        14.57, // C Plantilla (107 pixels)
         7.5,   // D SG
         9.66,  // E Salary
-        25.0,  // F Education
-        26.0,  // G Training
-        20.0,  // H Experience
-        16.0,  // I Eligibility
-        19.0,  // J Competency
-        15.0   // K Assignment
+        34.14, // F Education (244 pixels)
+        36.57, // G Training (261 pixels)
+        25.86, // H Experience (186 pixels)
+        20.00, // I Eligibility (145 pixels)
+        20.57, // J Competency (149 pixels)
+        15.57  // K Assignment (114 pixels)
     ];
 
     sheet.columns = colWidths.map(w => ({ width: w }));

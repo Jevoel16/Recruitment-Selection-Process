@@ -60,6 +60,10 @@ hbs.registerHelper('formatDate', function(date) {
     const d = new Date(date);
     return d.toISOString().split('T')[0];
 });
+hbs.registerHelper('isStep1Or2', function(status) {
+    const validStatuses = ['PENDING', 'QUALIFIED', 'DISQUALIFIED', 'DISQUALIFIED_ARCHIVED', 'WAITING_FOR_ASSESSMENT'];
+    return validStatuses.includes(status);
+});
 
 // Import route definitions
 const apiRoutes = require('./routes/apiRoutes');

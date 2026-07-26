@@ -7,7 +7,7 @@ const positionsData = require('./seed_positions.js');
 // --- SETTINGS ---
 const CATEGORY_MODE = 'specific'; // 'specific' or 'random'
 const SPECIFIC_CATEGORIES = ['Non-Teaching'];
-const TOTAL_APPLICANTS = 401;
+const TOTAL_APPLICANTS = 1000;
 const API_BASE = `http://localhost:${process.env.PORT || 3000}/api`;
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -33,28 +33,83 @@ async function seed() {
         await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
-        // 1. Run database.sql
+        // 1. Run database.sql to rebuild just the applicant tables
         const sqlFilePath = path.join(__dirname, 'database.sql');
         const sqlQuery = fs.readFileSync(sqlFilePath, 'utf8');
-        
-        console.log('📦 Executing database.sql...');
+        console.log('📦 Executing database.sql (recreating applicant schema)...');
         await connection.query(sqlQuery);
-
-        // 3. Set Open Vacancies
-        console.log('🔓 Opening specific vacancies...');
         
-        const mandatoryPositions = ['Administrative Officer I', 'Project Development Officer II'];
-        await connection.query('UPDATE positions SET in_vacancy = 0, vacancyAnnouncementNo = NULL'); // Reset all just in case
-        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5, vacancyAnnouncementNo = 1 WHERE title = ?', ['Administrative Officer I']);
-        await connection.query('UPDATE positions SET in_vacancy = 1, vacancyCount = 5, vacancyAnnouncementNo = 2 WHERE title = ?', ['Project Development Officer II']);
 
-        // Fetch the open positions to assign to applicants
-        const [openPositions] = await connection.query('SELECT title, category, vacancyAnnouncementNo FROM positions WHERE in_vacancy = 1');
-        console.log(`Open Positions: ${openPositions.map(p => p.title).join(', ')}`);
+        // 2. Setup API Auth
+        const jwt = require('jsonwebtoken');
+        const token = jwt.sign({ 
+            id: 1, 
+            username: 'superadmin', 
+            role: 'superadmin', 
+            can_access_step2: true, 
+            name: 'Seeder' 
+        }, process.env.JWT_SECRET || 'fallback-secret-for-dev', { expiresIn: '1h' });
+        
+        const authHeaders = { 
+            'Content-Type': 'application/json',
+            'Cookie': `auth=${token}`,
+            'x-is-seeding': 'true'
+        };
 
-        // Close DB connection, shift to API simulation
+        // 3. Create active positions via API
+        console.log('🔓 Creating new random positions with active vacancies via API...');
+        const newPositionsToCreate = [
+            { title: 'Administrative Officer II', category: 'Non-Teaching', vacNo: '101', count: 5, posCode: 'AO2' },
+            { title: 'Administrative Assistant III', category: 'Non-Teaching', vacNo: '102', count: 6, posCode: 'ADAS3' },
+            { title: 'Project Development Officer II', category: 'Non-Teaching', vacNo: '103', count: 5, posCode: 'PDO2' },
+            { title: 'Accountant I', category: 'Non-Teaching', vacNo: '104', count: 5, posCode: 'ACC1' },
+            { title: 'Teacher I (Elementary)', category: 'Teaching', vacNo: '105', count: 10, posCode: 'T1-ELEM' },
+            { title: 'Teacher I (Junior High School)', category: 'Teaching', vacNo: '106', count: 8, posCode: 'T1-JHS' },
+            { title: 'Teacher I (Senior High School)', category: 'Teaching', vacNo: '107', count: 7, posCode: 'T1-SHS' },
+            { title: 'School Principal I', category: 'School Administration', vacNo: '108', count: 5, posCode: 'SP1' },
+            { title: 'Teacher II (Elementary)', category: 'Teaching', vacNo: '109', count: 5, posCode: 'T2-ELEM' },
+            { title: 'Master Teacher I (Elementary)', category: 'Teaching', vacNo: '110', count: 5, posCode: 'MT1' }
+        ];
+
+        const openPositions = [];
+
+        for (const pos of newPositionsToCreate) {
+            // Find existing position
+            const [rows] = await connection.query('SELECT id, title, category FROM positions WHERE title = ?', [pos.title]);
+            if (rows.length === 0) {
+                console.log(`Skipping ${pos.title} as it was not found in the DB.`);
+                continue;
+            }
+            
+            const insertId = rows[0].id;
+
+            // Generate mock Plantilla Items based on count
+            const generatedItems = [];
+            for(let i = 0; i < pos.count; i++) {
+                generatedItems.push(`OSEC-DECSB-${pos.posCode}-${Math.floor(100000 + Math.random() * 900000)}-2023`);
+            }
+            
+            const plantillaPayload = [
+                {
+                    items: generatedItems.join(', '),
+                    parenthetical: '',
+                    dropdown1: 'Division Office',
+                    dropdown2: 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation'
+                }
+            ];
+
+            await connection.query(
+                'UPDATE positions SET vacancyAnnouncementNo = ?, plantillaItem = ?, in_vacancy = 1, vacancyCount = ? WHERE id = ?',
+                [pos.vacNo, JSON.stringify(plantillaPayload), pos.count, insertId]
+            );
+
+            openPositions.push({ id: insertId, title: pos.title, category: pos.category, vacancyAnnouncementNo: pos.vacNo });
+        }
+        
         await connection.end();
-        console.log('✅ Database setup complete. Starting API simulation...');
+
+        console.log(`Open Positions: ${openPositions.map(p => p.title).join(', ')}`);
+        console.log('✅ Database and Position setup complete. Starting API simulation for Applicants...');
 
         // 4. Generate Applicants via API
         const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara'];
@@ -73,21 +128,7 @@ async function seed() {
         
         let allApplicantIds = [];
 
-        // Generate a valid JWT token to bypass authentication
-        const jwt = require('jsonwebtoken');
-        const token = jwt.sign({ 
-            id: 1, 
-            username: 'superadmin', 
-            role: 'superadmin', 
-            can_access_step2: true, 
-            name: 'Seeder' 
-        }, process.env.JWT_SECRET || 'fallback-secret-for-dev', { expiresIn: '1h' });
-        
-        const authHeaders = { 
-            'Content-Type': 'application/json',
-            'Cookie': `auth=${token}`,
-            'x-is-seeding': 'true'
-        };
+
 
         // Batch generation to avoid socket exhaustion
         const BATCH_SIZE = 50;
@@ -102,39 +143,53 @@ async function seed() {
                 const randomMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
                 const randomDay = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
                 
-                const payload = {
-                    firstName: fName,
-                    lastName: lName,
-                    middleName: 'Seed',
-                    nameExtension: Math.random() > 0.85 ? 'Jr.' : '',
-                    applicationType: Math.random() > 0.5 ? 'Walk-in' : 'Online',
-                    district: 'District ' + (Math.floor(Math.random() * 6) + 1),
-                    address: JSON.stringify({
-                        res_house: Math.floor(Math.random() * 999) + 1,
-                        res_street: 'Seed Street',
-                        res_subdivision: 'Seed Village',
-                        res_barangay: 'Barangay ' + (Math.floor(Math.random() * 20) + 1),
-                        res_city: 'Seed City',
-                        res_province: 'Seed Province',
-                        res_zip: '1000'
-                    }),
-                    birthdate: `${randomYear}-${randomMonth}-${randomDay}`,
-                    sex: Math.random() > 0.5 ? 'Male' : 'Female',
-                    civilStatus: civilStatuses[Math.floor(Math.random() * civilStatuses.length)],
-                    religion: religions[Math.floor(Math.random() * religions.length)],
-                    disability: disabilities[Math.floor(Math.random() * disabilities.length)],
-                    ethnicGroup: ethnicGroups[Math.floor(Math.random() * ethnicGroups.length)],
-                    emailAddress: `jevoel.orbilla@gmail.com`,
-                    contactNo: '09' + Math.floor(100000000 + Math.random() * 900000000),
-                    pdsLink: 'http://example.com/pds',
-                    category: positionObj.category,
-                    position: positionObj.title,
-                    vacancyAnnouncementNo: positionObj.vacancyAnnouncementNo || null,
-                    education: JSON.stringify([{ degree: degrees[Math.floor(Math.random() * degrees.length)], year: Math.floor(Math.random() * (2022 - 2010 + 1)) + 2010, link: 'http://link' }]),
-                    training: JSON.stringify([{ title: trainings[Math.floor(Math.random() * trainings.length)], hours: Math.floor(Math.random() * 80) + 8, link: 'http://link' }]),
-                    experience: JSON.stringify([{ details: experiences[Math.floor(Math.random() * experiences.length)], years: (Math.random() * 10).toFixed(1), link: 'http://link' }]),
-                    eligibility: JSON.stringify([{ details: eligibilities[Math.floor(Math.random() * eligibilities.length)], rating: (Math.random() * 20 + 80).toFixed(2), link: 'http://link' }])
-                };
+                    const posUpper = positionObj.title.toUpperCase();
+                    const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper) || positionObj.category === 'School Administration';
+                    
+                    let perfData = [];
+                    if (isHigherTeaching) {
+                        const groupId = Math.random().toString(36).substr(2, 9);
+                        perfData = [
+                            { group_id: groupId, ratingPeriod: 'SY 2021-2022', rating: '3.750', letterGrade: 'VS' },
+                            { group_id: groupId, ratingPeriod: 'SY 2022-2023', rating: '3.800', letterGrade: 'VS' },
+                            { group_id: groupId, ratingPeriod: 'SY 2023-2024', rating: '3.900', letterGrade: 'VS' }
+                        ];
+                    }
+
+                    const payload = {
+                        firstName: fName,
+                        lastName: lName,
+                        middleName: 'Seed',
+                        nameExtension: Math.random() > 0.85 ? 'Jr.' : '',
+                        applicationType: Math.random() > 0.5 ? 'Walk-in' : 'Online',
+                        district: 'District ' + (Math.floor(Math.random() * 6) + 1),
+                        address: JSON.stringify({
+                            res_house: Math.floor(Math.random() * 999) + 1,
+                            res_street: 'Seed Street',
+                            res_subdivision: 'Seed Village',
+                            res_barangay: 'Barangay ' + (Math.floor(Math.random() * 20) + 1),
+                            res_city: 'Seed City',
+                            res_province: 'Seed Province',
+                            res_zip: '1000'
+                        }),
+                        birthdate: `${randomYear}-${randomMonth}-${randomDay}`,
+                        sex: Math.random() > 0.5 ? 'Male' : 'Female',
+                        civilStatus: civilStatuses[Math.floor(Math.random() * civilStatuses.length)],
+                        religion: religions[Math.floor(Math.random() * religions.length)],
+                        disability: disabilities[Math.floor(Math.random() * disabilities.length)],
+                        ethnicGroup: ethnicGroups[Math.floor(Math.random() * ethnicGroups.length)],
+                        emailAddress: `jevoel.orbilla@gmail.com`,
+                        contactNo: '09' + Math.floor(100000000 + Math.random() * 900000000),
+                        pdsLink: 'http://example.com/pds',
+                        category: positionObj.category,
+                        position: positionObj.title,
+                        vacancyAnnouncementNo: positionObj.vacancyAnnouncementNo || null,
+                        education: JSON.stringify([{ degree: degrees[Math.floor(Math.random() * degrees.length)], year: Math.floor(Math.random() * (2022 - 2010 + 1)) + 2010, link: 'http://link' }]),
+                        training: JSON.stringify([{ title: trainings[Math.floor(Math.random() * trainings.length)], hours: Math.floor(Math.random() * 80) + 8, link: 'http://link' }]),
+                        experience: JSON.stringify([{ details: experiences[Math.floor(Math.random() * experiences.length)], years: (Math.random() * 10).toFixed(1), link: 'http://link' }]),
+                        eligibility: JSON.stringify([{ details: eligibilities[Math.floor(Math.random() * eligibilities.length)], rating: (Math.random() * 20 + 80).toFixed(2), link: 'http://link' }]),
+                        performance: JSON.stringify(perfData)
+                    };
 
                 try {
                     const res = await fetch(`${API_BASE}/applicants`, {
@@ -190,6 +245,7 @@ async function seed() {
                 await qualifyDoc('training', details.training);
                 await qualifyDoc('experience', details.experience);
                 await qualifyDoc('eligibility', details.eligibility);
+                await qualifyDoc('performance', details.performance);
 
                 await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST', headers: authHeaders });
                 // We intentionally omit /proceed-step2 so they stay in Step 1 but are flagged as QUALIFIED
@@ -217,6 +273,7 @@ async function seed() {
                 await disqualifyDoc('training', details.training);
                 await disqualifyDoc('experience', details.experience);
                 await disqualifyDoc('eligibility', details.eligibility);
+                await disqualifyDoc('performance', details.performance);
 
                 await fetch(`${API_BASE}/applicants/${id}/disqualify`, { 
                     method: 'POST', 
@@ -247,6 +304,7 @@ async function seed() {
                 await qualifyDoc('training', details.training);
                 await qualifyDoc('experience', details.experience);
                 await qualifyDoc('eligibility', details.eligibility);
+                await qualifyDoc('performance', details.performance);
 
                 await fetch(`${API_BASE}/applicants/${id}/qualify`, { method: 'POST', headers: authHeaders });
                 await fetch(`${API_BASE}/applicants/${id}/proceed-step2`, { method: 'POST', headers: authHeaders });

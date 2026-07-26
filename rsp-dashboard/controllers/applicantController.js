@@ -69,7 +69,7 @@ exports.createApplicant = async (req, res) => {
     try {
         const { 
             firstName, lastName, middleName, nameExtension, applicationType, district, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position, vacancyAnnouncementNo,
-            education, training, experience, eligibility
+            education, training, experience, eligibility, performance
         } = req.body;
         
         if (!firstName || !lastName) return res.status(400).json({ success: false, error: "Missing required fields" });
@@ -118,6 +118,9 @@ exports.createApplicant = async (req, res) => {
         const eligArray = eligibility ? JSON.parse(eligibility) : [];
         for (let el of eligArray) await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, el.details, el.rating, el.link || '']);
 
+        const perfArray = performance ? JSON.parse(performance) : [];
+        for (let p of perfArray) await db.query('INSERT INTO applicant_performance (applicant_id, group_id, ratingPeriod, rating, letterGrade) VALUES (?, ?, ?, ?, ?)', [applicantId, p.group_id, p.ratingPeriod, p.rating, p.letterGrade]);
+
         res.json({ success: true, applicationCode: newCode, id: applicantId });
     } catch (error) {
         console.error(error);
@@ -148,10 +151,8 @@ exports.disqualifyApplicant = async (req, res) => {
         db.query('SELECT * FROM applicants WHERE id = ?', [req.params.id]).then(async ([apps]) => {
             if (apps && apps.length > 0) {
                 const app = apps[0];
-                const isHigherTeaching = [
-                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
-                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
-                ].includes(String(app.position || '').toUpperCase());
+                const posUpper = String(app.position || '').toUpperCase();
+                const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper);
                 
                 const targetTmpl = isHigherTeaching ? 'Notice to DQ - Higher Teaching' : 'Notice to DQ';
                 let generated = 0, failed = 0;
@@ -185,10 +186,8 @@ exports.qualifyApplicant = async (req, res) => {
         db.query('SELECT * FROM applicants WHERE id = ?', [req.params.id]).then(async ([apps]) => {
             if (apps && apps.length > 0) {
                 const app = apps[0];
-                const isHigherTeaching = [
-                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
-                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
-                ].includes(String(app.position || '').toUpperCase());
+                const posUpper = String(app.position || '').toUpperCase();
+                const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper);
                 
                 const targetTmpl = isHigherTeaching ? 'Notice to Qualified - Higher Teaching' : 'Notice to Qualified - Without Date of Assessment';
                 let generated = 0, failed = 0;
@@ -233,10 +232,8 @@ exports.pregeneratePdf = async (req, res) => {
         }
         
         const app = apps[0];
-        const isHigherTeaching = [
-            'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
-            'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
-        ].includes(String(app.position || '').toUpperCase());
+        const posUpper = String(app.position || '').toUpperCase();
+        const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper);
         
         let targetTmpl = '';
         const isQual = app.status === 'QUALIFIED' || app.status === 'WAITING_FOR_ASSESSMENT' || app.docRemark === 'Qualified';
@@ -569,6 +566,7 @@ exports.getApplicantDetails = async (req, res) => {
         const [training] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [id]);
         const [experience] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [id]);
         const [eligibility] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [id]);
+        const [performance] = await db.query('SELECT * FROM applicant_performance WHERE applicant_id = ?', [id]);
 
         let positionStandards = null;
         if (app.position) {
@@ -583,7 +581,8 @@ exports.getApplicantDetails = async (req, res) => {
             education,
             training,
             experience,
-            eligibility
+            eligibility,
+            performance
         });
     } catch (error) {
         console.error(error);
@@ -605,6 +604,7 @@ exports.updateDocumentStatus = async (req, res) => {
         else if (type === 'training') table = 'applicant_training';
         else if (type === 'experience') table = 'applicant_experience';
         else if (type === 'eligibility') table = 'applicant_eligibility';
+        else if (type === 'performance') table = 'applicant_performance';
         else return res.status(400).json({ success: false, error: "Invalid document type" });
 
         await db.query(`UPDATE ${table} SET status = ? WHERE id = ? AND applicant_id = ?`, [status, docId, id]);
@@ -676,6 +676,43 @@ exports.updateEligibility = async (req, res) => {
 
         const { details, rating } = req.body;
         await db.query('UPDATE applicant_eligibility SET details = ?, rating = ? WHERE id = ?', [details, rating, req.params.id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: "Internal server error" }); }
+};
+
+exports.addPerformanceGroup = async (req, res) => {
+    try {
+        if (!(await updateVersion(req, res, req.params.id))) return;
+        const { records } = req.body;
+        const groupId = Date.now().toString();
+        for (const record of records) {
+            await db.query('INSERT INTO applicant_performance (applicant_id, group_id, ratingPeriod, rating, letterGrade) VALUES (?, ?, ?, ?, ?)', [req.params.id, groupId, record.ratingPeriod, record.rating, record.letterGrade]);
+        }
+        res.json({ success: true });
+    } catch (error) { res.status(500).json({ success: false, error: "Internal server error" }); }
+};
+
+exports.deletePerformanceGroup = async (req, res) => {
+    try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_performance WHERE group_id = ? LIMIT 1', [req.params.groupId]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
+        await db.query('DELETE FROM applicant_performance WHERE group_id = ?', [req.params.groupId]);
+        res.json({ success: true });
+    } catch (error) { res.status(500).json({ success: false, error: "Internal server error" }); }
+};
+
+exports.updatePerformanceGroup = async (req, res) => {
+    try {
+        const [appRows] = await db.query('SELECT applicant_id FROM applicant_performance WHERE group_id = ? LIMIT 1', [req.params.groupId]);
+        if (!appRows.length) return res.status(404).json({ error: 'Record not found' });
+        if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
+
+        const { records } = req.body;
+        for (const record of records) {
+            await db.query('UPDATE applicant_performance SET ratingPeriod = ?, rating = ?, letterGrade = ? WHERE id = ? AND group_id = ?', [record.ratingPeriod, record.rating, record.letterGrade, record.id, req.params.groupId]);
+        }
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: "Internal server error" }); }
 };

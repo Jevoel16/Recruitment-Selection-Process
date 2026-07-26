@@ -5,10 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon -e js,hbs,json,css server.js",
-    "start": "nodemon -e js,hbs,json,css server.js",
+    "start": "node server.js",
     "seedPositions": "node seeders/seedPositions.js",
     "seedApplicants": "node seeders/seedApplicants.js",
-    "unseed": "node seeders/unseed.js",
     "db:init": "node seeders/initDb.js",
     "db:reset": "node seeders/initDb.js --force"
   },

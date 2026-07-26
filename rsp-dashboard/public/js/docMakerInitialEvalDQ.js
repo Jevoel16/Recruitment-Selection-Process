@@ -52,6 +52,25 @@ window.printInitialEvalDQ = async function(id) {
 
     const remarksDate = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
 
+    let rating1 = '', rating2 = '', rating3 = '';
+    let rmPerf = 'Disqualified';
+    
+    if (data.performance && data.performance.length > 0) {
+        const perfRecords = data.performance.slice(0, 3);
+        const formatRating = (p) => p ? `${p.ratingPeriod || ''}: ${p.rating || ''} ${p.letterGrade ? '(' + p.letterGrade + ')' : ''}`.trim() : '';
+        rating1 = formatRating(perfRecords[0]);
+        rating2 = formatRating(perfRecords[1]);
+        rating3 = formatRating(perfRecords[2]);
+
+        if (perfRecords.some(p => p.status === 'DISQUALIFIED')) {
+            rmPerf = 'Unmet';
+        } else if (perfRecords.every(p => p.status === 'QUALIFIED')) {
+            rmPerf = 'Met';
+        } else {
+            rmPerf = 'Pending';
+        }
+    }
+
     const templateData = {
         FormattedDate: dateStr,
         IEDate: dateStr,
@@ -63,29 +82,33 @@ window.printInitialEvalDQ = async function(id) {
         ApplicationCode: appCode,
         ReasonText: reasonText,
         
-        QSEducation: data.positionStandards?.qsEducation ? 'Education: ' + cleanText(data.positionStandards.qsEducation) : '',
+        QSEducation: data.positionStandards?.qsEducation ? cleanText(data.positionStandards.qsEducation) : '',
         AppEducation: cleanText((data.education || []).map(e => e.degree || e.title).join(', ')) || '',
         RmEducation: getRemark(data.education),
 
-        QSTraining: data.positionStandards?.qsTraining ? 'Training: ' + cleanText(data.positionStandards.qsTraining) : '',
+        QSTraining: data.positionStandards?.qsTraining ? cleanText(data.positionStandards.qsTraining) : '',
         AppTraining: cleanText((data.training || []).map(e => e.title).join(', ')) || '',
         RmTraining: getRemark(data.training),
 
-        QSExperience: data.positionStandards?.qsExperience ? 'Experience: ' + cleanText(data.positionStandards.qsExperience) : '',
+        QSExperience: data.positionStandards?.qsExperience ? cleanText(data.positionStandards.qsExperience) : '',
         AppExperience: cleanText((data.experience || []).map(e => e.details).join(', ')) || '',
         RmExperience: getRemark(data.experience),
 
-        QSEligibility: data.positionStandards?.qsEligibility ? 'Eligibility: ' + cleanText(data.positionStandards.qsEligibility) : '',
+        QSEligibility: data.positionStandards?.qsEligibility ? cleanText(data.positionStandards.qsEligibility) : '',
         AppEligibility: cleanText((data.eligibility || []).map(e => e.title || e.details).join(', ')) || '',
         RmEligibility: getRemark(data.eligibility),
+
+        QSPerformance: data.positionStandards?.qsPerformance ? cleanText(data.positionStandards.qsPerformance) : '',
+        Rating1: rating1 || '',
+        Rating2: rating2 || '',
+        Rating3: rating3 || '',
+        RmPerformance: rmPerf || '',
 
         Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`
     };
 
-    const isHigherTeaching = [
-        'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
-        'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
-    ].includes(String(pos || '').toUpperCase());
+    const posUpper = String(pos || '').toUpperCase();
+    const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper);
 
     const templateUrl = isHigherTeaching ? "/templates/Notice to DQ - Higher Teaching.docx" : "/templates/Notice to DQ.docx";
     const noticeType = templateUrl.includes('Higher Teaching') ? 'Notice_to_DQ___Higher_Teaching' : 'Notice_to_DQ';

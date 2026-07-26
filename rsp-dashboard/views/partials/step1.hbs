@@ -61,7 +61,7 @@
                             <th class="text-center">Edu</th>
                             <th class="text-center">Train</th>
                             <th class="text-center">Exp</th>
-                            {{#if ../showPerfColumn}}
+                            {{#if showPerfColumn}}
                             <th class="text-center">Perf</th>
                             {{/if}}
                             <th class="text-center">Elig</th>
@@ -81,7 +81,7 @@
                             {{#if ../showPerfColumn}}
                             <td data-label="Performance" class="text-center">
                                 {{#if this.isHigherTeaching}}
-                                <button class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openHtPerfCalcModal({{this.id}})" title="Performance"><i class="bi bi-graph-up-arrow"></i> Perf</button>
+                                <button class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center text-nowrap gap-1" onclick="openPerfModal({{this.id}})" title="Performance"><i class="bi bi-graph-up-arrow"></i> Perf</button>
                                 {{else}}
                                 <span class="text-muted small">-</span>
                                 {{/if}}
@@ -114,7 +114,7 @@
                             </td>
                         </tr>
                         {{else}}
-                        <tr><td colspan="9" class="text-center text-muted py-4">No initial evaluation applicants found.</td></tr>
+                        <tr><td {{#if showPerfColumn}}colspan="10"{{else}}colspan="9"{{/if}} class="text-center text-muted py-4">No initial evaluation applicants found.</td></tr>
                         {{/each}}
                     </tbody>
                 </table>

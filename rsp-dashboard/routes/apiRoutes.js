@@ -81,6 +81,10 @@ router.put('/training/:id', applicantController.updateTraining);
 router.put('/experience/:id', applicantController.updateExperience);
 router.put('/eligibility/:id', applicantController.updateEligibility);
 
+// Endpoints for managing applicant performance records
+router.post('/applicants/:id/performance/group', applicantController.addPerformanceGroup);
+router.delete('/performance/group/:groupId', applicantController.deletePerformanceGroup);
+router.put('/performance/group/:groupId', applicantController.updatePerformanceGroup);
 
 
 // JSON Database Backup Endpoint
@@ -160,7 +164,7 @@ router.get('/export/backup/automated/download/:filename', async (req, res) => {
 // Endpoint to fetch daily email sending limit and remaining count
 router.get('/export/email-codes/limits', async (req, res) => {
     try {
-        const [logs] = await db.query('SELECT COUNT(*) as sentToday FROM applicant_email_logs WHERE DATE(sent_at) = CURDATE()');
+        const [logs] = await db.query('SELECT COUNT(*) as sentToday FROM applicant_email_logs WHERE sent_at >= NOW() - INTERVAL 24 HOUR');
         const sentToday = logs[0].sentToday || 0;
         const singleLimit = parseInt(process.env.DAILY_EMAIL_LIMIT) || 500;
         const dailyLimit = singleLimit * 2; // Total for both accounts
@@ -216,8 +220,8 @@ router.post('/export/email-codes', async (req, res) => {
             return res.status(404).json({ message: 'No applicants with valid email addresses found among the selection.' });
         }
 
-        // Get count of emails sent today for these applicants
-        const [todayLogs] = await db.query('SELECT applicant_id, COUNT(*) as todayCount FROM applicant_email_logs WHERE applicant_id IN (?) AND DATE(sent_at) = CURDATE() GROUP BY applicant_id', [applicantIds]);
+        // Get count of emails sent in the last 24 hours for these applicants
+        const [todayLogs] = await db.query('SELECT applicant_id, COUNT(*) as todayCount FROM applicant_email_logs WHERE applicant_id IN (?) AND sent_at >= NOW() - INTERVAL 24 HOUR GROUP BY applicant_id', [applicantIds]);
         const todayCountMap = {};
         todayLogs.forEach(log => {
             todayCountMap[log.applicant_id] = log.todayCount;
@@ -250,7 +254,7 @@ router.post('/export/email-codes', async (req, res) => {
         let errors = [];
 
         for (const applicant of applicants) {
-            // Check daily limit (2 per day)
+            // Check rolling 24-hour limit (2 per 24 hours)
             if (todayCountMap[applicant.id] >= 2) {
                 skippedCount++;
                 continue;
@@ -398,10 +402,8 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 const pos = app.position || 'Position';
                 const appCode = app.applicationCode || '[Application Code]';
                 
-                const isHigherTeaching = [
-                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
-                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
-                ].includes(String(pos || '').toUpperCase());
+                const posUpper = String(app.position || '').toUpperCase();
+                const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper);
 
                 const isQualified = app.status === 'QUALIFIED' || app.status === 'WAITING_FOR_ASSESSMENT' || app.status === 'ASSESSED' || app.status === 'NO_APPEARANCE' || app.status === 'NEWLY_PROMOTED' || app.status === 'WAITING' || app.status === 'ASSIGNED' || app.status === 'COMPLETED';
                 
@@ -630,10 +632,8 @@ router.post('/export/email-docs', async (req, res) => {
         for (const app of applicants) {
             try {
                 const pos = app.position || '';
-                const isHigherTeaching = [
-                    'TEACHER II', 'TEACHER III', 'TEACHER IV', 'TEACHER V', 'TEACHER VI', 'TEACHER VII',
-                    'MASTER TEACHER I', 'MASTER TEACHER II', 'MASTER TEACHER III', 'MASTER TEACHER IV', 'MASTER TEACHER V'
-                ].includes(String(pos).toUpperCase());
+                const posUpper = String(pos || '').toUpperCase();
+                const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper);
 
                 const isQualified = app.status === 'QUALIFIED' || app.status === 'WAITING_FOR_ASSESSMENT' || app.status === 'ASSESSED' || app.status === 'NO_APPEARANCE' || app.status === 'NEWLY_PROMOTED' || app.status === 'WAITING' || app.status === 'ASSIGNED' || app.status === 'COMPLETED';
                 

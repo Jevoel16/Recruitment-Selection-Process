@@ -98,7 +98,7 @@ router.get('/ver', async (req, res) => {
         const buffer = await generateVERExcelJS(allItems);
 
         const dateStr = new Date().toISOString().split('T')[0];
-        const filename = `VER-${dateStr}.xlsx`;
+        const filename = `VPR-${dateStr}.xlsx`;
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename=${filename}`);

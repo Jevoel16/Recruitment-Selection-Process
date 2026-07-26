@@ -424,7 +424,169 @@ async function updateDocStatus(type, applicantId, docId, status) {
             else if(type === 'training') openTrainModal(applicantId);
             else if(type === 'experience') openExpModal(applicantId);
             else if(type === 'eligibility') openEligModal(applicantId);
+            else if(type === 'performance') openPerfModal(applicantId);
         }
     } catch(err) { console.error(err); }
 }
 
+async function openPerfModal(id, editGroupId = null) {
+    if (!(await window.acquireLock(id))) return;
+    try {
+        window.currentDocApplicantId = id;
+        document.getElementById('perfModalTitle').innerText = 'Performance Records';
+        const data = await fetchDetails(id);
+        const perf = data.performance || [];
+        
+        const qsPerfText = data.positionStandards && data.positionStandards.qsPerformance 
+            ? data.positionStandards.qsPerformance 
+            : 'Performance Rating Requirements';
+        setFloatingStandard('perfModal', qsPerfText);
+        
+        let html = '';
+        
+        // Group by group_id
+        const grouped = {};
+        perf.forEach(p => {
+            if (!grouped[p.group_id]) grouped[p.group_id] = [];
+            grouped[p.group_id].push(p);
+        });
+        
+        const groupIds = Object.keys(grouped);
+        
+        if (groupIds.length > 0 && !editGroupId) {
+            // Show list view
+            html += '<div class="mb-3">';
+            groupIds.forEach(gId => {
+                const groupRecords = grouped[gId];
+                html += `
+                <div class="card mb-3 shadow-sm border-0">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Performance Set</span>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-info text-white" onclick="openPerfModal(${id}, '${gId}')"><i class="bi bi-pencil"></i> Update</button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="deletePerfGroup('${gId}', ${id})"><i class="bi bi-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                `;
+                groupRecords.forEach(e => {
+                    html += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${e.ratingPeriod}</strong>
+                                <br>Score: ${e.rating} ${e.letterGrade ? `(Grade: ${e.letterGrade})` : ''}
+                                <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('performance', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
+                                <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('performance', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
+                            </div>
+                        </li>
+                    `;
+                });
+                html += '</ul></div>';
+            });
+            html += '</div>';
+        } else if (groupIds.length === 0 || editGroupId) {
+            // Show form (Add or Update)
+            const isUpdate = !!editGroupId;
+            const recordsToEdit = isUpdate ? grouped[editGroupId] : [{}, {}, {}];
+            // Ensure there are 3 items
+            while (recordsToEdit.length < 3) recordsToEdit.push({});
+            
+            const placeholders = [
+                { period: 'SY 2023-2024', rating: '3.456', grade: 'S' },
+                { period: 'SY 2024-2025', rating: '3.756', grade: 'VS' },
+                { period: 'SY 2025-2026', rating: '3.756', grade: 'VS' }
+            ];
+            
+            html += `
+                <form id="perfGroupForm-${id}" class="mb-3" data-mode="${isUpdate ? 'update' : 'add'}" data-groupid="${editGroupId || ''}">
+                    <p class="text-muted small mb-2">Please provide 3 consecutive rating periods.</p>
+            `;
+            
+            for (let i = 0; i < 3; i++) {
+                const rec = recordsToEdit[i];
+                html += `
+                    <div class="d-flex gap-2 w-100 mb-2">
+                        <input type="hidden" name="id_${i}" value="${rec.id || ''}">
+                        <input type="text" class="form-control" name="period_${i}" placeholder="${placeholders[i].period}" value="${rec.ratingPeriod || ''}" style="flex: 2;" required>
+                        <input type="number" step="any" class="form-control" name="rating_${i}" placeholder="${placeholders[i].rating}" value="${rec.rating || ''}" style="flex: 1;" required>
+                        <input type="text" class="form-control" name="grade_${i}" placeholder="${placeholders[i].grade}" value="${rec.letterGrade || ''}" style="flex: 1;" required>
+                    </div>
+                `;
+            }
+            
+            html += `
+                    <div class="d-flex gap-2 mt-3">
+                        ${isUpdate ? `<button type="button" class="btn btn-secondary w-50" onclick="openPerfModal(${id})">Cancel</button>` : ''}
+                        <button type="submit" class="btn btn-${isUpdate ? 'info text-white' : 'primary'} w-${isUpdate ? '50' : '100'}"><i class="bi ${isUpdate ? 'bi-pencil' : 'bi-plus-circle'}"></i> ${isUpdate ? 'Update' : 'Add'} Performance</button>
+                    </div>
+                </form>
+            `;
+        }
+        
+        document.getElementById('perfModalBody').innerHTML = html;
+        
+        const formEl = document.getElementById(`perfGroupForm-${id}`);
+        if (formEl) {
+            formEl.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const isUpdate = form.dataset.mode === 'update';
+                const groupId = form.dataset.groupid;
+                
+                const records = [];
+                for(let i=0; i<3; i++) {
+                    records.push({
+                        id: form[`id_${i}`].value,
+                        ratingPeriod: form[`period_${i}`].value,
+                        rating: form[`rating_${i}`].value,
+                        letterGrade: form[`grade_${i}`].value
+                    });
+                }
+                
+                try {
+                    let res;
+                    if (isUpdate) {
+                        res = await fetch(`/api/performance/group/${groupId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ records })
+                        });
+                    } else {
+                        res = await fetch(`/api/applicants/${id}/performance/group`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ records })
+                        });
+                    }
+                    if(res.ok) {
+                        window.showToast('Successfully saved!', 'success');
+                        openPerfModal(id); // Reload view
+                    } else {
+                        window.showToast('Failed to save records.', 'danger');
+                    }
+                } catch(err) { console.error(err); window.showToast('Error saving records.', 'danger'); }
+            });
+        }
+        
+        const perfModalEl = document.getElementById('perfModal');
+        if (!perfModalEl.classList.contains('show')) {
+            bootstrap.Modal.getOrCreateInstance(perfModalEl).show();
+        }
+    } catch (err) { window.showToast(err.message, 'danger'); }
+}
+
+async function deletePerfGroup(groupId, applicantId) {
+    if(!confirm("Are you sure you want to delete this performance group?")) return;
+    try {
+        const res = await fetch(`/api/performance/group/${groupId}`, { method: 'DELETE' });
+        if(res.ok) {
+            window.showToast('Successfully deleted', 'success');
+            openPerfModal(applicantId);
+        } else {
+            window.showToast('Error deleting record', 'danger');
+        }
+    } catch(err) { console.error(err); }
+}

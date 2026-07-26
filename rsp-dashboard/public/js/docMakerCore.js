@@ -40,6 +40,15 @@ window.exportFromTemplate = async (templateUrl, data, filename) => {
         const doc = new window.docxtemplater(zip, {
             paragraphLoop: true,
             linebreaks: true,
+            nullGetter: function(part) {
+                if (!part.module) {
+                    return "";
+                }
+                if (part.module === "rawxml") {
+                    return "";
+                }
+                return "";
+            }
         });
 
         doc.render(data);
@@ -55,7 +64,12 @@ window.exportFromTemplate = async (templateUrl, data, filename) => {
         window.showToast("Word document generated successfully.", "success");
     } catch (error) {
         console.error("Error generating document:", error);
-        alert("Failed to generate document from template: " + (error.message || error));
+        if (error.properties && error.properties.errors) {
+            console.error("Docxtemplater detailed errors:", error.properties.errors);
+            alert("Failed to generate document: " + error.properties.errors.map(e => e.message || e.name).join(", "));
+        } else {
+            alert("Failed to generate document from template: " + (error.message || error));
+        }
     }
 };
 

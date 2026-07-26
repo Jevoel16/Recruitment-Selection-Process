@@ -970,7 +970,7 @@ async function openStep2SummaryModal(id, name, isReadOnly = false) {
             <div class="row g-3 text-center mb-4">
                 <div class="col-md-4"><strong>Category:</strong><br>${app.category || 'N/A'}</div>
                 <div class="col-md-4"><strong>Position:</strong><br>${app.position || 'N/A'}</div>
-                <div class="col-md-4"><strong>Salary Grade:</strong><br>${posStandards.salaryGrade || 'N/A'}</div>
+                <div class="col-md-4"><strong>Salary Grade:</strong><br>${sg === '1' && (!posStandards || !posStandards.salaryGrade) ? 'N/A' : sg}</div>
             </div>
             <h6 class="mt-4 mb-3 fw-bold text-secondary border-bottom pb-2">Evaluation Assessment Summary</h6>
             <div class="table-responsive">
