@@ -13,6 +13,7 @@
                             <option value="relevant">Experienced: Relevant Intervention</option>
                             <option value="not_relevant">Experienced: Not Relevant Intervention</option>
                             <option value="no_exp">No Experience: GWA Percentage Scale</option>
+                            <option value="no_exp_gwa1">No Experience: GWA (1.00–5.00 grade point scale)</option>
                         </select>
                     </div>
 
@@ -28,9 +29,9 @@
                     </div>
 
                     <div class="mb-3 d-none" id="appEduGWADiv">
-                        <label class="form-label fw-bold">GWA Transmuted to Percentage (x)</label>
+                        <label class="form-label fw-bold" id="appEduGWALabel">GWA Transmuted to Percentage (x)</label>
                         <input type="number" class="form-control" id="appEduGWAInput" step="0.01" max="100" placeholder="e.g. 82.75" oninput="if(this.max && parseFloat(this.value) > parseFloat(this.max)) this.value = this.max; calculateAppEduPoints();">
-                        <div class="form-text small text-muted">Enter percentage from 0 to 100.</div>
+                        <div class="form-text small text-muted" id="appEduGWAHelp">Enter percentage from 0 to 100.</div>
                     </div>
 
                     <hr class="my-4 border-secondary border-opacity-25">

@@ -30,7 +30,7 @@ async function seed() {
 
         console.log('🧹 Dropping existing applicant tables...');
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicants');
+        await connection.query('DROP TABLE IF EXISTS applicant_eligibility, applicant_experience, applicant_training, applicant_education, applicant_performance, applicants');
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         // 1. Run database.sql to rebuild just the applicant tables
@@ -59,15 +59,15 @@ async function seed() {
         // 3. Create active positions via API
         console.log('🔓 Creating new random positions with active vacancies via API...');
         const newPositionsToCreate = [
-            { title: 'Administrative Officer II', category: 'Non-Teaching', vacNo: '101', count: 5, posCode: 'AO2' },
+            { title: 'Administrative Officer II', category: 'Non-Teaching', vacNo: '101', count: 5, posCode: 'ADOF2' },
             { title: 'Administrative Assistant III', category: 'Non-Teaching', vacNo: '102', count: 6, posCode: 'ADAS3' },
             { title: 'Project Development Officer II', category: 'Non-Teaching', vacNo: '103', count: 5, posCode: 'PDO2' },
             { title: 'Accountant I', category: 'Non-Teaching', vacNo: '104', count: 5, posCode: 'ACC1' },
-            { title: 'Teacher I (Elementary)', category: 'Teaching', vacNo: '105', count: 10, posCode: 'T1-ELEM' },
-            { title: 'Teacher I (Junior High School)', category: 'Teaching', vacNo: '106', count: 8, posCode: 'T1-JHS' },
-            { title: 'Teacher I (Senior High School)', category: 'Teaching', vacNo: '107', count: 7, posCode: 'T1-SHS' },
+            { title: 'Teacher I (Elementary)', category: 'Teaching', vacNo: '105', count: 10, posCode: 'T1' },
+            { title: 'Teacher I (Junior High School)', category: 'Teaching', vacNo: '106', count: 8, posCode: 'T1' },
+            { title: 'Teacher I (Senior High School)', category: 'Teaching', vacNo: '107', count: 7, posCode: 'T1' },
             { title: 'School Principal I', category: 'School Administration', vacNo: '108', count: 5, posCode: 'SP1' },
-            { title: 'Teacher II (Elementary)', category: 'Teaching', vacNo: '109', count: 5, posCode: 'T2-ELEM' },
+            { title: 'Teacher II (Elementary)', category: 'Teaching', vacNo: '109', count: 5, posCode: 'T2' },
             { title: 'Master Teacher I (Elementary)', category: 'Teaching', vacNo: '110', count: 5, posCode: 'MT1' }
         ];
 
@@ -86,7 +86,7 @@ async function seed() {
             // Generate mock Plantilla Items based on count
             const generatedItems = [];
             for(let i = 0; i < pos.count; i++) {
-                generatedItems.push(`OSEC-DECSB-${pos.posCode}-${Math.floor(100000 + Math.random() * 900000)}-2023`);
+                generatedItems.push(`${pos.posCode}-${Math.floor(100000 + Math.random() * 900000)}-2026`);
             }
             
             const plantillaPayload = [
@@ -335,27 +335,46 @@ async function seed() {
                 const sgStr = info.salaryGrade || '';
                 const sg = parseInt(sgStr.replace(/[^0-9]/g, ''), 10) || 0;
                 
-                let standard = 'General';
-                if (category === 'Teaching' && title.includes('Teacher I') && !title.includes('Teacher II') && !title.includes('Teacher III')) standard = 'Teacher I';
-                else if (category === 'School Administration') standard = 'School Administration';
-                else if (category === 'Teaching' || category === 'Related Teaching') {
+                const catLower = category.toLowerCase();
+                const posLower = title.toLowerCase();
+                
+                const isGeneral = catLower.includes('general services') || 
+                                  sgStr.toLowerCase().includes('general services') ||
+                                  posLower.includes('aide') || posLower.includes('guard') || posLower.includes('watchman') ||
+                                  posLower.includes('worker') || posLower.includes('driver') || posLower.includes('cook') ||
+                                  posLower.includes('mechanic') || posLower.includes('operator') || posLower.includes('fisherman') ||
+                                  posLower.includes('clerk') || posLower.includes('maintenance');
+
+                const isAdmin = catLower.includes('school administration') || catLower.includes('school admin') ||
+                                posLower.includes('principal') || posLower.includes('head teacher') || posLower.includes('supervisor');
+
+                const isRelated = catLower.includes('related teaching') || catLower.includes('related-teaching') ||
+                                  posLower.includes('nurse') || posLower.includes('guidance') || posLower.includes('librarian') || 
+                                  posLower.includes('counselor') || posLower.includes('psychologist') || posLower.includes('education program specialist') || posLower.includes('eps');
+
+                const isTeacher = catLower.includes('teacher') || catLower === 'teaching' ||
+                                  posLower.includes('teacher i') || posLower === 'teacher';
+
+                let standard = 'SG 1-9';
+                if (isAdmin) standard = 'School Administration';
+                else if (isTeacher) standard = 'Teacher I';
+                else if (isRelated) {
                     if (sg >= 11 && sg <= 15) standard = 'RT SG 11-15';
-                    else if (sg >= 16 && sg <= 23) standard = 'RT SG 16-23';
-                    else if (sg == 24) standard = 'RT SG 24';
-                    else standard = 'General';
-                } else {
-                    if (sg >= 1 && sg <= 9) standard = 'SG 1-9';
-                    else if (sg >= 10 && sg <= 22) standard = 'SG 10-22';
-                    else if (sg == 24) standard = 'SG 24';
-                    else standard = 'General';
+                    else if ((sg >= 16 && sg <= 23) || sg === 27) standard = 'RT SG 16-23';
+                    else if (sg >= 24) standard = 'RT SG 24';
+                    else standard = 'RT SG 11-15';
                 }
+                else if (isGeneral) standard = 'General';
+                else if ((sg >= 10 && sg <= 22) || sg === 27) standard = 'SG 10-22 and SG 27';
+                else if (sg >= 23) standard = 'SG 24';
+                else standard = 'SG 1-9';
 
                 const cKeys = {
                     'Teacher I': ['education', 'training', 'experience', 'pbet', 'ppst_coi', 'ppst_ncoi'],
                     'School Administration': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
                     'General': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'potential'],
                     'SG 1-9': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
-                    'SG 10-22': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
+                    'SG 10-22 and SG 27': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
                     'SG 24': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
                     'RT SG 11-15': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],
                     'RT SG 16-23': ['education', 'training', 'experience', 'performance', 'outstandingAccomplishments', 'applicationOfEducation', 'applicationOfLD', 'potential'],

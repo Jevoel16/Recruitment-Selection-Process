@@ -10,6 +10,31 @@ const backupManager = require('../utils/backupManager');
 const path = require('path');
 const fs = require('fs');
 
+const transporterCache = new Map();
+
+function getTransporter(accIdx) {
+    if (transporterCache.has(accIdx)) return transporterCache.get(accIdx);
+    
+    const nodemailer = require('nodemailer');
+    const host = process.env[`SMTP_HOST_${accIdx}`] || process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = process.env[`SMTP_PORT_${accIdx}`] || process.env.SMTP_PORT || 587;
+    const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
+    const pass = process.env[`SMTP_PASS_${accIdx}`] || process.env.SMTP_PASS || 'your-email-password';
+
+    let transporter = nodemailer.createTransport({
+        host: host,
+        port: port,
+        secure: port == 465, 
+        auth: { user: user, pass: pass },
+        pool: true,
+        maxConnections: 1,
+        maxMessages: 100
+    });
+    
+    transporterCache.set(accIdx, transporter);
+    return transporter;
+}
+
 router.use(requireAuth);
 
 // Removed automatic logging middleware.
@@ -227,27 +252,10 @@ router.post('/export/email-codes', async (req, res) => {
             todayCountMap[log.applicant_id] = log.todayCount;
         });
 
-        const nodemailer = require('nodemailer');
-        
         const accIdx = accountIndex || '1';
-        const host = process.env[`SMTP_HOST_${accIdx}`] || process.env.SMTP_HOST || 'smtp.gmail.com';
-        const port = process.env[`SMTP_PORT_${accIdx}`] || process.env.SMTP_PORT || 587;
-        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
-        const pass = process.env[`SMTP_PASS_${accIdx}`] || process.env.SMTP_PASS || 'your-email-password';
+        let transporter = getTransporter(accIdx);
         const gmailName = process.env[`SMTP_GMAILNAME_${accIdx}`] || process.env.SMTP_GMAILNAME || '';
-
-        let transporter = nodemailer.createTransport({
-            host: host,
-            port: port,
-            secure: port == 465, 
-            auth: {
-                user: user, 
-                pass: pass
-            },
-            pool: true,
-            maxConnections: 1,
-            maxMessages: 100
-        });
+        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
 
         let sentCount = 0;
         let skippedCount = 0;
@@ -470,7 +478,8 @@ router.post('/export/pre-generate-docs', async (req, res) => {
 
                 const getPosCode = (p) => {
                     if (!p) return 'APP';
-                    let cleanPos = p.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+                    let noParens = p.replace(/\s*\(.*?\)/g, '');
+                    let cleanPos = noParens.replace(/[^a-zA-Z0-9 ]/g, '').trim();
                     const match = cleanPos.match(/\s([IVX]+)$/i);
                     let numberSuffix = '';
                     if (match) {
@@ -485,8 +494,8 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                     else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
                     else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
                     else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
-                    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
-                    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+                    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LEA';
+                    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPSVR';
                     else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
                     else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
                     else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
@@ -604,26 +613,13 @@ router.post('/export/email-docs', async (req, res) => {
             return res.status(404).json({ message: 'No applicants with valid email addresses found among the selection.' });
         }
 
-        const nodemailer = require('nodemailer');
         const fs = require('fs');
         const path = require('path');
         
         const accIdx = accountIndex || '1';
-        const host = process.env[`SMTP_HOST_${accIdx}`] || process.env.SMTP_HOST || 'smtp.gmail.com';
-        const port = process.env[`SMTP_PORT_${accIdx}`] || process.env.SMTP_PORT || 587;
-        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
-        const pass = process.env[`SMTP_PASS_${accIdx}`] || process.env.SMTP_PASS || 'your-email-password';
+        let transporter = getTransporter(accIdx);
         const gmailName = process.env[`SMTP_GMAILNAME_${accIdx}`] || process.env.SMTP_GMAILNAME || '';
-
-        let transporter = nodemailer.createTransport({
-            host: host,
-            port: port,
-            secure: port == 465, 
-            auth: { user: user, pass: pass },
-            pool: true,
-            maxConnections: 1,
-            maxMessages: 100
-        });
+        const user = process.env[`SMTP_USER_${accIdx}`] || process.env.SMTP_USER || 'your-email@gmail.com';
 
         let sentCount = 0;
         let errors = [];
@@ -648,7 +644,8 @@ router.post('/export/email-docs', async (req, res) => {
                 const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const getPosCode = (p) => {
                     if (!p) return 'APP';
-                    let cleanPos = p.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+                    let noParens = p.replace(/\s*\(.*?\)/g, '');
+                    let cleanPos = noParens.replace(/[^a-zA-Z0-9 ]/g, '').trim();
                     const match = cleanPos.match(/\s([IVX]+)$/i);
                     let numberSuffix = '';
                     if (match) {
@@ -663,8 +660,8 @@ router.post('/export/email-docs', async (req, res) => {
                     else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
                     else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
                     else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
-                    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
-                    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+                    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LEA';
+                    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPSVR';
                     else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
                     else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
                     else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
@@ -818,13 +815,8 @@ router.get('/events/pdf-status', (req, res) => {
         res.write(': heartbeat\n\n');
     }, 15000);
 
-    const recycleTimer = setTimeout(() => {
-        res.end();
-    }, 45000);
-
     req.on('close', () => {
         clearInterval(heartbeat);
-        clearTimeout(recycleTimer);
         pdfEvents.removeListener('pdf-done', onPdfDone);
     });
 });

@@ -30,6 +30,7 @@ window.executeDeleteRecord = async function() {
             else if (modalType === 'train') { window.showToast('Successfully deleted!', 'success'); openTrainModal(applicantId); }
             else if (modalType === 'exp') { window.showToast('Successfully deleted!', 'success'); openExpModal(applicantId); }
             else if (modalType === 'elig') { window.showToast('Successfully deleted!', 'success'); openEligModal(applicantId); }
+            else if (modalType === 'perf') { window.showToast('Successfully deleted!', 'success'); openPerfModal(applicantId); }
             else {
                 window.showToast('Successfully deleted!', 'success');
                 const row = document.querySelector(`.applicant-name-display-${recordId}`)?.closest('tr');
@@ -53,17 +54,21 @@ async function openInfoModal(id) {
         document.getElementById('infoModalBody').innerHTML = `
             <form id="infoForm-${id}" class="mt-3 p-3 glass-panel rounded-4">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">First Name</label>
                         <input type="text" class="form-control" name="firstName" value="${app.firstName || ''}" required oninput="this.value = this.value.toUpperCase();">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Middle Name</label>
                         <input type="text" class="form-control" name="middleName" value="${app.middleName || ''}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Last Name</label>
                         <input type="text" class="form-control" name="lastName" value="${app.lastName || ''}" required oninput="this.value = this.value.toUpperCase();">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Ext.</label>
+                        <input type="text" class="form-control" name="nameExtension" value="${app.nameExtension || ''}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     
                     <div class="col-md-12 border rounded-3 p-3 bg-light">

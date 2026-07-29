@@ -112,7 +112,8 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     
     const getPosCode = (p) => {
         if (!p) return 'APP';
-        let cleanPos = p.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+        let noParens = p.replace(/\s*\(.*?\)/g, '');
+        let cleanPos = noParens.replace(/[^a-zA-Z0-9 ]/g, '').trim();
         const match = cleanPos.match(/\s([IVX]+)$/i);
         let numberSuffix = '';
         if (match) {
@@ -127,8 +128,8 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
         else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
         else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
         else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
-        else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
-        else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+        else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LEA';
+        else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPSVR';
         else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
         else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
         else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
@@ -140,7 +141,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
 
     const safeLName = app.lastName ? app.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const safeFName = app.firstName ? app.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const pCode = positionStandards?.position_code ? positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(pos);
+    const pCode = getPosCode(pos);
     const noticeType = templateName.replace(/[^a-zA-Z0-9]/g, '_');
     
     let incrementStr = '1';
@@ -220,8 +221,8 @@ $word.Quit()
         }
         
         if (!success) {
-            console.warn(`LibreOffice PDF conversion failed after ${maxRetries} attempts for ${appName}. Generating DOCX fallback.`);
-            fs.copyFileSync(inputPath, finalOutputPath.replace('.pdf', '.docx'));
+            console.error(`LibreOffice PDF conversion failed after ${maxRetries} attempts for ${appName}. Aborting.`);
+            throw new Error('Failed to generate PDF');
         }
     }
     

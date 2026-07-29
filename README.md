@@ -9,6 +9,7 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Cleaned up one-off debugging scripts and improved text label clarity for assessment dropdowns across dashboard views.
 - Fixed performance evaluation bypass and QS fields data-loss bug in the database seeding scripts.
 - Resolved docxtemplater "Multi error" exceptions by correcting malformed XML tags inside Assignment Order templates.
 - Removed redundant formatting labels (e.g., "Education: Education: ...") from Initial Evaluation Notice documents.

@@ -42,10 +42,10 @@ function getShortenedPosition(position) {
     const upperPos = position.toUpperCase();
     if (upperPos.includes('ADMINISTRATIVE ASSISTANT')) base = 'ADAS';
     else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
-    else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'AO';
+    else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
     else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
-    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
-    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LEA';
+    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPSVR';
     else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
     else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
     else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
@@ -166,7 +166,7 @@ exports.disqualifyApplicant = async (req, res) => {
                     failed++;
                 }
                 
-                pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: 'DISQUALIFIED', generated, failed, total: 1 });
+                pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: 'DISQUALIFIED', generated, failed, total: 1, source: 'auto' });
             }
         }).catch(err => console.error("DB error:", err));
 
@@ -201,7 +201,7 @@ exports.qualifyApplicant = async (req, res) => {
                     failed++;
                 }
                 
-                pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: 'QUALIFIED', generated, failed, total: 1 });
+                pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: 'QUALIFIED', generated, failed, total: 1, source: 'auto' });
             }
         }).catch(err => console.error("DB error:", err));
 
@@ -257,7 +257,7 @@ exports.pregeneratePdf = async (req, res) => {
                 console.error(`[Manual Auto-PDF] Failed "${targetTmpl}" for applicant ${app.id}:`, err.message);
                 failed++;
             }
-            pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: app.status, generated, failed, total: 1 });
+            pdfEvents.emit('pdf-done', { applicantId: app.id, name: `${app.firstName} ${app.lastName}`, status: app.status, generated, failed, total: 1, source: 'manual' });
         })();
         
     } catch (error) {
@@ -346,8 +346,7 @@ exports.assessApplicant = async (req, res) => {
             WHERE id = ?`, 
             [edu, trn, exp, prf, oac, aoe, ald, pot, pb, ppc, ppnc, sWe, sSwst, sBei, sPotPa, sPotPsa, mWe, mSwst, mBei, mPotPa, mPotPsa, finalTotal, assessmentRemarks, customRemarks, req.params.id]
         );
-        const delayMs = req.headers['x-is-seeding'] === 'true' ? 3600000 : 60000; // 1 hour vs 1 min
-        queuePregeneratedDocsDeletion(req.params.id, delayMs);
+        processSpecificDeletion(req.params.id, 0);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -720,8 +719,7 @@ exports.updatePerformanceGroup = async (req, res) => {
 exports.noAppearanceApplicant = async (req, res) => {
     try {
         await db.query(`UPDATE applicants SET status = 'NO_APPEARANCE', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, scorePbet = 0, scorePpstCoi = 0, scorePpstNcoi = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
-        const delayMs = req.headers['x-is-seeding'] === 'true' ? 3600000 : 60000;
-        queuePregeneratedDocsDeletion(req.params.id, delayMs);
+        processSpecificDeletion(req.params.id, 0);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -732,8 +730,7 @@ exports.noAppearanceApplicant = async (req, res) => {
 exports.newlyPromotedApplicant = async (req, res) => {
     try {
         await db.query(`UPDATE applicants SET status = 'NEWLY_PROMOTED', scoreEducation = 0, scoreTraining = 0, scoreExperience = 0, scorePerformance = 0, scoreOutstandingAccomplishments = 0, scoreApplicationOfEducation = 0, scoreApplicationOfLD = 0, scorePotential = 0, scorePbet = 0, scorePpstCoi = 0, scorePpstNcoi = 0, assessmentTotal = 0 WHERE id = ?`, [req.params.id]);
-        const delayMs = req.headers['x-is-seeding'] === 'true' ? 3600000 : 60000;
-        queuePregeneratedDocsDeletion(req.params.id, delayMs);
+        processSpecificDeletion(req.params.id, 0);
         res.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -741,72 +738,98 @@ exports.newlyPromotedApplicant = async (req, res) => {
     }
 };
 
-// Background queue for deleting documents
-const deletionQueue = [];
-let isDeleting = false;
-
-async function processDeletionQueue() {
-    if (isDeleting || deletionQueue.length === 0) return;
-    isDeleting = true;
-    
+// Background process for deleting documents individually
+async function processSpecificDeletion(appId, retries = 0) {
     const fs = require('fs').promises;
     const path = require('path');
     const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
     
-    while (deletionQueue.length > 0) {
-        const item = deletionQueue.shift();
-        const appId = typeof item === 'object' ? item.appId : item;
-        let retries = typeof item === 'object' ? item.retries : 0;
-        
-        let allDeletedSuccessfully = true;
+    let allDeletedSuccessfully = true;
 
-        try {
-            const [apps] = await db.query('SELECT firstName, lastName FROM applicants WHERE id = ?', [appId]);
-            if (apps && apps.length > 0) {
-                const app = apps[0];
-                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const prefix = `${cleanLName}_${cleanFName}_`;
-                const suffixPdf = `_${appId}.pdf`;
-                const suffixDocx = `_${appId}.docx`;
-                
-                const files = await fs.readdir(generatedDir).catch(() => []);
-                for (const file of files) {
-                    if (file.startsWith(prefix) && (file.endsWith(suffixPdf) || file.endsWith(suffixDocx))) {
-                        try {
-                            await fs.unlink(path.join(generatedDir, file));
-                        } catch (unlinkErr) {
-                            if (unlinkErr.code !== 'ENOENT') {
-                                allDeletedSuccessfully = false;
-                                console.warn(`Could not delete ${file}, will retry later.`);
-                            }
+    try {
+        const [apps] = await db.query('SELECT firstName, lastName FROM applicants WHERE id = ?', [appId]);
+        if (apps && apps.length > 0) {
+            const app = apps[0];
+            const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
+            const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
+            const prefix = `${cleanLName}_${cleanFName}_`;
+            const suffixPdf = `_${appId}.pdf`;
+            const suffixDocx = `_${appId}.docx`;
+            
+            const files = await fs.readdir(generatedDir).catch(() => []);
+            for (const file of files) {
+                if (file.startsWith(prefix) && (file.endsWith(suffixPdf) || file.endsWith(suffixDocx))) {
+                    try {
+                        await fs.unlink(path.join(generatedDir, file));
+                    } catch (unlinkErr) {
+                        if (unlinkErr.code !== 'ENOENT') {
+                            allDeletedSuccessfully = false;
+                            console.warn(`Could not delete ${file}, will retry later.`);
                         }
                     }
                 }
             }
-        } catch (e) {
-            console.error('Error processing deletion queue:', e);
-            allDeletedSuccessfully = false;
         }
+    } catch (e) {
+        console.error('Error processing specific deletion:', e);
+        allDeletedSuccessfully = false;
+    }
 
-        if (!allDeletedSuccessfully) {
-            retries++;
-            if (retries <= 20) {
-                deletionQueue.push({ appId, retries });
-                setTimeout(() => {
-                    if (!isDeleting) processDeletionQueue();
-                }, 5000); // Retry after 5 seconds
-                break; // Pause this batch to give the file system time to unlock
-            } else {
-                console.warn(`Failed to delete files for applicant ${appId} after 20 retries. Giving up.`);
-            }
+    if (!allDeletedSuccessfully) {
+        retries++;
+        if (retries <= 20) {
+            setTimeout(() => processSpecificDeletion(appId, retries), 5000); // Retry after 5 seconds
+        } else {
+            console.warn(`Failed to delete files for applicant ${appId} after 20 retries. Giving up.`);
         }
     }
-    isDeleting = false;
 }
 
 function queuePregeneratedDocsDeletion(appId, delayMs = 60000) {
-    deletionQueue.push({ appId, retries: 0 });
-    setTimeout(processDeletionQueue, delayMs); 
+    setTimeout(() => processSpecificDeletion(appId, 0), delayMs);
 }
+
+// Event-Driven Deletion Listener
+pdfEvents.on('pdf-done', async (data) => {
+    if (data.source === 'auto') {
+        try {
+            const [apps] = await db.query('SELECT status, assessmentRemarks FROM applicants WHERE id = ?', [data.applicantId]);
+            if (apps && apps.length > 0) {
+                const app = apps[0];
+                const shouldDelete = ['ASSESSED', 'WAITING', 'ASSIGNED', 'COMPLETE', 'NO_APPEARANCE', 'NEWLY_PROMOTED'].includes(app.status) || 
+                                     app.assessmentRemarks === 'Assessed' || 
+                                     app.assessmentRemarks === 'In-Prog';
+                if (shouldDelete) {
+                    processSpecificDeletion(data.applicantId, 0);
+                }
+            }
+        } catch (e) {
+            console.error('Error in pdf-done deletion listener:', e);
+        }
+    }
+});
+
+const cron = require('node-cron');
+
+// Cron job: run every day at 12:30 PM to clean up any orphaned PDFs
+cron.schedule('30 12 * * *', async () => {
+    console.log('[Cron] Running daily PDF cleanup at 12:30 PM...');
+    try {
+        const [apps] = await db.query('SELECT id FROM applicants WHERE status IN ("ASSESSED", "WAITING", "ASSIGNED", "COMPLETE", "NO_APPEARANCE", "NEWLY_PROMOTED") OR assessmentRemarks IN ("Assessed", "In-Prog")');
+        
+        if (apps && apps.length > 0) {
+            let queued = 0;
+            for (const app of apps) {
+                // This function safely checks and deletes files without throwing fatal errors
+                processSpecificDeletion(app.id, 0);
+                queued++;
+            }
+            console.log(`[Cron] Triggered cleanup for ${queued} applicants.`);
+        } else {
+            console.log('[Cron] No orphaned applicants found to clean up.');
+        }
+    } catch (e) {
+        console.error('[Cron] Error during daily PDF cleanup:', e);
+    }
+});
 

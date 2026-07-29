@@ -107,7 +107,8 @@ window.printInitialEvalQualified = async function(id) {
     
     const getPosCode = (p) => {
         if (!p) return 'APP';
-        let cleanPos = p.replace(/[^a-zA-Z0-9 ]/g, '').trim();
+        let noParens = p.replace(/\s*\(.*?\)/g, '');
+        let cleanPos = noParens.replace(/[^a-zA-Z0-9 ]/g, '').trim();
         const match = cleanPos.match(/\s([IVX]+)$/i);
         let numberSuffix = '';
         if (match) {
@@ -122,8 +123,8 @@ window.printInitialEvalQualified = async function(id) {
         else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
         else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
         else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
-        else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LA';
-        else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPS';
+        else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LEA';
+        else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPSVR';
         else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
         else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
         else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
@@ -135,7 +136,7 @@ window.printInitialEvalQualified = async function(id) {
 
     const cleanLName = applicantObj.lastName ? applicantObj.lastName.replace(/[^a-zA-Z0-9]/g, '') : '';
     const cleanFName = applicantObj.firstName ? applicantObj.firstName.replace(/[^a-zA-Z0-9]/g, '') : '';
-    const pCode = data.positionStandards?.position_code ? data.positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(pos);
+    const pCode = getPosCode(pos);
 
     let incrementStr = '1';
     if (applicantObj.applicationCode && applicantObj.applicationCode.includes('-')) {

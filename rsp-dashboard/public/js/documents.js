@@ -464,7 +464,7 @@ async function openPerfModal(id, editGroupId = null) {
                         <span class="fw-bold">Performance Set</span>
                         <div class="btn-group">
                             <button type="button" class="btn btn-sm btn-info text-white" onclick="openPerfModal(${id}, '${gId}')"><i class="bi bi-pencil"></i> Update</button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="deletePerfGroup('${gId}', ${id})"><i class="bi bi-trash"></i> Delete</button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('performance/group', '${gId}', ${id}, 'perf')"><i class="bi bi-trash"></i> Delete</button>
                         </div>
                     </div>
                     <ul class="list-group list-group-flush">
@@ -576,17 +576,4 @@ async function openPerfModal(id, editGroupId = null) {
             bootstrap.Modal.getOrCreateInstance(perfModalEl).show();
         }
     } catch (err) { window.showToast(err.message, 'danger'); }
-}
-
-async function deletePerfGroup(groupId, applicantId) {
-    if(!confirm("Are you sure you want to delete this performance group?")) return;
-    try {
-        const res = await fetch(`/api/performance/group/${groupId}`, { method: 'DELETE' });
-        if(res.ok) {
-            window.showToast('Successfully deleted', 'success');
-            openPerfModal(applicantId);
-        } else {
-            window.showToast('Error deleting record', 'danger');
-        }
-    } catch(err) { console.error(err); }
 }

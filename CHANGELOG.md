@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-29 (v1.5.8-Release)
+
+### Changed
+- **UI Labels**: Refactored training and assessment level option labels across views and controllers (e.g., using "to less than X hours") for better clarity.
+- **Project Maintenance**: Cleaned up the repository by removing obsolete one-off fixing and testing scripts (`apply_ea_calculator.js`, `fix_assessment.js`, `fix_labels.js`, `fix_options.js`).
+
 ## 2026-07-27 (v1.5.7-Release)
 
 ### Fixed

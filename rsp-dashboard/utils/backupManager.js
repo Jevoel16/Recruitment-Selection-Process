@@ -48,6 +48,7 @@ async function generateDailyBackups() {
     const now = new Date();
     // Using ISO format for date in filename: YYYY-MM-DD
     const dateStr = now.toISOString().split('T')[0]; 
+    const timestamp = Date.now();
     
     // 1. Generate JSON Backup
     const backupData = {
@@ -57,7 +58,7 @@ async function generateDailyBackups() {
         },
         data: data
     };
-    const jsonFilename = `RSP-Backup-${dateStr}.json`;
+    const jsonFilename = `RSP-Backup-${dateStr}-${timestamp}.json`;
     await fs.writeFile(path.join(BACKUP_DIR, jsonFilename), JSON.stringify(backupData, null, 2));
     
     // 2. Generate CSV Zip Backup
@@ -69,7 +70,7 @@ async function generateDailyBackups() {
     zip.file('eligibility.csv', jsonToCsv(data.eligibility));
     
     const content = zip.generate({ type: 'nodebuffer' });
-    const csvFilename = `RSP-Backup-CSV-${dateStr}.zip`;
+    const csvFilename = `RSP-Backup-CSV-${dateStr}-${timestamp}.zip`;
     await fs.writeFile(path.join(BACKUP_DIR, csvFilename), content);
     
     console.log(`[Backup] Automated backups generated for ${dateStr}`);

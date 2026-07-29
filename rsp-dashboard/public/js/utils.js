@@ -4,7 +4,20 @@
  * @param {string} type - 'success', 'danger', 'warning', 'info'
  * @param {boolean} reload - Whether to reload the page after showing the toast
  */
+window.toastQueue = window.toastQueue || [];
+window.isToastShowing = window.isToastShowing || false;
+
 window.showToast = function(message, type = 'info', reload = false) {
+    window.toastQueue.push({ message, type, reload });
+    processToastQueue();
+};
+
+function processToastQueue() {
+    if (window.isToastShowing || window.toastQueue.length === 0) return;
+
+    window.isToastShowing = true;
+    const { message, type, reload } = window.toastQueue.shift();
+
     const container = document.querySelector('.toast-container');
     const template = document.getElementById('globalToastTemplate');
     
@@ -12,16 +25,10 @@ window.showToast = function(message, type = 'info', reload = false) {
         console.warn('Toast elements not found. Message:', message);
         alert(message);
         if (reload) window.location.reload();
+        
+        window.isToastShowing = false;
+        processToastQueue();
         return;
-    }
-
-    // Maintain max 5 toasts (remove oldest if needed)
-    const activeToasts = container.querySelectorAll('.toast:not(#globalToastTemplate)');
-    if (activeToasts.length >= 5) {
-        const oldestToast = activeToasts[0];
-        const bsToast = bootstrap.Toast.getInstance(oldestToast);
-        if (bsToast) bsToast.hide();
-        else oldestToast.remove();
     }
 
     // Clone the template
@@ -44,6 +51,13 @@ window.showToast = function(message, type = 'info', reload = false) {
     
     toastEl.addEventListener('hidden.bs.toast', () => {
         toastEl.remove();
+        window.isToastShowing = false;
+        
+        if (reload) {
+            window.location.reload();
+        } else {
+            processToastQueue();
+        }
     });
 
     if (reload) {
@@ -53,14 +67,10 @@ window.showToast = function(message, type = 'info', reload = false) {
             const instance = bootstrap.Modal.getInstance(m);
             if (instance) instance.hide();
         });
-
-        toastEl.addEventListener('hidden.bs.toast', () => {
-            window.location.reload();
-        }, { once: true });
     }
 
     toast.show();
-};
+}
 
 window.submitSearch = function(form) {
     if (form.position) form.position.value = '';
