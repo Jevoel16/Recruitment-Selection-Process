@@ -9,7 +9,8 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
-- Implemented an event-driven `pdfEvents` deletion hook and a daily `node-cron` fallback job to robustly clean up orphaned pre-generated documents.
+- Cleaned up the repository by removing auto-generated PDF notices, temporary Word lock files, and unused variables.
+- Optimized Excel export column layouts.
 - Cleaned up one-off debugging scripts and improved text label clarity for assessment dropdowns across dashboard views.
 - Fixed performance evaluation bypass and QS fields data-loss bug in the database seeding scripts.
 - Resolved docxtemplater "Multi error" exceptions by correcting malformed XML tags inside Assignment Order templates.

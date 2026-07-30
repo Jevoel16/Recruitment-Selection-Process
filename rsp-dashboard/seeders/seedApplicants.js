@@ -5,8 +5,6 @@ const path = require('path');
 const positionsData = require('./seed_positions.js');
 
 // --- SETTINGS ---
-const CATEGORY_MODE = 'specific'; // 'specific' or 'random'
-const SPECIFIC_CATEGORIES = ['Non-Teaching'];
 const TOTAL_APPLICANTS = 1000;
 const API_BASE = `http://localhost:${process.env.PORT || 3000}/api`;
 

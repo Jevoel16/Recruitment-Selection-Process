@@ -2,6 +2,13 @@
 
 ## 2026-07-30 (v1.5.9-Release)
 
+### Changed
+- **Project Maintenance**: Purged over 150 auto-generated PDF notices from the repository and deleted temporary Microsoft Word lock files.
+- **Seeder Optimization**: Cleared out verbose default disqualification reasons and removed unused variables in the applicants seeder.
+- **Excel Exports**: Updated Excel layout columns in IER generation using explicit pixel-to-character functions.
+
+## 2026-07-29 (v1.5.8-Release)
+
 ### Added
 - **Event-Driven PDF Deletion**: Hooked into `pdfEvents` to trigger immediate background deletion of orphaned pre-generated documents for applicants who have already transitioned to Step 3, completely eliminating a prior race condition.
 - **Daily Cron Cleanup**: Implemented a `node-cron` fallback job running at 12:30 PM daily to securely sweep the `generated_notices` folder and delete any stray documents.
