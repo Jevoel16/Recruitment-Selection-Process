@@ -613,18 +613,7 @@ router.post('/export/email-docs', async (req, res) => {
 
         for (const app of applicants) {
             try {
-                const pos = app.position || '';
-                const posUpper = String(pos || '').toUpperCase();
-                const isHigherTeaching = /^(TEACHER (II|III|IV|V|VI|VII)|MASTER TEACHER (I|II|III|IV|V))\b/.test(posUpper);
 
-                const isQualified = app.status === 'QUALIFIED' || app.status === 'WAITING_FOR_ASSESSMENT' || app.status === 'ASSESSED' || app.status === 'NO_APPEARANCE' || app.status === 'NEWLY_PROMOTED' || app.status === 'WAITING' || app.status === 'ASSIGNED' || app.status === 'COMPLETED';
-                
-                let resolvedTemplateName = '';
-                if (isQualified) {
-                    resolvedTemplateName = isHigherTeaching ? 'Notice to Qualified - Higher Teaching' : 'Notice to Qualified - Without Date of Assessment';
-                } else {
-                    resolvedTemplateName = isHigherTeaching ? 'Notice to DQ - Higher Teaching' : 'Notice to DQ';
-                }
 
                 const baseName = `Notice_${app.id}`;
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');

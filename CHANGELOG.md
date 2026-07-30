@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-30 (v1.5.11-Release)
+
+### Changed
+- **Repository Maintenance**: Removed unused dependencies (`chart.js`, `html-docx-js`) from package.json, deleted the obsolete `convert.ps1` script, and pruned dead code in the API routes.
+
 ## 2026-07-30 (v1.5.10-Release)
 
 ### Added
