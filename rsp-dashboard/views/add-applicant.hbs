@@ -13,7 +13,7 @@
                 <!-- Step 0: Category & Position -->
                 <div id="wizardStep0">
                     <div id="categorySelectionContainer">
-                        <div class="row mb-4">
+                        <div class="row mb-4" id="categorySearchContainer">
                             <div class="col-md-4">
                                 <div class="input-group glass-panel h-100 shadow-sm">
                                     <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterWizardCategories()"><i class="bi bi-search text-primary"></i></span>
@@ -29,6 +29,16 @@
                                     <span class="fs-5">{{this.categoryName}}</span>
                                 </button>
                             </div>
+                            {{else}}
+                            <div class="col-12 text-center p-5 text-muted glass-panel rounded-4">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                <h5 class="fw-semibold">No category available</h5>
+                                <p class="mb-0 small opacity-75">There are no vacant positions available.</p>
+                            </div>
+                            <style>
+                                #categorySearchContainer { display: none !important; }
+                                #categoryEmptyState { display: none !important; }
+                            </style>
                             {{/each}}
                         </div>
                         <div id="categoryEmptyState" class="d-none text-center p-5 text-muted glass-panel rounded-4">

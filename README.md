@@ -9,6 +9,9 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Added an empty state visual prompt in the applicant category selection when no vacancies are available.
+- Simplified generated notice filenames and dynamically formatted email attachment names.
+- Implemented native Word XML insertion to display disqualified fields in red font inside docxtemplater evaluation notices.
 - Cleaned up the repository by removing auto-generated PDF notices, temporary Word lock files, and unused variables.
 - Optimized Excel export column layouts.
 - Cleaned up one-off debugging scripts and improved text label clarity for assessment dropdowns across dashboard views.

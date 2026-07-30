@@ -314,12 +314,9 @@ router.get('/export/check-generated-docs', async (req, res) => {
         const files = fs.readdirSync(generatedDir);
         
         const readyIds = files
-            .filter(f => (f.endsWith('.pdf') || f.endsWith('.docx')) && (
-                 f.includes('_Notice_to_DQ') || 
-                 f.includes('_Notice_to_Qualified')
-            ))
+            .filter(f => f.startsWith('Notice_') && (f.endsWith('.pdf') || f.endsWith('.docx')))
             .map(f => {
-                 const match = f.match(/_(\d+)\.(pdf|docx)$/);
+                 const match = f.match(/Notice_(\d+)\.(pdf|docx)$/);
                  return match ? parseInt(match[1]) : NaN;
             })
             .filter(id => !isNaN(id));
@@ -384,6 +381,25 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 const [training] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [app.id]);
                 const [experience] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [app.id]);
                 const [eligibility] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [app.id]);
+                const [performance] = await db.query('SELECT * FROM applicant_performance WHERE applicant_id = ? ORDER BY id ASC', [app.id]);
+                
+                let rating1 = '', rating2 = '', rating3 = '';
+                let rmPerf = 'Disqualified';
+                if (performance && performance.length > 0) {
+                    const perfRecords = performance.slice(0, 3);
+                    const formatRating = (p) => p ? `${p.ratingPeriod || ''}: ${p.rating || ''} ${p.letterGrade ? '(' + p.letterGrade + ')' : ''}`.trim() : '';
+                    rating1 = formatRating(perfRecords[0]);
+                    rating2 = formatRating(perfRecords[1]);
+                    rating3 = formatRating(perfRecords[2]);
+
+                    if (perfRecords.some(p => p.status === 'DISQUALIFIED')) {
+                        rmPerf = 'Unmet';
+                    } else if (perfRecords.every(p => p.status === 'QUALIFIED')) {
+                        rmPerf = 'Met';
+                    } else {
+                        rmPerf = 'Pending';
+                    }
+                }
                 
                 let positionStandards = null;
                 if (app.position) {
@@ -452,21 +468,27 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                     ApplicationCode: appCode,
                     ReasonText: reasonText,
                     
-                    QSEducation: positionStandards?.qsEducation ? 'Education: ' + cleanText(positionStandards.qsEducation) : '',
-                    AppEducation: cleanText((education || []).map(e => e.degree || e.title).join(', ')) || '',
-                    RmEducation: getRemark(education),
+                    QSEducation: positionStandards?.qsEducation ? cleanText(positionStandards.qsEducation) : '',
+                    AppEducation: (getRemark(education) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((education || []).map(e => e.degree || e.title).join(', ')) || ''),
+                    RmEducation: (getRemark(education) === 'Disqualified' ? '@@RED@@' : '') + getRemark(education),
 
-                    QSTraining: positionStandards?.qsTraining ? 'Training: ' + cleanText(positionStandards.qsTraining) : '',
-                    AppTraining: cleanText((training || []).map(e => e.title).join(', ')) || '',
-                    RmTraining: getRemark(training),
+                    QSTraining: positionStandards?.qsTraining ? cleanText(positionStandards.qsTraining) : '',
+                    AppTraining: (getRemark(training) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((training || []).map(e => e.title).join(', ')) || ''),
+                    RmTraining: (getRemark(training) === 'Disqualified' ? '@@RED@@' : '') + getRemark(training),
 
-                    QSExperience: positionStandards?.qsExperience ? 'Experience: ' + cleanText(positionStandards.qsExperience) : '',
-                    AppExperience: cleanText((experience || []).map(e => e.details).join(', ')) || '',
-                    RmExperience: getRemark(experience),
+                    QSExperience: positionStandards?.qsExperience ? cleanText(positionStandards.qsExperience) : '',
+                    AppExperience: (getRemark(experience) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((experience || []).map(e => e.details).join(', ')) || ''),
+                    RmExperience: (getRemark(experience) === 'Disqualified' ? '@@RED@@' : '') + getRemark(experience),
 
-                    QSEligibility: positionStandards?.qsEligibility ? 'Eligibility: ' + cleanText(positionStandards.qsEligibility) : '',
-                    AppEligibility: cleanText((eligibility || []).map(e => e.title || e.details).join(', ')) || '',
-                    RmEligibility: getRemark(eligibility),
+                    QSEligibility: positionStandards?.qsEligibility ? cleanText(positionStandards.qsEligibility) : '',
+                    AppEligibility: (getRemark(eligibility) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((eligibility || []).map(e => e.title || e.details).join(', ')) || ''),
+                    RmEligibility: (getRemark(eligibility) === 'Disqualified' ? '@@RED@@' : '') + getRemark(eligibility),
+
+                    QSPerformance: positionStandards?.qsPerformance ? cleanText(positionStandards.qsPerformance) : '',
+                    Rating1: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + rating1,
+                    Rating2: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + rating2,
+                    Rating3: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + rating3,
+                    RmPerformance: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + rmPerf,
 
                     Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`
                 };
@@ -474,52 +496,16 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 const zip = new PizZip(content);
                 const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
                 doc.render(templateData);
-                const buf = doc.getZip().generate({ type: 'nodebuffer' });
-
-                const getPosCode = (p) => {
-                    if (!p) return 'APP';
-                    let noParens = p.replace(/\s*\(.*?\)/g, '');
-                    let cleanPos = noParens.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-                    const match = cleanPos.match(/\s([IVX]+)$/i);
-                    let numberSuffix = '';
-                    if (match) {
-                        const roman = match[1].toUpperCase();
-                        const romanMap = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10 };
-                        numberSuffix = romanMap[roman] || '';
-                        cleanPos = cleanPos.substring(0, cleanPos.length - match[0].length).trim();
-                    }
-                    let base = '';
-                    const upperPos = p.toUpperCase();
-                    if (upperPos.includes('ADMINISTRATIVE ASSISTANT')) base = 'ADAS';
-                    else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
-                    else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
-                    else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
-                    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LEA';
-                    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPSVR';
-                    else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
-                    else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
-                    else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
-                    else if (upperPos.includes('TEACHER')) base = 'T';
-                    else if (upperPos.includes('WATCHMAN')) base = 'WCH';
-                    else { base = cleanPos.split(/\s+/).map(w => w[0]).join('').toUpperCase(); }
-                    return base + numberSuffix;
-                };
-
-                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const pCode = app.position_code ? app.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(app.position);
-                const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
                 
-                let incrementStr = '1';
-                if (app.applicationCode && app.applicationCode.includes('-')) {
-                    const parts = app.applicationCode.split('-');
-                    const parsedInc = parseInt(parts[parts.length - 1], 10);
-                    if (!isNaN(parsedInc)) incrementStr = parsedInc.toString();
+                const outZip = doc.getZip();
+                let xmlContent = outZip.file("word/document.xml").asText();
+                if (xmlContent.includes('@@RED@@')) {
+                    xmlContent = xmlContent.replace(/<w:t([^>]*)>([^<]*)@@RED@@([^<]*)<\/w:t>/g, '<w:t$1>$2</w:t></w:r><w:r><w:rPr><w:color w:val="FF0000"/></w:rPr><w:t$1>$3</w:t>');
+                    outZip.file("word/document.xml", xmlContent);
                 }
-                const vacNoStr = app.vacancyAnnouncementNo || '000';
-                const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
-                
-                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}_${app.id}`;
+                const buf = outZip.generate({ type: 'nodebuffer' });
+
+                const baseName = `Notice_${app.id}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 fs.mkdirSync(tempDir, { recursive: true });
                 const inputPath = path.join(tempDir, baseName + '.docx');
@@ -640,61 +626,23 @@ router.post('/export/email-docs', async (req, res) => {
                     resolvedTemplateName = isHigherTeaching ? 'Notice to DQ - Higher Teaching' : 'Notice to DQ';
                 }
 
-                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const getPosCode = (p) => {
-                    if (!p) return 'APP';
-                    let noParens = p.replace(/\s*\(.*?\)/g, '');
-                    let cleanPos = noParens.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-                    const match = cleanPos.match(/\s([IVX]+)$/i);
-                    let numberSuffix = '';
-                    if (match) {
-                        const roman = match[1].toUpperCase();
-                        const romanMap = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10 };
-                        numberSuffix = romanMap[roman] || '';
-                        cleanPos = cleanPos.substring(0, cleanPos.length - match[0].length).trim();
-                    }
-                    let base = '';
-                    const upperPos = p.toUpperCase();
-                    if (upperPos.includes('ADMINISTRATIVE ASSISTANT')) base = 'ADAS';
-                    else if (upperPos.includes('ADMINISTRATIVE AIDE')) base = 'ADA';
-                    else if (upperPos.includes('ADMINISTRATIVE OFFICER')) base = 'ADOF';
-                    else if (upperPos.includes('PROJECT DEVELOPMENT OFFICER')) base = 'PDO';
-                    else if (upperPos.includes('LEGAL ASSISTANT')) base = 'LEA';
-                    else if (upperPos.includes('EDUCATION PROGRAM SUPERVISOR')) base = 'EPSVR';
-                    else if (upperPos.includes('SCHOOL PRINCIPAL') || upperPos.includes('PRINCIPAL')) base = 'SP';
-                    else if (upperPos.includes('HEAD TEACHER')) base = 'HT';
-                    else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
-                    else if (upperPos.includes('TEACHER')) base = 'T';
-                    else if (upperPos.includes('WATCHMAN')) base = 'WCH';
-                    else { base = cleanPos.split(/\s+/).map(w => w[0]).join('').toUpperCase(); }
-                    return base + numberSuffix;
-                };
-                const pCode = app.position_code ? app.position_code.replace(/[^a-zA-Z0-9]/g, '') : getPosCode(app.position);
-                const noticeType = resolvedTemplateName.replace(/[^a-zA-Z0-9]/g, '_');
-
-                let incrementStr = '1';
-                if (app.applicationCode && app.applicationCode.includes('-')) {
-                    const parts = app.applicationCode.split('-');
-                    const parsedInc = parseInt(parts[parts.length - 1], 10);
-                    if (!isNaN(parsedInc)) incrementStr = parsedInc.toString();
-                }
-                const vacNoStr = app.vacancyAnnouncementNo || '000';
-                const combinedCode = `${pCode}-${incrementStr}-${vacNoStr}`;
-
-                const baseName = `${cleanLName}_${cleanFName}_${combinedCode}_${noticeType}_${app.id}`;
+                const baseName = `Notice_${app.id}`;
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');
                 const docxPath = path.join(generatedDir, baseName + '.docx');
                 
                 let attachmentBuf;
                 let attachmentName;
 
+                const safeLName = (app.lastName || '').replace(/[/\\?%*:|"<>]/g, '').trim();
+                const safeFName = (app.firstName || '').replace(/[/\\?%*:|"<>]/g, '').trim();
+                const displayFilename = `${safeLName}, ${safeFName} - Notice of Evaluation`;
+
                 if (fs.existsSync(pdfPath)) {
                     attachmentBuf = fs.readFileSync(pdfPath);
-                    attachmentName = `${cleanLName}_${cleanFName}_Notice_of_Evaluation.pdf`;
+                    attachmentName = `${displayFilename}.pdf`;
                 } else if (fs.existsSync(docxPath)) {
                     attachmentBuf = fs.readFileSync(docxPath);
-                    attachmentName = `${cleanLName}_${cleanFName}_Notice_of_Evaluation.docx`;
+                    attachmentName = `${displayFilename}.docx`;
                 } else {
                     throw new Error(`Pre-generated file not found for Applicant ID ${app.id}. Please click "Pre-Generate PDFs" first.`);
                 }

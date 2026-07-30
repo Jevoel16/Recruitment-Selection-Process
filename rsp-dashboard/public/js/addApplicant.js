@@ -7,7 +7,10 @@
         const query = document.getElementById('categorySearch').value.toLowerCase();
         let anyMatch = false;
         
-        document.querySelectorAll('.category-btn').forEach(btn => {
+        const btns = document.querySelectorAll('.category-btn');
+        if (btns.length === 0) return;
+        
+        btns.forEach(btn => {
             const catName = btn.getAttribute('data-category');
             const colDiv = btn.closest('.col-md-6');
             

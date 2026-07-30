@@ -83,26 +83,26 @@ window.printInitialEvalDQ = async function(id) {
         ReasonText: reasonText,
         
         QSEducation: data.positionStandards?.qsEducation ? cleanText(data.positionStandards.qsEducation) : '',
-        AppEducation: cleanText((data.education || []).map(e => e.degree || e.title).join(', ')) || '',
-        RmEducation: getRemark(data.education),
+        AppEducation: (getRemark(data.education) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((data.education || []).map(e => e.degree || e.title).join(', ')) || ''),
+        RmEducation: (getRemark(data.education) === 'Disqualified' ? '@@RED@@' : '') + getRemark(data.education),
 
         QSTraining: data.positionStandards?.qsTraining ? cleanText(data.positionStandards.qsTraining) : '',
-        AppTraining: cleanText((data.training || []).map(e => e.title).join(', ')) || '',
-        RmTraining: getRemark(data.training),
+        AppTraining: (getRemark(data.training) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((data.training || []).map(e => e.title).join(', ')) || ''),
+        RmTraining: (getRemark(data.training) === 'Disqualified' ? '@@RED@@' : '') + getRemark(data.training),
 
         QSExperience: data.positionStandards?.qsExperience ? cleanText(data.positionStandards.qsExperience) : '',
-        AppExperience: cleanText((data.experience || []).map(e => e.details).join(', ')) || '',
-        RmExperience: getRemark(data.experience),
+        AppExperience: (getRemark(data.experience) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((data.experience || []).map(e => e.details).join(', ')) || ''),
+        RmExperience: (getRemark(data.experience) === 'Disqualified' ? '@@RED@@' : '') + getRemark(data.experience),
 
         QSEligibility: data.positionStandards?.qsEligibility ? cleanText(data.positionStandards.qsEligibility) : '',
-        AppEligibility: cleanText((data.eligibility || []).map(e => e.title || e.details).join(', ')) || '',
-        RmEligibility: getRemark(data.eligibility),
+        AppEligibility: (getRemark(data.eligibility) === 'Disqualified' ? '@@RED@@' : '') + (cleanText((data.eligibility || []).map(e => e.title || e.details).join(', ')) || ''),
+        RmEligibility: (getRemark(data.eligibility) === 'Disqualified' ? '@@RED@@' : '') + getRemark(data.eligibility),
 
         QSPerformance: data.positionStandards?.qsPerformance ? cleanText(data.positionStandards.qsPerformance) : '',
-        Rating1: rating1 || '',
-        Rating2: rating2 || '',
-        Rating3: rating3 || '',
-        RmPerformance: rmPerf || '',
+        Rating1: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + (rating1 || ''),
+        Rating2: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + (rating2 || ''),
+        Rating3: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + (rating3 || ''),
+        RmPerformance: (rmPerf === 'Unmet' || rmPerf === 'Disqualified' ? '@@RED@@' : '') + (rmPerf || ''),
 
         Remarks: `JSD/MPM/ABQ/KMJ - ${remarksDate}`
     };

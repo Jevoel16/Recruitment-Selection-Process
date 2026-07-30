@@ -53,8 +53,15 @@ window.exportFromTemplate = async (templateUrl, data, filename) => {
 
         doc.render(data);
 
+        const outZip = doc.getZip();
+        let xmlContent = outZip.file("word/document.xml").asText();
+        if (xmlContent.includes('@@RED@@')) {
+            xmlContent = xmlContent.replace(/<w:t([^>]*)>([^<]*)@@RED@@([^<]*)<\/w:t>/g, '<w:t$1>$2</w:t></w:r><w:r><w:rPr><w:color w:val="FF0000"/></w:rPr><w:t$1>$3</w:t>');
+            outZip.file("word/document.xml", xmlContent);
+        }
+
         // Generate blob for DOCX download
-        const outBlob = doc.getZip().generate({
+        const outBlob = outZip.generate({
             type: "blob",
             mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         });

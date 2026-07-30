@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-30 (v1.5.10-Release)
+
+### Added
+- **UI Enhancements**: Added an empty state visual prompt in the category selection modal when no vacancies/categories are available.
+
+### Changed
+- **Document Generation**: Simplified internal generated notice filenames to `Notice_[ID]`. Email attachments are now dynamically renamed to `[LastName], [FirstName] - Notice of Evaluation`.
+- **Document Formatting**: Implemented native Word XML replacement for `@@RED@@` tags to properly render red font styling on disqualified qualification fields (Education, Training, Experience, Eligibility, Performance) inside the evaluation notices.
+
 ## 2026-07-30 (v1.5.9-Release)
 
 ### Changed
