@@ -121,32 +121,35 @@ function generateIERSheet(workbook, exportType, sheetName, positionFilter, posDa
 
     const baseFont = { name: 'Bookman Old Style', size: 10 };
 
+    const px2Char = (px) => Math.round((px - 5) / 7 * 100) / 100;
+
     let cols = [];
-    cols.push({ width: 6.0 }); // B (No.)
-    cols.push({ width: 16.44 }); // C (App Code)
+    cols.push({ width: px2Char(54) }); // B (No.)
+    cols.push({ width: px2Char(148) }); // C (App Code)
     
-    if (showName) cols.push({ width: 32.22 }); // D (Name)
+    if (showName) cols.push({ width: px2Char(290) }); // D (Name)
     
     if (showDetails) {
-        cols.push({ width: 27.66 }); // E (Address)
-        cols.push({ width: 8.78 }); // F (Age)
-        cols.push({ width: 12.22 }); // G (Sex)
-        cols.push({ width: 13.78 }); // H (Civil Status)
-        cols.push({ width: 16.78 }); // I (Religion)
-        cols.push({ width: 13.22 }); // J (Disability)
-        cols.push({ width: 12.22 }); // K (Ethnic Group)
-        cols.push({ width: 32.78 }); // L (Email Address)
-        cols.push({ width: 18.0 }); // M (Contact No.)
+        cols.push({ width: 18.0 }); // E (Address)
+        cols.push({ width: 6.0 }); // F (Age)
+        cols.push({ width: 8.0 }); // G (Sex)
+        cols.push({ width: 9.0 }); // H (Civil Status)
+        cols.push({ width: 10.0 }); // I (Religion)
+        cols.push({ width: 9.0 }); // J (Disability)
+        cols.push({ width: 8.0 }); // K (Ethnic Group)
+        cols.push({ width: 20.0 }); // L (Email Address)
+        cols.push({ width: 12.0 }); // M (Contact No.)
     }
     
-    cols.push({ width: 35.22 }); // N (Education)
-    cols.push({ width: 46.22 }); // O (Training Title)
-    cols.push({ width: 9.0 }); // P (Training Hours)
-    cols.push({ width: 21.22 }); // Q (Experience Details)
-    cols.push({ width: 12.22 }); // R (Experience Years)
-    cols.push({ width: 21.0 }); // S (Eligibility)
-    cols.push({ width: 21.78 }); // T (Remarks (Qualified or Disqualified))
-    cols.push({ width: 21.78 }); // U (Remarks (Reason))
+    cols.push({ width: px2Char(270) }); // Education
+    cols.push({ width: px2Char(317) }); // Training Title
+    cols.push({ width: px2Char(416) }); // Training Hours
+    cols.push({ width: px2Char(81) });  // Experience Details
+    cols.push({ width: px2Char(191) }); // Experience Years
+    cols.push({ width: px2Char(109) }); // Eligibility
+    cols.push({ width: px2Char(189) }); // Remarks (Q/D)
+    cols.push({ width: px2Char(196) }); // Remarks (Reason)
+    cols.push({ width: px2Char(196) }); // Extra column (M or L)
 
     sheet.columns = [{ width: 1.22 }, ...cols].map(c => ({ ...c, style: { font: { name: 'Bookman Old Style', size: 10 } } }));
 

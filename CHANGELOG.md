@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-30 (v1.5.9-Release)
+
+### Added
+- **Event-Driven PDF Deletion**: Hooked into `pdfEvents` to trigger immediate background deletion of orphaned pre-generated documents for applicants who have already transitioned to Step 3, completely eliminating a prior race condition.
+- **Daily Cron Cleanup**: Implemented a `node-cron` fallback job running at 12:30 PM daily to securely sweep the `generated_notices` folder and delete any stray documents.
+
+### Changed
+- **PDF Generation**: Removed the `.docx` conversion fallback on Linux servers when LibreOffice fails, instead strictly throwing an error to match the native Windows behavior.
+- **Excel Exports**: Updated `exceljsIER.js` to utilize dynamic column width generation formulas (`px2Char`) for improved formatting.
+- **Seeder Disqualification**: Removed hardcoded textual rejection reasons in `seedApplicants.js` API payload, allowing the controller to handle it dynamically.
+
 ## 2026-07-29 (v1.5.8-Release)
 
 ### Changed
