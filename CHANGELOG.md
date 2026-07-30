@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-30 (v1.5.12-Release)
+
+### Changed
+- **Document Generation**: Expanded the generated notice filenames from `Notice_[ID]` to a comprehensive format: `[LastName]_[FirstName]_[PosCode]-[Increment]-[VacancyNo]_[NoticeType]_[ID]`.
+
 ## 2026-07-30 (v1.5.11-Release)
 
 ### Changed

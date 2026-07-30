@@ -314,9 +314,9 @@ router.get('/export/check-generated-docs', async (req, res) => {
         const files = fs.readdirSync(generatedDir);
         
         const readyIds = files
-            .filter(f => f.startsWith('Notice_') && (f.endsWith('.pdf') || f.endsWith('.docx')))
+            .filter(f => f.endsWith('.pdf') || f.endsWith('.docx'))
             .map(f => {
-                 const match = f.match(/Notice_(\d+)\.(pdf|docx)$/);
+                 const match = f.match(/_(\d+)\.(pdf|docx)$/);
                  return match ? parseInt(match[1]) : NaN;
             })
             .filter(id => !isNaN(id));
@@ -505,7 +505,17 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 }
                 const buf = outZip.generate({ type: 'nodebuffer' });
 
-                const baseName = `Notice_${app.id}`;
+                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const posCode = (app.position_code || 'UnknownPos').replace(/[^a-zA-Z0-9]/g, '');
+                const vacancyNo = (app.vacancyAnnouncementNo || 'UnknownVac').replace(/[^a-zA-Z0-9]/g, '');
+                let increment = '0000';
+                if (app.applicationCode) {
+                    const parts = app.applicationCode.split('-');
+                    if (parts.length > 0) increment = parts[parts.length - 1];
+                }
+                const noticeType = 'NoticeOfEvaluation';
+                const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 fs.mkdirSync(tempDir, { recursive: true });
                 const inputPath = path.join(tempDir, baseName + '.docx');
@@ -615,7 +625,19 @@ router.post('/export/email-docs', async (req, res) => {
             try {
 
 
-                const baseName = `Notice_${app.id}`;
+                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
+                const posCode = (app.position_code || 'UnknownPos').replace(/[^a-zA-Z0-9]/g, '');
+                const vacancyNo = (app.vacancyAnnouncementNo || 'UnknownVac').replace(/[^a-zA-Z0-9]/g, '');
+                
+                let increment = '0000';
+                if (app.applicationCode) {
+                    const parts = app.applicationCode.split('-');
+                    if (parts.length > 0) increment = parts[parts.length - 1];
+                }
+                const noticeType = 'NoticeOfEvaluation';
+
+                const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');
                 const docxPath = path.join(generatedDir, baseName + '.docx');
                 

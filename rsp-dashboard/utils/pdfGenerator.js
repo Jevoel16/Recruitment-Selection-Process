@@ -142,7 +142,25 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
     fs.mkdirSync(tempDir, { recursive: true });
     
-    const baseName = `Notice_${app.id}`;
+    const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
+    const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
+    const posCode = (positionStandards && positionStandards.position_code ? positionStandards.position_code : 'UnknownPos').replace(/[^a-zA-Z0-9]/g, '');
+    const vacancyNo = (app.vacancyAnnouncementNo || (positionStandards ? positionStandards.vacancyAnnouncementNo : 'UnknownVac') || 'UnknownVac').replace(/[^a-zA-Z0-9]/g, '');
+    
+    let increment = '0000';
+    if (app.applicationCode) {
+        const parts = app.applicationCode.split('-');
+        if (parts.length > 0) increment = parts[parts.length - 1];
+    }
+    
+    let noticeType = 'NoticeOfEvaluation';
+    if (templateName.includes('Notice to DQ')) {
+        noticeType = 'Notice_to_DQ';
+    } else if (templateName.includes('Notice to Qualified')) {
+        noticeType = 'Notice_to_Qualified';
+    }
+
+    const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
     
     const inputPath = path.join(tempDir, baseName + '.docx');
     fs.writeFileSync(inputPath, buf);

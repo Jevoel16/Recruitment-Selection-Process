@@ -9,6 +9,7 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- Expanded the generated notice filenames to include the applicant's name, position code, increment, and vacancy details.
 - Cleaned up the repository by removing obsolete scripts (`convert.ps1`), unused npm packages, and dead routing code.
 - Added an empty state visual prompt in the applicant category selection when no vacancies are available.
 - Simplified generated notice filenames and dynamically formatted email attachment names.
