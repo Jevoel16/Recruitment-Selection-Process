@@ -507,13 +507,25 @@ router.post('/export/pre-generate-docs', async (req, res) => {
 
                 const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const posCode = (app.position_code || 'UnknownPos').replace(/[^a-zA-Z0-9]/g, '');
-                const vacancyNo = (app.vacancyAnnouncementNo || 'UnknownVac').replace(/[^a-zA-Z0-9]/g, '');
+                
+                let posCode = 'UnknownPos';
+                let vacancyNo = 'UnknownVac';
                 let increment = '0000';
                 if (app.applicationCode) {
                     const parts = app.applicationCode.split('-');
-                    if (parts.length > 0) increment = parts[parts.length - 1];
+                    if (parts.length >= 4) {
+                        posCode = parts[0];
+                        vacancyNo = parts[1];
+                        increment = parts[3];
+                    } else if (parts.length > 0) {
+                        posCode = parts[0];
+                        increment = parts[parts.length - 1];
+                    }
+                } else {
+                    if (app.position_code) posCode = app.position_code.replace(/[^a-zA-Z0-9]/g, '');
+                    if (app.vacancyAnnouncementNo) vacancyNo = app.vacancyAnnouncementNo.replace(/[^a-zA-Z0-9]/g, '');
                 }
+                
                 const noticeType = 'NoticeOfEvaluation';
                 const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
@@ -627,14 +639,25 @@ router.post('/export/email-docs', async (req, res) => {
 
                 const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
                 const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const posCode = (app.position_code || 'UnknownPos').replace(/[^a-zA-Z0-9]/g, '');
-                const vacancyNo = (app.vacancyAnnouncementNo || 'UnknownVac').replace(/[^a-zA-Z0-9]/g, '');
                 
+                let posCode = 'UnknownPos';
+                let vacancyNo = 'UnknownVac';
                 let increment = '0000';
                 if (app.applicationCode) {
                     const parts = app.applicationCode.split('-');
-                    if (parts.length > 0) increment = parts[parts.length - 1];
+                    if (parts.length >= 4) {
+                        posCode = parts[0];
+                        vacancyNo = parts[1];
+                        increment = parts[3];
+                    } else if (parts.length > 0) {
+                        posCode = parts[0];
+                        increment = parts[parts.length - 1];
+                    }
+                } else {
+                    if (app.position_code) posCode = app.position_code.replace(/[^a-zA-Z0-9]/g, '');
+                    if (app.vacancyAnnouncementNo) vacancyNo = app.vacancyAnnouncementNo.replace(/[^a-zA-Z0-9]/g, '');
                 }
+                
                 const noticeType = 'NoticeOfEvaluation';
 
                 const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;

@@ -144,13 +144,23 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     
     const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
     const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-    const posCode = (positionStandards && positionStandards.position_code ? positionStandards.position_code : 'UnknownPos').replace(/[^a-zA-Z0-9]/g, '');
-    const vacancyNo = (app.vacancyAnnouncementNo || (positionStandards ? positionStandards.vacancyAnnouncementNo : 'UnknownVac') || 'UnknownVac').replace(/[^a-zA-Z0-9]/g, '');
     
+    let posCode = 'UnknownPos';
+    let vacancyNo = 'UnknownVac';
     let increment = '0000';
     if (app.applicationCode) {
         const parts = app.applicationCode.split('-');
-        if (parts.length > 0) increment = parts[parts.length - 1];
+        if (parts.length >= 4) {
+            posCode = parts[0];
+            vacancyNo = parts[1];
+            increment = parts[3];
+        } else if (parts.length > 0) {
+            posCode = parts[0];
+            increment = parts[parts.length - 1];
+        }
+    } else {
+        if (positionStandards && positionStandards.position_code) posCode = positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '');
+        if (app.vacancyAnnouncementNo) vacancyNo = app.vacancyAnnouncementNo.replace(/[^a-zA-Z0-9]/g, '');
     }
     
     let noticeType = 'NoticeOfEvaluation';
