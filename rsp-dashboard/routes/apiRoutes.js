@@ -191,8 +191,9 @@ router.get('/export/email-codes/limits', async (req, res) => {
     try {
         const [logs] = await db.query('SELECT COUNT(*) as sentToday FROM applicant_email_logs WHERE sent_at >= NOW() - INTERVAL 24 HOUR');
         const sentToday = logs[0].sentToday || 0;
-        const singleLimit = parseInt(process.env.DAILY_EMAIL_LIMIT) || 500;
-        const dailyLimit = singleLimit * 2; // Total for both accounts
+        const singleLimit1 = parseInt(process.env.DAILY_EMAIL_LIMIT1);
+        const singleLimit2 = parseInt(process.env.DAILY_EMAIL_LIMIT2);
+        const dailyLimit = singleLimit1 + singleLimit2; // Total for both accounts
         const remaining = Math.max(0, dailyLimit - sentToday);
         
         res.json({ success: true, sentToday, dailyLimit, remaining });
@@ -685,8 +686,8 @@ router.post('/export/email-docs', async (req, res) => {
                     from: `"${gmailName}" <${user}>`,
                     to: app.emailAddress,
                     subject: 'Your Initial Evaluation Document',
-                    text: `Hello ${app.firstName} ${app.lastName},\n\nPlease find attached your Step 1 Evaluation Document.\n\nThank you!`,
-                    html: `<p>Hello ${app.firstName} ${app.lastName},</p><p>Please find attached your Step 1 Evaluation Document.</p><p>Thank you!</p>`,
+                    text: `Good Day, ${app.firstName} ${app.lastName}! \n\nPlease find attached files for your Initial Evaluation.\n\nThank you!`,
+                    html: `<p>Good Day, ${app.firstName} ${app.lastName}! </p><p>Please find attached files for your Initial Evaluation.</p><p>Thank you!</p>`,
                     attachments: [{ filename: attachmentName, content: attachmentBuf }]
                 });
                 
