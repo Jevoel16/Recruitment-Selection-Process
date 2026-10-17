@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rsp-dashboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "rsp-dashboard", "start"],
+      "port": 3000
+    }
+  ]
+}

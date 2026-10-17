@@ -67,7 +67,26 @@ app.get('/apply/:type', (req, res) => {
     });
 });
 
-app.post('/api/apply', async (req, res) => {
+// Basic per-IP limit on public application submissions
+const applyHits = new Map();
+function applyRateLimit(req, res, next) {
+    const windowMs = 15 * 60 * 1000;
+    const now = Date.now();
+    const key = req.ip || '';
+    let entry = applyHits.get(key);
+    if (!entry || entry.resetAt <= now) {
+        entry = { count: 0, resetAt: now + windowMs };
+        applyHits.set(key, entry);
+    }
+    if (++entry.count > 20) return res.status(429).json({ success: false, error: 'Too many submissions. Please try again later.' });
+    next();
+}
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of applyHits) if (entry.resetAt <= now) applyHits.delete(key);
+}, 15 * 60 * 1000).unref();
+
+app.post('/api/apply', applyRateLimit, async (req, res) => {
     const conn = await db.getConnection();
     try {
         await conn.beginTransaction();
@@ -143,7 +162,8 @@ app.post('/api/apply', async (req, res) => {
         res.json({ success: true, applicationCode });
     } catch (err) {
         await conn.rollback();
-        res.status(500).json({ error: err.message });
+        console.error('Application submission failed:', err);
+        res.status(500).json({ error: 'Failed to submit application. Please try again.' });
     } finally {
         conn.release();
     }

@@ -84,16 +84,16 @@
     </div> <!-- End d-flex wrapper -->
     
 
-    <script src="/js/requirements.js?v=2.0"></script>
-<script src="/js/qualifications.js?v=2.0"></script>
-<script src="/js/assignment.js?v=2.0"></script>
-<script src="/js/applicantDetails.js?v=2.1"></script>
-<script src="/js/documents.js?v=2.0"></script>
-<script src="/js/assessment.js?v=2"></script>
-<script src="/js/admin.js?v=2.0"></script>
-<script src="/js/main.js?v=2.0"></script>
-<script src="/js/modal_stack.js?v=2.0"></script>
-<script src="/js/paginationHelper.js?v=2.0"></script>
+    <script src="/js/requirements.js?v={{assetVersion}}"></script>
+<script src="/js/qualifications.js?v={{assetVersion}}"></script>
+<script src="/js/assignment.js?v={{assetVersion}}"></script>
+<script src="/js/applicantDetails.js?v={{assetVersion}}"></script>
+<script src="/js/documents.js?v={{assetVersion}}"></script>
+<script src="/js/assessment.js?v={{assetVersion}}"></script>
+<script src="/js/admin.js?v={{assetVersion}}"></script>
+<script src="/js/main.js?v={{assetVersion}}"></script>
+<script src="/js/modal_stack.js?v={{assetVersion}}"></script>
+<script src="/js/paginationHelper.js?v={{assetVersion}}"></script>
 <!-- Chart JS -->
 <script src="/chartjs/chart.umd.js"></script>
 <!-- Choices JS -->
@@ -126,8 +126,8 @@
         }
     };
 </script>
-{{> dashboard_scripts}}
+<script src="/js/dashboard.js?v={{assetVersion}}"></script>
     {{> global_toasts}}
-    <script src="/js/utils.js?v=2.0"></script>
+    <script src="/js/utils.js?v={{assetVersion}}"></script>
 </body>
 </html>

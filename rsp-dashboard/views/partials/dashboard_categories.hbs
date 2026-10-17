@@ -69,6 +69,9 @@
                 </div>
 
                 <div id="vacancyWizardLayout">
+                    <div id="vacancySetupLoading" class="text-center p-5 text-muted d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Loading positions...
+                    </div>
                     <div id="vacancyEmptyState" class="d-none text-center p-5 text-muted mt-4 glass-panel rounded-4">
                         <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
                         <h5 class="fw-semibold">No positions found</h5>
@@ -97,110 +100,8 @@
                             <h4 class="mb-0 fw-bold text-primary" id="activeCategoryTitle">Category Name</h4>
                         </div>
 
-                        <div class="tab-content" id="v-pills-tabContent">
-                            {{#each groupedPositions}}
-                                <div class="tab-pane fade vacancy-category-group" id="v-pills-{{this.categorySlug}}" role="tabpanel" data-category="{{this.categoryName}}" data-bs-target="#v-pills-{{this.categorySlug}}">
-                                    <div class="bg-white p-4 rounded-4 shadow-sm border-0">
-                                        <div class="row min-vh-50">
-                                            <!-- Vertical Sidebar for Groups -->
-                                            <div class="col-md-3 border-end pe-3">
-                                                <h6 class="text-uppercase fw-bold text-muted mb-3 fs-7" style="letter-spacing: 1px;">Position Groups</h6>
-                                                <div class="nav flex-column nav-pills gap-1 sidebar-scroll" id="v-pills-group-{{this.categorySlug}}" role="tablist" aria-orientation="vertical">
-                                                    {{#each this.positionGroups}}
-                                                        <button class="nav-link text-start fw-semibold vacancy-group-tab-btn {{#if @first}}active{{/if}} rounded-3" 
-                                                                id="tab-btn-{{../this.categorySlug}}-{{this.groupSlug}}" 
-                                                                data-bs-toggle="pill" 
-                                                                data-bs-target="#tab-pane-{{../this.categorySlug}}-{{this.groupSlug}}" 
-                                                                type="button" role="tab"
-                                                                data-category="{{../this.categoryName}}" data-group="{{this.groupName}}"
-                                                                style="transition: all 0.2s;">
-                                                            <i class="bi bi-folder2 me-2 opacity-75"></i> {{this.groupName}}
-                                                        </button>
-                                                    {{/each}}
-                                                </div>
-                                            </div>
-                                            <!-- Main Content Area for Table -->
-                                            <div class="col-md-9 ps-4">
-                                                <div class="tab-content" id="v-pills-group-tabContent-{{this.categorySlug}}">
-                                                    {{#each this.positionGroups}}
-                                                        <div class="tab-pane fade {{#if @first}}show active{{/if}} vacancy-group-wrapper" 
-                                                             id="tab-pane-{{../this.categorySlug}}-{{this.groupSlug}}" 
-                                                             role="tabpanel"
-                                                             data-category="{{../this.categoryName}}" data-group="{{this.groupName}}">
-                                                            
-                                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                                <h5 class="fw-bold text-secondary mb-0"><i class="bi bi-journal-text me-2"></i>{{this.groupName}}</h5>
-                                                            </div>
-                                                            <div class="table-responsive border rounded-3">
-                                                                <table class="table table-hover align-middle mb-0 border-0 vacancyTable">
-                                                                    <thead class="table-light border-bottom">
-                                                                        <tr>
-                                                                            <th class="fw-bold px-3 py-3">Position Name</th>
-                                                                            <th class="text-center fw-bold py-3">Vacancy</th>
-                                                                            <th class="text-center fw-bold py-3">Plantilla</th>
-                                                                            <th class="text-center fw-bold py-3">Slots</th>
-                                                                            <th class="text-center fw-bold py-3">Position Info</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {{#each this.positions}}
-                                                                        <tr class="vacancy-row" data-category="{{../../this.categoryName}}" data-title="{{this.title}}" data-group="{{../this.groupName}}">
-                                                                            <td class="fw-semibold px-3">{{this.title}}</td>
-                                                                            <td class="text-center">
-                                                                                <div class="form-check form-switch d-flex justify-content-center">
-                                                                                    <input class="form-check-input vacancy-toggle cursor-pointer" type="checkbox" data-id="{{this.id}}" {{#if this.in_vacancy}}checked{{/if}} style="transform: scale(1.3);">
-                                                                                </div>
-                                                                            </td>
-                                                                            <td class="text-center">
-                                                                                <button class="btn btn-sm btn-outline-success shadow-sm plantilla-setup-btn rounded-pill px-3" 
-                                                                                    data-bs-toggle="modal" 
-                                                                                    data-bs-target="#plantillaModal"
-                                                                                    data-id="{{this.id}}"
-                                                                                    data-title="{{this.title}}"
-                                                                                    data-count="{{this.vacancyCount}}"
-                                                                                    data-plantilla="{{this.plantillaItem}}"
-                                                                                    id="plantilla-btn-{{this.id}}"
-                                                                                    {{#unless this.in_vacancy}}disabled{{/unless}}>
-                                                                                    <i class="bi bi-list-ol me-1"></i> Setup
-                                                                                </button>
-                                                                            </td>
-                                                                            <td class="text-center fw-bold text-secondary" id="slot-count-{{this.id}}">{{#if this.in_vacancy}}{{this.vacancyCount}}{{else}}0{{/if}}</td>
-                                                                            <td class="text-center">
-                                                                                <button class="btn btn-sm btn-outline-primary shadow-sm position-info-btn rounded-pill px-3" 
-                                                                                    data-bs-toggle="modal" 
-                                                                                    data-bs-target="#positionInfoModal"
-                                                                                    data-id="{{this.id}}"
-                                                                                    data-title="{{this.title}}"
-                                                                                    data-vacancy="{{this.vacancyAnnouncementNo}}"
-                                                                                    data-plantilla="{{this.plantillaItem}}"
-                                                                                    data-salary="{{this.salaryGrade}}"
-                                                                                    data-monthly="{{this.monthlySalary}}"
-                                                                                    data-edu="{{this.qsEducation}}"
-                                                                                    data-edu-level="{{this.qsEducationLevel}}"
-                                                                                    data-train="{{this.qsTraining}}"
-                                                                                    data-train-level="{{this.qsTrainingLevel}}"
-                                                                                    data-exp="{{this.qsExperience}}"
-                                                                                    data-exp-level="{{this.qsExperienceLevel}}"
-                                                                                    data-elig="{{this.qsEligibility}}"
-                                                                                    data-perf="{{this.qsPerformance}}">
-                                                                                    <i class="bi bi-info-circle me-1"></i> Info
-                                                                                </button>
-                                                                            </td>
-                                                                        </tr>
-                                                                        {{/each}}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                            <div class="w-100 mt-2" id="pagination-tab-pane-{{../this.categorySlug}}-{{this.groupSlug}}"></div>
-                                                        </div>
-                                                    {{/each}}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {{/each}}
-                        </div>
+                        <!-- Category panes are built by loadVacancySetup() in /js/dashboard.js from /api/positions/vacancy-setup -->
+                        <div class="tab-content" id="v-pills-tabContent"></div>
                     </div>
                 </div>
 
