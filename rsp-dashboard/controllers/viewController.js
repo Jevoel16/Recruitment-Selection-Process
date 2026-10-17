@@ -1,5 +1,28 @@
 const db = require('../db');
 
+// Derives the Step 1 document remark (Pending / In-Prog / Assessed) for PENDING applicants
+// with one grouped query instead of one query per applicant.
+async function attachDocRemarks(rows) {
+    const ids = rows.filter(r => r.status === 'PENDING').map(r => r.id);
+    if (ids.length === 0) return;
+    const [counts] = await db.query(`
+        SELECT applicant_id, COUNT(*) AS total, SUM(status = 'PENDING' OR status IS NULL) AS pending FROM (
+            SELECT applicant_id, status FROM applicant_education WHERE applicant_id IN (?)
+            UNION ALL SELECT applicant_id, status FROM applicant_training WHERE applicant_id IN (?)
+            UNION ALL SELECT applicant_id, status FROM applicant_experience WHERE applicant_id IN (?)
+            UNION ALL SELECT applicant_id, status FROM applicant_eligibility WHERE applicant_id IN (?)
+        ) docs GROUP BY applicant_id
+    `, [ids, ids, ids, ids]);
+    const byId = new Map(counts.map(c => [c.applicant_id, { total: Number(c.total), pending: Number(c.pending) }]));
+    for (const row of rows) {
+        if (row.status !== 'PENDING') continue;
+        const c = byId.get(row.id);
+        if (!c || c.pending === c.total) row.docRemark = 'Pending';
+        else if (c.pending === 0) row.docRemark = 'Assessed';
+        else row.docRemark = 'In-Prog';
+    }
+}
+
 exports.getMetrics = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM positions');
@@ -153,28 +176,15 @@ exports.getDashboard = async (req, res) => {
         }
 
         if (req.socket.destroyed) return;
-        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
+        const [[countResult], [applicants]] = await Promise.all([
+            db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams),
+            db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset])
+        ]);
         const totalRecords = countResult[0].total;
         const totalPages = Math.ceil(totalRecords / limit) || 1;
 
-        const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
-
-        for (let row of applicants) {
-            if (row.status !== 'PENDING') continue;
-            if (req.socket.destroyed) return;
-            const [docs] = await db.query(`
-                SELECT status FROM applicant_education WHERE applicant_id = ?
-                UNION ALL SELECT status FROM applicant_training WHERE applicant_id = ?
-                UNION ALL SELECT status FROM applicant_experience WHERE applicant_id = ?
-                UNION ALL SELECT status FROM applicant_eligibility WHERE applicant_id = ?
-            `, [row.id, row.id, row.id, row.id]);
-            if (docs.length === 0) { row.docRemark = 'Pending'; } else {
-                const pendingCount = docs.filter(d => d.status === 'PENDING' || !d.status).length;
-                if (pendingCount === docs.length) row.docRemark = 'Pending';
-                else if (pendingCount === 0) row.docRemark = 'Assessed';
-                else row.docRemark = 'In-Prog';
-            }
-        }
+        if (req.socket.destroyed) return;
+        await attachDocRemarks(applicants);
 
         const showMasterlist = req.query.tab === 'masterlist';
         const showBackup = req.query.tab === 'backup';
@@ -424,27 +434,14 @@ exports.getDashboardPosition = async (req, res, next) => {
             else if (stepFilter === 'step5_completed') baseQuery += ` AND status = 'COMPLETED'`;
         }
 
-        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
+        const [[countResult], [applicants]] = await Promise.all([
+            db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams),
+            db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset])
+        ]);
         const totalRecords = countResult[0].total;
         const totalPages = Math.ceil(totalRecords / limit) || 1;
 
-        const [applicants] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
-
-        for (let row of applicants) {
-            if (row.status !== 'PENDING') continue;
-            const [docs] = await db.query(`
-                SELECT status FROM applicant_education WHERE applicant_id = ?
-                UNION ALL SELECT status FROM applicant_training WHERE applicant_id = ?
-                UNION ALL SELECT status FROM applicant_experience WHERE applicant_id = ?
-                UNION ALL SELECT status FROM applicant_eligibility WHERE applicant_id = ?
-            `, [row.id, row.id, row.id, row.id]);
-            if (docs.length === 0) { row.docRemark = 'Pending'; } else {
-                const pendingCount = docs.filter(d => d.status === 'PENDING' || !d.status).length;
-                if (pendingCount === docs.length) row.docRemark = 'Pending';
-                else if (pendingCount === 0) row.docRemark = 'Assessed';
-                else row.docRemark = 'In-Prog';
-            }
-        }
+        await attachDocRemarks(applicants);
 
         const showMasterlist = req.query.tab === 'masterlist';
         const showBackup = req.query.tab === 'backup';
@@ -612,69 +609,6 @@ exports.getAddApplicant = async (req, res) => {
     }
 };
 
-exports.getMasterlist = async (req, res) => {
-    const page = parseInt(req.params.page) || 1;
-    const limit = 10;
-    const offset = (page - 1) * limit;
-    const searchQuery = req.query.q || '';
-    const positionFilter = req.query.position || '';
-    const vacancyFilter = req.query.vacancy || '';
-
-    let baseQuery = `FROM applicants WHERE 1=1`;
-        const queryParams = [];
-        let searchCondition = '';
-        let searchParams = [];
-
-        if (searchQuery) {
-            searchCondition = ` AND (CONCAT(firstName, ' ', lastName) LIKE ? OR applicationCode LIKE ? OR vacancyAnnouncementNo LIKE ?)`;
-            const searchPattern = `%${searchQuery}%`;
-            searchParams.push(searchPattern, searchPattern, searchPattern);
-            baseQuery += searchCondition;
-            queryParams.push(...searchParams);
-        }
-
-    if (positionFilter) {
-        baseQuery += ` AND position = ?`;
-        queryParams.push(positionFilter);
-    }
-    
-    if (vacancyFilter) {
-        baseQuery += ` AND vacancyAnnouncementNo = ?`;
-        queryParams.push(vacancyFilter);
-    }
-
-    try {
-        if (req.socket.destroyed) return;
-        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
-        const totalRecords = countResult[0].total;
-        const totalPages = Math.ceil(totalRecords / limit) || 1;
-
-        const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
-
-        const [positions] = await db.query(`SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' ORDER BY position ASC`);
-        const positionList = positions.map(p => p.position);
-        
-        const [vacancies] = await db.query(`SELECT DISTINCT vacancyAnnouncementNo FROM applicants WHERE vacancyAnnouncementNo IS NOT NULL ORDER BY vacancyAnnouncementNo ASC`);
-        const vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
-
-        res.render('masterlist', {
-            masterlistActive: true,
-            applicants: rows,
-            currentPage: page,
-            totalPages,
-            searchQuery,
-            positionFilter,
-            positionList,
-            vacancyFilter,
-            vacancyList,
-            paginationArray: Array.from({ length: totalPages }, (_, i) => i + 1)
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Database error');
-    }
-};
-
 // Dynamic multi-step rendering router. Evaluates the requested `:step` parameter to determine which subset of applicants to query.
 // Applies specific WHERE clauses depending on the step (e.g. Step 1 shows all 'PENDING' applicants, Step 2 shows 'QUALIFIED' ones).
 exports.getStepPage = async (req, res, next) => {
@@ -780,11 +714,12 @@ exports.getStepPage = async (req, res, next) => {
 
     try {
         if (req.socket.destroyed) return;
-        const [countResult] = await db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams);
+        const [[countResult], [rows]] = await Promise.all([
+            db.query(`SELECT COUNT(*) AS total ${baseQuery}`, queryParams),
+            db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY ${config.orderBy} LIMIT ? OFFSET ?`, [...queryParams, limit, offset])
+        ]);
         const totalRecords = countResult[0].total;
         const totalPages = Math.ceil(totalRecords / limit) || 1;
-
-        const [rows] = await db.query(`SELECT *, CONCAT(firstName, ' ', lastName) AS name ${baseQuery} ORDER BY ${config.orderBy} LIMIT ? OFFSET ?`, [...queryParams, limit, offset]);
 
         let positionList = [];
         let vacancyList = [];
@@ -794,9 +729,7 @@ exports.getStepPage = async (req, res, next) => {
             let positionQuery = `SELECT DISTINCT position FROM applicants WHERE position IS NOT NULL AND position != '' AND ${config.conditions}`;
             if (searchQuery) positionQuery += searchCondition;
             positionQuery += ` ORDER BY position ASC`;
-            const [positions] = await db.query(positionQuery, searchParams);
-            positionList = positions.map(p => p.position);
-            
+
             let vacancyQuery;
             let vacancyParams = [];
             if (positionFilter) {
@@ -810,10 +743,14 @@ exports.getStepPage = async (req, res, next) => {
                 }
             }
             vacancyQuery += ` ORDER BY vacancyAnnouncementNo ASC`;
-            
-            const [vacancies] = await db.query(vacancyQuery, vacancyParams);
+
+            const [[positions], [vacancies]] = await Promise.all([
+                db.query(positionQuery, searchParams),
+                db.query(vacancyQuery, vacancyParams)
+            ]);
+            positionList = positions.map(p => p.position);
             vacancyList = vacancies.map(v => String(v.vacancyAnnouncementNo));
-            
+
             if (step === 'step1') {
                 let pQuery = `SELECT id, status FROM applicants WHERE ${config.conditions}`;
                 let pParams = [];
@@ -937,25 +874,9 @@ exports.getStepPage = async (req, res, next) => {
 
         if (step === 'step1') {
             for (let row of mappedRows) {
-                if (row.status !== 'PENDING') {
-                    row.docRemark = row.status === 'QUALIFIED' ? 'Qualified' : 'Disqualified';
-                    continue;
-                }
-                
-                const [docs] = await db.query(`
-                    SELECT status FROM applicant_education WHERE applicant_id = ?
-                    UNION ALL SELECT status FROM applicant_training WHERE applicant_id = ?
-                    UNION ALL SELECT status FROM applicant_experience WHERE applicant_id = ?
-                    UNION ALL SELECT status FROM applicant_eligibility WHERE applicant_id = ?
-                `, [row.id, row.id, row.id, row.id]);
-                
-                if (docs.length === 0) { row.docRemark = 'Pending'; } else {
-                    const pendingCount = docs.filter(d => d.status === 'PENDING' || !d.status).length;
-                    if (pendingCount === docs.length) row.docRemark = 'Pending';
-                    else if (pendingCount === 0) row.docRemark = 'Assessed';
-                    else row.docRemark = 'In-Prog';
-                }
+                if (row.status !== 'PENDING') row.docRemark = row.status === 'QUALIFIED' ? 'Qualified' : 'Disqualified';
             }
+            await attachDocRemarks(mappedRows);
         }
 
         const pagination = [];
@@ -1001,6 +922,7 @@ exports.postStep2Login = async (req, res) => {
         const db = require('../db');
         const crypto = require('crypto');
         const jwt = require('jsonwebtoken');
+        const { JWT_SECRET, verifyPassword } = require('../utils/security');
 
         const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
         if (rows.length === 0) {
@@ -1008,9 +930,7 @@ exports.postStep2Login = async (req, res) => {
         }
 
         const user = rows[0];
-        const hash = crypto.createHash('sha256').update(password).digest('hex');
-
-        if (user.password !== hash) {
+        if (!(await verifyPassword(password, user.password))) {
             return res.redirect('/step2-login?error=Invalid credentials');
         }
 
@@ -1026,7 +946,7 @@ exports.postStep2Login = async (req, res) => {
         const token = jwt.sign({ 
             step2Auth: true,
             fingerprint: fingerprint 
-        }, process.env.JWT_SECRET || 'fallback-secret-for-dev', { expiresIn: '12h' });
+        }, JWT_SECRET, { expiresIn: '12h' });
         
         res.cookie('step2Auth', token, {
             httpOnly: true,

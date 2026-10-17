@@ -1,17 +1,11 @@
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 const db = require('../db');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const { JWT_SECRET, hashPassword, verifyPassword, isLegacyHash } = require('../utils/security');
 
 function validatePassword(password) {
     // Minimum 8 characters, at least one letter and one number
     const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
     return regex.test(password);
-}
-
-function hashPassword(password) {
-    return crypto.createHash('sha256').update(password).digest('hex');
 }
 
 exports.postLogin = async (req, res) => {
@@ -23,8 +17,13 @@ exports.postLogin = async (req, res) => {
         }
         
         const user = rows[0];
-        if (user.password !== hashPassword(password)) {
+        if (!(await verifyPassword(password, user.password))) {
             return res.redirect('/login?error=Invalid credentials');
+        }
+
+        // Upgrade legacy SHA-256 hashes to scrypt on successful login
+        if (isLegacyHash(user.password)) {
+            await db.query('UPDATE users SET password = ? WHERE id = ?', [await hashPassword(password), user.id]);
         }
 
         const token = jwt.sign({ id: user.id, username: user.username, role: user.role, can_access_step2: user.can_access_step2, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
@@ -32,6 +31,7 @@ exports.postLogin = async (req, res) => {
         res.cookie('auth', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
@@ -82,7 +82,7 @@ exports.createUser = async (req, res) => {
         if (rows.length > 0) return res.status(400).json({ error: 'Username already exists' });
         
         await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES (?, ?, ?, ?, ?)`, 
-            [username, hashPassword(password), name, role, can_access_step2 ? 1 : 0]);
+            [username, await hashPassword(password), name, role, can_access_step2 ? 1 : 0]);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: 'Server error' });
@@ -124,7 +124,7 @@ exports.updateUser = async (req, res) => {
                 return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one letter and one number.' });
             }
             await db.query(`UPDATE users SET role = ?, can_access_step2 = ?, password = ? WHERE id = ?`, 
-                [role, can_access_step2 ? 1 : 0, hashPassword(password), id]);
+                [role, can_access_step2 ? 1 : 0, await hashPassword(password), id]);
         } else {
             await db.query(`UPDATE users SET role = ?, can_access_step2 = ? WHERE id = ?`, 
                 [role, can_access_step2 ? 1 : 0, id]);

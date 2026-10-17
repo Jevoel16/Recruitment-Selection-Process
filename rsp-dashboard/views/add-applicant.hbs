@@ -347,8 +347,8 @@
     // Make positions map available to frontend
     window.dynamicPositionsByCategory = {{{dynamicPositionsJSON}}};
 </script>
-<script src="/js/paginationHelper.js?v=2.0"></script>
-<script src="/js/addApplicant.js?v=5"></script>
+<script src="/js/paginationHelper.js?v={{assetVersion}}"></script>
+<script src="/js/addApplicant.js?v={{assetVersion}}"></script>
 
 {{> index_modals}}
 </div> <!-- End container-fluid -->
@@ -362,14 +362,14 @@
 
 <!-- Custom Script -->
 
-<script src="/js/requirements.js?v=2.0"></script>
-<script src="/js/qualifications.js?v=2.0"></script>
-<script src="/js/assignment.js?v=2.0"></script>
-<script src="/js/applicantDetails.js?v=2.1"></script>
-<script src="/js/documents.js?v=2.0"></script>
-<script src="/js/assessment.js?v=2"></script>
-<script src="/js/main.js?v=2.0"></script>
-<script src="/js/modal_stack.js?v=2.0"></script>
+<script src="/js/requirements.js?v={{assetVersion}}"></script>
+<script src="/js/qualifications.js?v={{assetVersion}}"></script>
+<script src="/js/assignment.js?v={{assetVersion}}"></script>
+<script src="/js/applicantDetails.js?v={{assetVersion}}"></script>
+<script src="/js/documents.js?v={{assetVersion}}"></script>
+<script src="/js/assessment.js?v={{assetVersion}}"></script>
+<script src="/js/main.js?v={{assetVersion}}"></script>
+<script src="/js/modal_stack.js?v={{assetVersion}}"></script>
     {{> global_toasts}}
     <script src="/choices.js/scripts/choices.min.js"></script>
     <script>
@@ -384,6 +384,6 @@
             });
         });
     </script>
-    <script src="/js/utils.js?v=2.0"></script>
+    <script src="/js/utils.js?v={{assetVersion}}"></script>
 </body>
 </html>

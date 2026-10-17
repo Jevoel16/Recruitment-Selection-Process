@@ -7,10 +7,25 @@ const authController = require('../controllers/authController');
 const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
 const pdfEvents = require('../utils/pdfEvents');
 const backupManager = require('../utils/backupManager');
+const { convertWithWord, convertWithLibreOffice } = require('../utils/docConverter');
 const path = require('path');
 const fs = require('fs');
 
 const transporterCache = new Map();
+
+// DOCX templates are read from disk once and reused (binary strings for PizZip)
+const templateCache = new Map();
+async function loadTemplate(templateName) {
+    if (!templateCache.has(templateName)) {
+        const templatePath = path.join(__dirname, '..', 'public', 'templates', templateName + '.docx');
+        try {
+            templateCache.set(templateName, await fs.promises.readFile(templatePath, 'binary'));
+        } catch (err) {
+            throw new Error('Template not found: ' + templateName);
+        }
+    }
+    return templateCache.get(templateName);
+}
 
 function getTransporter(accIdx) {
     if (transporterCache.has(accIdx)) return transporterCache.get(accIdx);
@@ -49,6 +64,7 @@ router.delete('/users/:id', requireAdmin, authController.deleteUser);
 router.get('/logs', requireAdmin, authController.getLogs);
 
 // Endpoints for managing positions and fetching dynamic plantilla assignments
+router.get('/positions/vacancy-setup', positionController.getVacancySetup);
 router.post('/positions', positionController.createPosition);
 router.post('/positions/update', positionController.updatePosition);
 router.post('/positions/vacancy-off-all', positionController.turnOffAllVacancies);
@@ -174,9 +190,13 @@ router.get('/export/backup/automated/list', async (req, res) => {
 // Automated Backups Download Endpoint
 router.get('/export/backup/automated/download/:filename', async (req, res) => {
     try {
-        const filename = req.params.filename;
+        // Reject anything that is not a plain file name inside the backup directory
+        const filename = path.basename(req.params.filename);
+        if (filename !== req.params.filename) return res.status(400).send('Invalid file name');
         const filePath = path.join(backupManager.BACKUP_DIR, filename);
-        if (!fs.existsSync(filePath)) {
+        try {
+            await fs.promises.access(filePath);
+        } catch (e) {
             return res.status(404).send('Backup file not found');
         }
         res.download(filePath);
@@ -304,15 +324,14 @@ router.post('/export/email-codes', async (req, res) => {
 
 router.get('/export/check-generated-docs', async (req, res) => {
     try {
-        const fs = require('fs');
-        const path = require('path');
         const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
-        
-        if (!fs.existsSync(generatedDir)) {
+
+        let files;
+        try {
+            files = await fs.promises.readdir(generatedDir);
+        } catch (e) {
             return res.json({ success: true, readyIds: [] });
         }
-
-        const files = fs.readdirSync(generatedDir);
         
         const readyIds = files
             .filter(f => f.endsWith('.pdf') || f.endsWith('.docx'))
@@ -349,16 +368,10 @@ router.post('/export/pre-generate-docs', async (req, res) => {
 
         const PizZip = require('pizzip');
         const Docxtemplater = require('docxtemplater');
-        const fs = require('fs');
-        const path = require('path');
         const os = require('os');
-        const util = require('util');
-        const execAsync = util.promisify(require('child_process').exec);
 
         const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
-        fs.mkdirSync(generatedDir, { recursive: true });
-
-        const templatesCache = {};
+        await fs.promises.mkdir(generatedDir, { recursive: true });
 
         const cleanText = (txt) => {
             if (!txt) return '';
@@ -375,15 +388,41 @@ router.post('/export/pre-generate-docs', async (req, res) => {
         let generatedCount = 0;
         let errors = [];
 
+        // Load child records and position standards for all selected applicants up front
+        const ids = applicants.map(a => a.id);
+        const groupByApplicant = (rows) => {
+            const map = new Map();
+            for (const row of rows) {
+                if (!map.has(row.applicant_id)) map.set(row.applicant_id, []);
+                map.get(row.applicant_id).push(row);
+            }
+            return map;
+        };
+        const positionTitles = [...new Set(applicants.map(a => a.position).filter(Boolean))];
+        const [[eduRows], [trainRows], [expRows], [eligRows], [perfRows], [positionRows]] = await Promise.all([
+            db.query('SELECT * FROM applicant_education WHERE applicant_id IN (?)', [ids]),
+            db.query('SELECT * FROM applicant_training WHERE applicant_id IN (?)', [ids]),
+            db.query('SELECT * FROM applicant_experience WHERE applicant_id IN (?)', [ids]),
+            db.query('SELECT * FROM applicant_eligibility WHERE applicant_id IN (?)', [ids]),
+            db.query('SELECT * FROM applicant_performance WHERE applicant_id IN (?) ORDER BY id ASC', [ids]),
+            positionTitles.length > 0 ? db.query('SELECT * FROM positions WHERE title IN (?) ORDER BY id ASC', [positionTitles]) : [[]]
+        ]);
+        const eduByApp = groupByApplicant(eduRows);
+        const trainByApp = groupByApplicant(trainRows);
+        const expByApp = groupByApplicant(expRows);
+        const eligByApp = groupByApplicant(eligRows);
+        const perfByApp = groupByApplicant(perfRows);
+        const positionByTitle = new Map();
+        for (const row of positionRows) if (!positionByTitle.has(row.title)) positionByTitle.set(row.title, row);
+
         for (const app of applicants) {
             try {
-                // Fetch extra details
-                const [education] = await db.query('SELECT * FROM applicant_education WHERE applicant_id = ?', [app.id]);
-                const [training] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [app.id]);
-                const [experience] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [app.id]);
-                const [eligibility] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [app.id]);
-                const [performance] = await db.query('SELECT * FROM applicant_performance WHERE applicant_id = ? ORDER BY id ASC', [app.id]);
-                
+                const education = eduByApp.get(app.id) || [];
+                const training = trainByApp.get(app.id) || [];
+                const experience = expByApp.get(app.id) || [];
+                const eligibility = eligByApp.get(app.id) || [];
+                const performance = perfByApp.get(app.id) || [];
+
                 let rating1 = '', rating2 = '', rating3 = '';
                 let rmPerf = 'Disqualified';
                 if (performance && performance.length > 0) {
@@ -402,11 +441,7 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                     }
                 }
                 
-                let positionStandards = null;
-                if (app.position) {
-                    const [posRows] = await db.query('SELECT * FROM positions WHERE title = ? LIMIT 1', [app.position]);
-                    if (posRows.length > 0) positionStandards = posRows[0];
-                }
+                const positionStandards = (app.position && positionByTitle.get(app.position)) || null;
 
                 let appName = 'Unknown Applicant';
                 const fName = app.firstName || '';
@@ -439,15 +474,7 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                     resolvedTemplateName = isHigherTeaching ? 'Notice to DQ - Higher Teaching' : 'Notice to DQ';
                 }
 
-                if (!templatesCache[resolvedTemplateName]) {
-                    const templatePath = path.join(__dirname, '..', 'public', 'templates', resolvedTemplateName + '.docx');
-                    try {
-                        templatesCache[resolvedTemplateName] = fs.readFileSync(templatePath, 'binary');
-                    } catch (err) {
-                        throw new Error('Template not found: ' + resolvedTemplateName);
-                    }
-                }
-                let content = templatesCache[resolvedTemplateName];
+                let content = await loadTemplate(resolvedTemplateName);
                 
                 let reasonText = app.disqualificationReason || `While your qualifications made a favorable impression, we regret to inform you that you did not meet the minimum QS set for ${pos} position.`;
                 if (app.disqualificationReason && !app.disqualificationReason.includes('we regret')) {
@@ -530,9 +557,9 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 const noticeType = 'NoticeOfEvaluation';
                 const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
-                fs.mkdirSync(tempDir, { recursive: true });
+                await fs.promises.mkdir(tempDir, { recursive: true });
                 const inputPath = path.join(tempDir, baseName + '.docx');
-                fs.writeFileSync(inputPath, buf);
+                await fs.promises.writeFile(inputPath, buf);
                 
                 const finalOutputPath = path.join(generatedDir, baseName + '.pdf');
 
@@ -542,28 +569,12 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                     for (let attempt = 1; attempt <= 3; attempt++) {
                         try {
                             const outputPath = path.join(tempDir, baseName + '.pdf');
-                            const psScript = `
-$word = New-Object -ComObject Word.Application
-$word.Visible = $false
-$doc = $word.Documents.Open('${inputPath}')
-$doc.ExportAsFixedFormat('${outputPath}', 17, $false, 0)
-$doc.Close()
-$word.Quit()
-                            `;
-                            const scriptPath = path.join(tempDir, 'convert.ps1');
-                            fs.writeFileSync(scriptPath, psScript);
-                            await execAsync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { timeout: 60000 });
-                            
-                            if (fs.existsSync(outputPath)) {
-                                fs.copyFileSync(outputPath, finalOutputPath);
-                                success = true;
-                                break;
-                            } else {
-                                throw new Error('PDF output not found');
-                            }
+                            await convertWithWord(inputPath, outputPath);
+                            await fs.promises.copyFile(outputPath, finalOutputPath);
+                            success = true;
+                            break;
                         } catch (convErr) {
                             console.warn(`Windows PDF conversion attempt ${attempt} failed for ${appName}:`, convErr.message);
-                            try { await execAsync('taskkill /F /IM winword.exe /T'); } catch(e) {}
                             await new Promise(res => setTimeout(res, 2000));
                         }
                     }
@@ -575,20 +586,15 @@ $word.Quit()
                 } else {
                     // Linux / macOS LibreOffice headless
                     try {
-                        await execAsync(`libreoffice --headless --convert-to pdf "${inputPath}" --outdir "${tempDir}"`, { timeout: 60000 });
-                        const outputPath = path.join(tempDir, baseName + '.pdf');
-                        if (fs.existsSync(outputPath)) {
-                            fs.copyFileSync(outputPath, finalOutputPath);
-                        } else {
-                            throw new Error('PDF output not found');
-                        }
+                        const outputPath = await convertWithLibreOffice(inputPath, tempDir);
+                        await fs.promises.copyFile(outputPath, finalOutputPath);
                     } catch (convErr) {
                         console.warn(`LibreOffice PDF conversion failed for ${appName}. Generating DOCX fallback.`);
-                        fs.copyFileSync(inputPath, finalOutputPath.replace('.pdf', '.docx'));
+                        await fs.promises.copyFile(inputPath, finalOutputPath.replace('.pdf', '.docx'));
                     }
                 }
                 
-                try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+                await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
                 generatedCount++;
             } catch (err) {
                 console.error(`Failed to pre-generate doc for ${app.id}:`, err);
@@ -672,11 +678,14 @@ router.post('/export/email-docs', async (req, res) => {
                 const safeFName = (app.firstName || '').replace(/[/\\?%*:|"<>]/g, '').trim();
                 const displayFilename = `${safeLName}, ${safeFName} - Notice of Evaluation`;
 
-                if (fs.existsSync(pdfPath)) {
-                    attachmentBuf = fs.readFileSync(pdfPath);
+                const readIfExists = (p) => fs.promises.readFile(p).catch(() => null);
+                const pdfBuf = await readIfExists(pdfPath);
+                const docxBuf = pdfBuf ? null : await readIfExists(docxPath);
+                if (pdfBuf) {
+                    attachmentBuf = pdfBuf;
                     attachmentName = `${displayFilename}.pdf`;
-                } else if (fs.existsSync(docxPath)) {
-                    attachmentBuf = fs.readFileSync(docxPath);
+                } else if (docxBuf) {
+                    attachmentBuf = docxBuf;
                     attachmentName = `${displayFilename}.docx`;
                 } else {
                     throw new Error(`Pre-generated file not found for Applicant ID ${app.id}. Please click "Pre-Generate PDFs" first.`);
@@ -713,66 +722,25 @@ router.post('/export/convert-to-pdf', async (req, res) => {
         const { filename, docxBase64 } = req.body;
         if (!docxBase64) return res.status(400).json({ error: 'Missing document data' });
 
-        const fs = require('fs');
-        const path = require('path');
         const os = require('os');
-        const { exec } = require('child_process');
-        
-        // Find LibreOffice
-        let sofficePath = 'soffice';
-        if (os.platform() === 'win32') {
-            const commonPaths = [
-                'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
-                'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe',
-                'C:\\Program Files\\LibreOffice 5\\program\\soffice.exe'
-            ];
-            let found = false;
-            for (let p of commonPaths) {
-                if (fs.existsSync(p)) {
-                    sofficePath = `"${p}"`;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                // If not found in common paths, it will rely on PATH. If that fails, it catches below.
-            }
-        }
+        const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'rsp_pdf_convert_'));
+        const cleanup = () => fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
 
-        const tempDir = path.join(os.tmpdir(), 'rsp_pdf_convert_' + Date.now());
-        fs.mkdirSync(tempDir, { recursive: true });
-        
         const safeName = (filename || 'doc').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
         const inputPath = path.join(tempDir, safeName);
-        const outputFilename = safeName.replace('.docx', '.pdf');
-        const outputPath = path.join(tempDir, outputFilename);
+        await fs.promises.writeFile(inputPath, Buffer.from(docxBase64, 'base64'));
 
-        const buffer = Buffer.from(docxBase64, 'base64');
-        fs.writeFileSync(inputPath, buffer);
+        let outputPath;
+        try {
+            outputPath = await convertWithLibreOffice(inputPath, tempDir, { timeout: 30000 });
+        } catch (convErr) {
+            // Frontend falls back to DOCX download on 500
+            console.warn('LibreOffice PDF conversion failed, returning 500 to trigger frontend fallback:', convErr.message);
+            await cleanup();
+            return res.status(500).json({ error: 'PDF conversion failed.' });
+        }
 
-        const cmd = `${sofficePath} --headless --convert-to pdf --outdir "${tempDir}" "${inputPath}"`;
-        
-        exec(cmd, { timeout: 30000 }, (error, stdout, stderr) => {
-            if (error) {
-                if (error.message && error.message.includes('is not recognized')) {
-                    console.warn("LibreOffice not found. PDF conversion failed, returning 500 to trigger frontend fallback.");
-                } else {
-                    console.error("LibreOffice conversion failed. Returning 500 to trigger frontend fallback.");
-                }
-                // Clean up and return error so frontend can fallback
-                try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
-                return res.status(500).json({ error: 'PDF conversion failed.' });
-            }
-            
-            if (fs.existsSync(outputPath)) {
-                res.download(outputPath, outputFilename, (err) => {
-                    try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
-                });
-            } else {
-                try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
-                res.status(500).json({ error: 'Output PDF not found.' });
-            }
-        });
+        res.download(outputPath, path.basename(outputPath), cleanup);
     } catch (err) {
         console.error("PDF conversion route error:", err);
         res.status(500).json({ error: 'Internal server error.' });

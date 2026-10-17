@@ -51,6 +51,18 @@ exports.updatePosition = async (req, res) => {
     }
 };
 
+// Lists every position for the Vacancy Setup tab, which renders its tables client-side
+// (keeps the /dashboard HTML small instead of inlining hundreds of rows).
+exports.getVacancySetup = async (req, res) => {
+    try {
+        const [positions] = await db.query(`SELECT id, title, category, groupName, in_vacancy, vacancyCount, plantillaItem, vacancyAnnouncementNo, salaryGrade, monthlySalary, qsEducation, qsEducationLevel, qsTraining, qsTrainingLevel, qsExperience, qsExperienceLevel, qsEligibility, qsPerformance FROM positions ORDER BY category ASC, title ASC`);
+        res.json({ success: true, positions });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 // Turns off vacancy status for all positions
 exports.turnOffAllVacancies = async (req, res) => {
     try {
@@ -173,7 +185,10 @@ exports.exportDoc = async (req, res) => {
             pages.push(flatEntries.slice(i, i + 22));
         }
 
-        const content = fs.readFileSync(path.resolve(__dirname, '../public/templates/Vacancy_Endorsement_Template3.docx'), 'binary');
+        const [content, tableHeaderXml] = await Promise.all([
+            fs.promises.readFile(path.resolve(__dirname, '../public/templates/Vacancy_Endorsement_Template3.docx'), 'binary'),
+            fs.promises.readFile(path.join(__dirname, '../templates_xml/table_header.xml'), 'utf8')
+        ]);
         const zip = new PizZip(content);
         // Parameterize dynamic variables
         const directorName = 'ALONA B. CARUMBA';
@@ -183,7 +198,7 @@ exports.exportDoc = async (req, res) => {
         const dateHeaderStr = `${monthNames[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
         const dateJsdpStr = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
 
-        let tableHeader = fs.readFileSync(path.join(__dirname, '../templates_xml/table_header.xml'), 'utf8');
+        let tableHeader = tableHeaderXml;
         tableHeader = tableHeader.replace(/ w14:paraId="[^"]+"/g, '').replace(/ w14:textId="[^"]+"/g, '');
 
         const tcPrLeft = '<w:tcPr><w:tcW w:w="1977" w:type="dxa"/>#MERGE#<w:tcBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="6" w:space="0" w:color="000000" w:themeColor="text1"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tcBorders><w:vAlign w:val="center"/><w:hideMark/></w:tcPr>';

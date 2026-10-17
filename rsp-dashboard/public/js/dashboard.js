@@ -1,4 +1,3 @@
-<script>
 window.globalTabAbortController = new AbortController();
 window.getTabAbortSignal = function() {
     if (window.globalTabAbortController) {
@@ -56,6 +55,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 const result = await response.json();
                 if(result.success) {
+                    const pos = vacancyPositionsById.get(String(data.id));
+                    if (pos) Object.assign(pos, data, { vacancyAnnouncementNo: data.vacancyAnnouncementNo || '0' });
                     window.showToast('Position standards saved successfully!', 'success');
                     btn.classList.remove('btn-primary');
                     btn.classList.add('btn-success');
@@ -80,11 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-</script>
 
-    <script>
     async function initDashboard() {
-        filterVacancyTable();
+        const categoriesPane = document.getElementById('categories');
+        if (categoriesPane && categoriesPane.classList.contains('active')) ensureVacancySetup();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -120,116 +120,124 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        document.querySelectorAll('.vacancy-toggle').forEach(toggle => {
-            toggle.addEventListener('change', async function() {
-                const id = this.getAttribute('data-id');
-                const in_vacancy = this.checked;
-                
-                // Toggle the button state immediately
-                const pBtn = document.getElementById('plantilla-btn-' + id);
-                if(pBtn) {
-                    pBtn.disabled = !in_vacancy;
-                }
-                
-                // Update the slot count display
-                const slotTd = document.getElementById('slot-count-' + id);
-                if (slotTd) {
-                    if (in_vacancy && pBtn) {
-                        slotTd.innerText = pBtn.getAttribute('data-count') || '0';
-                    } else {
-                        slotTd.innerText = '0';
-                    }
-                }
+        // Vacancy Setup rows are built after page load, so their handlers are delegated
+        document.addEventListener('change', async function(e) {
+            const toggle = e.target.closest('.vacancy-toggle');
+            if (!toggle) return;
+            const id = toggle.getAttribute('data-id');
+            const in_vacancy = toggle.checked;
 
-                try {
-                    const response = await fetch(`/api/positions/${id}/vacancy`, {
+            // Toggle the button state immediately
+            const pBtn = document.getElementById('plantilla-btn-' + id);
+            if(pBtn) {
+                pBtn.disabled = !in_vacancy;
+            }
 
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ in_vacancy })
-                    });
-                    const res = await response.json();
-                    if(!res.success) throw new Error('Failed to update vacancy status');
-                } catch(e) {
-                    console.error(e);
-                    alert('Error toggling vacancy');
-                    this.checked = !in_vacancy;
+            // Update the slot count display
+            const slotTd = document.getElementById('slot-count-' + id);
+            if (slotTd) {
+                if (in_vacancy && pBtn) {
+                    slotTd.innerText = pBtn.getAttribute('data-count') || '0';
+                } else {
+                    slotTd.innerText = '0';
                 }
-            });
+            }
+
+            try {
+                const response = await fetch(`/api/positions/${id}/vacancy`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ in_vacancy })
+                });
+                const res = await response.json();
+                if(!res.success) throw new Error('Failed to update vacancy status');
+                const pos = vacancyPositionsById.get(String(id));
+                if (pos) {
+                    pos.in_vacancy = in_vacancy ? 1 : 0;
+                    if (!in_vacancy) pos.vacancyAnnouncementNo = null;
+                }
+            } catch(e) {
+                console.error(e);
+                alert('Error toggling vacancy');
+                toggle.checked = !in_vacancy;
+            }
         });
 
-        document.querySelectorAll('.position-info-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const title = this.getAttribute('data-title');
-                document.getElementById('positionInfoModalTitle').innerText = title;
-                document.getElementById('modalPosId').value = this.getAttribute('data-id');
-                document.getElementById('modalPosVacancy').value = this.getAttribute('data-vacancy');
-                
-                // Show QS Performance field only for Higher Teaching
-                const isHigherTeaching = title && (
-                    title.toLowerCase().includes('teacher ii') || 
-                    title.toLowerCase().includes('teacher iii') || 
-                    title.toLowerCase().includes('teacher iv') || 
-                    title.toLowerCase().includes('teacher v') || 
-                    title.toLowerCase().includes('teacher vi') || 
-                    title.toLowerCase().includes('teacher vii') || 
-                    title.toLowerCase().includes('master teacher')
-                );
-                const perfContainer = document.getElementById('qsPerformanceContainer');
-                if (perfContainer) {
-                    perfContainer.style.display = isHigherTeaching ? 'block' : 'none';
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.position-info-btn');
+            if (!btn) return;
+            const pos = vacancyPositionsById.get(btn.getAttribute('data-id')) || {};
+            const val = v => (v === null || v === undefined) ? '' : v;
+
+            const title = btn.getAttribute('data-title');
+            document.getElementById('positionInfoModalTitle').innerText = title;
+            document.getElementById('modalPosId').value = btn.getAttribute('data-id');
+            document.getElementById('modalPosVacancy').value = val(pos.vacancyAnnouncementNo);
+
+            // Show QS Performance field only for Higher Teaching
+            const isHigherTeaching = title && (
+                title.toLowerCase().includes('teacher ii') ||
+                title.toLowerCase().includes('teacher iii') ||
+                title.toLowerCase().includes('teacher iv') ||
+                title.toLowerCase().includes('teacher v') ||
+                title.toLowerCase().includes('teacher vi') ||
+                title.toLowerCase().includes('teacher vii') ||
+                title.toLowerCase().includes('master teacher')
+            );
+            const perfContainer = document.getElementById('qsPerformanceContainer');
+            if (perfContainer) {
+                perfContainer.style.display = isHigherTeaching ? 'block' : 'none';
+            }
+
+            const plantillaStr = String(val(pos.plantillaItem));
+            const pHidden = document.getElementById('modalPosPlantillaHidden');
+            if(pHidden) pHidden.value = plantillaStr;
+
+            const pList = document.getElementById('modalPosPlantillaList');
+            if(pList) {
+                pList.innerHTML = '';
+                let itemsObj = [];
+                try {
+                    const parsed = JSON.parse(plantillaStr);
+                    parsed.forEach(loc => {
+                        if (loc.items && loc.items.trim() !== '') {
+                            let locItems = loc.items.split(',').map(s => s.trim()).filter(s => s);
+                            locItems.forEach(item => {
+                                let locStr = loc.dropdown1 || loc.location || '';
+                                itemsObj.push({item: item, loc: locStr});
+                            });
+                        }
+                    });
+                } catch (e) {
+                    itemsObj = plantillaStr.split(',').map(s => s.trim()).filter(s => s).map(s => ({item: s, loc: ''}));
                 }
 
-                const plantillaStr = this.getAttribute('data-plantilla') || '';
-                const pHidden = document.getElementById('modalPosPlantillaHidden');
-                if(pHidden) pHidden.value = plantillaStr;
-                
-                const pList = document.getElementById('modalPosPlantillaList');
-                if(pList) {
-                    pList.innerHTML = '';
-                    let itemsObj = [];
-                    try {
-                        const parsed = JSON.parse(plantillaStr);
-                        parsed.forEach(loc => {
-                            if (loc.items && loc.items.trim() !== '') {
-                                let locItems = loc.items.split(',').map(s => s.trim()).filter(s => s);
-                                locItems.forEach(item => {
-                                    let locStr = loc.dropdown1 || loc.location || '';
-                                    itemsObj.push({item: item, loc: locStr});
-                                });
-                            }
-                        });
-                    } catch (e) {
-                        itemsObj = plantillaStr.split(',').map(s => s.trim()).filter(s => s).map(s => ({item: s, loc: ''}));
-                    }
-                    
-                    if (itemsObj.length > 0) {
-                        const ul = document.createElement('ul');
-                        ul.className = 'mb-0 ps-3';
-                        ul.style.columnCount = '2';
-                        ul.style.columnGap = '0.5rem';
-                        ul.style.fontSize = '0.75rem';
-                        itemsObj.forEach(obj => {
-                            const li = document.createElement('li');
-                            li.textContent = obj.loc ? `${obj.item} (${obj.loc})` : obj.item;
-                            ul.appendChild(li);
-                        });
-                        pList.appendChild(ul);
-                    } else {
-                        pList.innerHTML = '<span class="fst-italic" style="font-size: 0.75rem;">None</span>';
-                    }
+                if (itemsObj.length > 0) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'mb-0 ps-3';
+                    ul.style.columnCount = '2';
+                    ul.style.columnGap = '0.5rem';
+                    ul.style.fontSize = '0.75rem';
+                    itemsObj.forEach(obj => {
+                        const li = document.createElement('li');
+                        li.textContent = obj.loc ? `${obj.item} (${obj.loc})` : obj.item;
+                        ul.appendChild(li);
+                    });
+                    pList.appendChild(ul);
+                } else {
+                    pList.innerHTML = '<span class="fst-italic" style="font-size: 0.75rem;">None</span>';
                 }
-                document.getElementById('modalPosSalaryGrade').value = this.getAttribute('data-salary');
-                document.getElementById('modalPosMonthlySalary').value = this.getAttribute('data-monthly');
-                document.getElementById('modalPosEdu').value = this.getAttribute('data-edu');
-                document.getElementById('modalPosEduLevel').value = this.getAttribute('data-edu-level') || '';
-                document.getElementById('modalPosTrain').value = this.getAttribute('data-train');
-                document.getElementById('modalPosTrainLevel').value = this.getAttribute('data-train-level') || '';
-                document.getElementById('modalPosExp').value = this.getAttribute('data-exp');
-                document.getElementById('modalPosExpLevel').value = this.getAttribute('data-exp-level') || '';
-                document.getElementById('modalPosElig').value = this.getAttribute('data-elig');
-                document.getElementById('modalPosPerf').value = this.getAttribute('data-perf') || '';
-            });
+            }
+            document.getElementById('modalPosSalaryGrade').value = val(pos.salaryGrade);
+            document.getElementById('modalPosMonthlySalary').value = val(pos.monthlySalary);
+            document.getElementById('modalPosEdu').value = val(pos.qsEducation);
+            document.getElementById('modalPosEduLevel').value = val(pos.qsEducationLevel);
+            document.getElementById('modalPosTrain').value = val(pos.qsTraining);
+            document.getElementById('modalPosTrainLevel').value = val(pos.qsTrainingLevel);
+            document.getElementById('modalPosExp').value = val(pos.qsExperience);
+            document.getElementById('modalPosExpLevel').value = val(pos.qsExperienceLevel);
+            document.getElementById('modalPosElig').value = val(pos.qsEligibility);
+            document.getElementById('modalPosPerf').value = val(pos.qsPerformance);
         });
     });
 
@@ -258,37 +266,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        document.querySelectorAll('.plantilla-setup-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('plantillaModalTitle').innerText = this.getAttribute('data-title');
-                document.getElementById('plantillaPosId').value = this.getAttribute('data-id');
-                
-                const container = document.getElementById('plantillaSetsContainer');
-                const template = container.querySelector('.plantilla-set').cloneNode(true);
-                container.innerHTML = '';
-                
-                const plantillaStr = this.getAttribute('data-plantilla') || '';
-                try {
-                    const parsed = JSON.parse(plantillaStr);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        parsed.forEach((item, index) => {
-                            const clone = template.cloneNode(true);
-                            clone.querySelector('.plantilla-items-input').value = item.items || '';
-                            clone.querySelector('.plantilla-parenthetical').value = item.parenthetical || '';
-                            clone.querySelector('.plantilla-assignment').value = item.dropdown1 || item.assignment || '';
-                            clone.querySelector('.plantilla-competency').value = item.dropdown2 || item.competency || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
-                            if (index > 0) clone.querySelector('.remove-plantilla-set').classList.remove('d-none');
-                            container.appendChild(clone);
-                        });
-                    } else {
-                        container.appendChild(template.cloneNode(true));
-                    }
-                } catch (e) {
-                    const clone = template.cloneNode(true);
-                    clone.querySelector('.plantilla-items-input').value = plantillaStr;
-                    container.appendChild(clone);
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.plantilla-setup-btn');
+            if (!btn) return;
+            document.getElementById('plantillaModalTitle').innerText = btn.getAttribute('data-title');
+            document.getElementById('plantillaPosId').value = btn.getAttribute('data-id');
+            
+            const container = document.getElementById('plantillaSetsContainer');
+            const template = container.querySelector('.plantilla-set').cloneNode(true);
+            container.innerHTML = '';
+            
+            const plantillaStr = btn.getAttribute('data-plantilla') || '';
+            try {
+                const parsed = JSON.parse(plantillaStr);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    parsed.forEach((item, index) => {
+                        const clone = template.cloneNode(true);
+                        clone.querySelector('.plantilla-items-input').value = item.items || '';
+                        clone.querySelector('.plantilla-parenthetical').value = item.parenthetical || '';
+                        clone.querySelector('.plantilla-assignment').value = item.dropdown1 || item.assignment || '';
+                        clone.querySelector('.plantilla-competency').value = item.dropdown2 || item.competency || 'Self- Management, Professionalism and Ethics, Result Focus, Teamwork, Service Orientation, Innovation';
+                        if (index > 0) clone.querySelector('.remove-plantilla-set').classList.remove('d-none');
+                        container.appendChild(clone);
+                    });
+                } else {
+                    container.appendChild(template.cloneNode(true));
                 }
-            });
+            } catch (e) {
+                const clone = template.cloneNode(true);
+                clone.querySelector('.plantilla-items-input').value = plantillaStr;
+                container.appendChild(clone);
+            }
         });
 
         const plantillaForm = document.getElementById('plantillaForm');
@@ -355,9 +363,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             slotTd.innerText = vacancyCount;
                         }
                         
-                        const infoBtn = document.querySelector(`button.position-info-btn[data-id="${id}"]`);
-                        if(infoBtn) {
-                            infoBtn.setAttribute('data-plantilla', plantillaItem);
+                        const pos = vacancyPositionsById.get(String(id));
+                        if (pos) {
+                            pos.vacancyCount = vacancyCount;
+                            pos.plantillaItem = plantillaItem;
                         }
                         
                         setTimeout(() => {
@@ -376,7 +385,155 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+    // ---- Vacancy Setup: positions are fetched once and the category panes built client-side ----
+    const vacancyPositionsById = new Map();
+    let vacancySetupPromise = null;
+    let vacancySetupLoaded = false;
+
+    const vacancySlug = str => String(str).replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+    function vacancyEl(tag, className, attrs) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        for (const key in (attrs || {})) node.setAttribute(key, attrs[key]);
+        return node;
+    }
+
+    function buildVacancyRow(pos, category, groupName) {
+        const vacancyCount = pos.vacancyCount === null || pos.vacancyCount === undefined ? '' : String(pos.vacancyCount);
+        const tr = vacancyEl('tr', 'vacancy-row', { 'data-category': category, 'data-title': pos.title || '', 'data-group': groupName });
+        tr.innerHTML = '<td class="fw-semibold px-3"></td>' +
+            '<td class="text-center"><div class="form-check form-switch d-flex justify-content-center">' +
+                '<input class="form-check-input vacancy-toggle cursor-pointer" type="checkbox" style="transform: scale(1.3);"></div></td>' +
+            '<td class="text-center"><button class="btn btn-sm btn-outline-success shadow-sm plantilla-setup-btn rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#plantillaModal">' +
+                '<i class="bi bi-list-ol me-1"></i> Setup</button></td>' +
+            '<td class="text-center fw-bold text-secondary"></td>' +
+            '<td class="text-center"><button class="btn btn-sm btn-outline-primary shadow-sm position-info-btn rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#positionInfoModal">' +
+                '<i class="bi bi-info-circle me-1"></i> Info</button></td>';
+        const cells = tr.children;
+        cells[0].textContent = pos.title || '';
+        const toggle = cells[1].querySelector('.vacancy-toggle');
+        toggle.setAttribute('data-id', pos.id);
+        toggle.checked = !!pos.in_vacancy;
+        const pBtn = cells[2].querySelector('.plantilla-setup-btn');
+        pBtn.id = 'plantilla-btn-' + pos.id;
+        pBtn.setAttribute('data-id', pos.id);
+        pBtn.setAttribute('data-title', pos.title || '');
+        pBtn.setAttribute('data-count', vacancyCount);
+        pBtn.setAttribute('data-plantilla', pos.plantillaItem || '');
+        pBtn.disabled = !pos.in_vacancy;
+        cells[3].id = 'slot-count-' + pos.id;
+        cells[3].textContent = pos.in_vacancy ? vacancyCount : '0';
+        const infoBtn = cells[4].querySelector('.position-info-btn');
+        infoBtn.setAttribute('data-id', pos.id);
+        infoBtn.setAttribute('data-title', pos.title || '');
+        return tr;
+    }
+
+    function buildVacancyCategoryPane(category, groups) {
+        const categorySlug = vacancySlug(category);
+        const pane = vacancyEl('div', 'tab-pane fade vacancy-category-group', {
+            id: 'v-pills-' + categorySlug, role: 'tabpanel', 'data-category': category, 'data-bs-target': '#v-pills-' + categorySlug
+        });
+        pane.innerHTML = '<div class="bg-white p-4 rounded-4 shadow-sm border-0"><div class="row min-vh-50">' +
+            '<div class="col-md-3 border-end pe-3"><h6 class="text-uppercase fw-bold text-muted mb-3 fs-7" style="letter-spacing: 1px;">Position Groups</h6>' +
+                '<div class="nav flex-column nav-pills gap-1 sidebar-scroll" role="tablist" aria-orientation="vertical"></div></div>' +
+            '<div class="col-md-9 ps-4"><div class="tab-content"></div></div></div></div>';
+        const nav = pane.querySelector('.nav');
+        nav.id = 'v-pills-group-' + categorySlug;
+        const content = pane.querySelector('.tab-content');
+        content.id = 'v-pills-group-tabContent-' + categorySlug;
+
+        let first = true;
+        groups.forEach((positions, groupName) => {
+            const wrapperId = 'tab-pane-' + categorySlug + '-' + vacancySlug(groupName);
+            const btn = vacancyEl('button', 'nav-link text-start fw-semibold vacancy-group-tab-btn rounded-3' + (first ? ' active' : ''), {
+                id: 'tab-btn-' + categorySlug + '-' + vacancySlug(groupName), 'data-bs-toggle': 'pill', 'data-bs-target': '#' + wrapperId,
+                type: 'button', role: 'tab', 'data-category': category, 'data-group': groupName, style: 'transition: all 0.2s;'
+            });
+            btn.innerHTML = '<i class="bi bi-folder2 me-2 opacity-75"></i> ';
+            btn.append(groupName);
+            nav.appendChild(btn);
+
+            const wrapper = vacancyEl('div', 'tab-pane fade vacancy-group-wrapper' + (first ? ' show active' : ''), {
+                id: wrapperId, role: 'tabpanel', 'data-category': category, 'data-group': groupName
+            });
+            wrapper.innerHTML = '<div class="d-flex justify-content-between align-items-center mb-3">' +
+                    '<h5 class="fw-bold text-secondary mb-0"><i class="bi bi-journal-text me-2"></i></h5></div>' +
+                '<div class="table-responsive border rounded-3"><table class="table table-hover align-middle mb-0 border-0 vacancyTable">' +
+                    '<thead class="table-light border-bottom"><tr>' +
+                        '<th class="fw-bold px-3 py-3">Position Name</th><th class="text-center fw-bold py-3">Vacancy</th>' +
+                        '<th class="text-center fw-bold py-3">Plantilla</th><th class="text-center fw-bold py-3">Slots</th>' +
+                        '<th class="text-center fw-bold py-3">Position Info</th>' +
+                    '</tr></thead><tbody></tbody></table></div>' +
+                '<div class="w-100 mt-2"></div>';
+            wrapper.querySelector('h5').append(groupName);
+            wrapper.lastElementChild.id = 'pagination-' + wrapperId;
+            const tbody = wrapper.querySelector('tbody');
+            positions.forEach(pos => tbody.appendChild(buildVacancyRow(pos, category, groupName)));
+            content.appendChild(wrapper);
+            first = false;
+        });
+        return pane;
+    }
+
+    function renderVacancySetup(positions) {
+        // Same grouping the server used: category -> groupName (or title) -> positions
+        const categories = new Map();
+        vacancyPositionsById.clear();
+        positions.forEach(pos => {
+            vacancyPositionsById.set(String(pos.id), pos);
+            if (!categories.has(pos.category)) categories.set(pos.category, new Map());
+            const groups = categories.get(pos.category);
+            const groupName = pos.groupName || pos.title;
+            if (!groups.has(groupName)) groups.set(groupName, []);
+            groups.get(groupName).push(pos);
+        });
+        const fragment = document.createDocumentFragment();
+        categories.forEach((groups, category) => fragment.appendChild(buildVacancyCategoryPane(category, groups)));
+        document.getElementById('v-pills-tabContent').replaceChildren(fragment);
+    }
+
+    function loadVacancySetup() {
+        if (vacancySetupPromise) return vacancySetupPromise;
+        const loading = document.getElementById('vacancySetupLoading');
+        const grid = document.getElementById('vacancyCategorySelection');
+        if (loading) {
+            loading.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Loading positions...';
+            loading.classList.remove('d-none');
+        }
+        if (grid) grid.classList.add('d-none');
+
+        vacancySetupPromise = fetch('/api/positions/vacancy-setup')
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                renderVacancySetup(data.positions || []);
+                vacancySetupLoaded = true;
+                if (loading) loading.classList.add('d-none');
+                if (grid) grid.classList.remove('d-none');
+                return true;
+            })
+            .catch(err => {
+                console.error('Failed to load vacancy setup', err);
+                vacancySetupPromise = null; // allow a retry next time the tab opens
+                if (loading) loading.textContent = 'Failed to load positions. Reopen the tab to try again.';
+                return false;
+            });
+        return vacancySetupPromise;
+    }
+
+    function ensureVacancySetup() {
+        if (!vacancySetupPromise && !vacancySetupLoaded) filterVacancyTable();
+    }
+
     function filterVacancyTable() {
+        if (!vacancySetupLoaded) {
+            loadVacancySetup().then(ok => { if (ok) filterVacancyTable(); });
+            return;
+        }
         const query = document.getElementById('vacancySearch').value.toLowerCase();
         const categorySelect = document.getElementById('vacancyCategory');
         const selectedCategory = categorySelect.value;
@@ -759,6 +916,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('dashboardTabs').addEventListener('show.bs.tab', function (event) {
             if (event.target.id === 'metrics-tab') {
                 refreshMetricsTab();
+            } else if (event.target.id === 'categories-tab') {
+                ensureVacancySetup();
             } else if (event.target.id === 'backup-tab') {
                 refreshEmailLimits();
             }
@@ -1269,4 +1428,3 @@ document.addEventListener('DOMContentLoaded', function() {
                 listEl.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Failed to load backups.</td></tr>`;
             }
         }
-    </script>

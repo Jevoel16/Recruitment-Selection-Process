@@ -31,7 +31,7 @@ async function seedPositionsOnly() {
             role: 'superadmin', 
             can_access_step2: true, 
             name: 'Seeder' 
-        }, process.env.JWT_SECRET || 'fallback-secret-for-dev', { expiresIn: '1h' });
+        }, require('../utils/security').JWT_SECRET, { expiresIn: '1h' });
         
         const authHeaders = { 
             'Content-Type': 'application/json',

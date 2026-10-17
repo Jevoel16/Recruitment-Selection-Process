@@ -4,8 +4,7 @@ const Docxtemplater = require('docxtemplater');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const util = require('util');
-const execAsync = util.promisify(require('child_process').exec);
+const { convertWithWord, convertWithLibreOffice } = require('./docConverter');
 
 const cleanText = (txt) => {
     if (!txt) return '';
@@ -23,21 +22,23 @@ let pdfQueue = Promise.resolve();
 
 const doGeneratePDFForApplicant = async (app, templateName) => {
     const generatedDir = path.join(__dirname, '..', 'public', 'generated_notices');
-    fs.mkdirSync(generatedDir, { recursive: true });
+    await fs.promises.mkdir(generatedDir, { recursive: true });
 
     const templatePath = path.join(__dirname, '..', 'public', 'templates', templateName + '.docx');
     let content;
     try {
-        content = fs.readFileSync(templatePath, 'binary');
+        content = await fs.promises.readFile(templatePath, 'binary');
     } catch (err) {
         throw new Error('Template not found: ' + templateName);
     }
 
-    const [education] = await db.query('SELECT * FROM applicant_education WHERE applicant_id = ?', [app.id]);
-    const [training] = await db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [app.id]);
-    const [experience] = await db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [app.id]);
-    const [eligibility] = await db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [app.id]);
-    const [performance] = await db.query('SELECT * FROM applicant_performance WHERE applicant_id = ? ORDER BY id ASC', [app.id]);
+    const [[education], [training], [experience], [eligibility], [performance]] = await Promise.all([
+        db.query('SELECT * FROM applicant_education WHERE applicant_id = ?', [app.id]),
+        db.query('SELECT * FROM applicant_training WHERE applicant_id = ?', [app.id]),
+        db.query('SELECT * FROM applicant_experience WHERE applicant_id = ?', [app.id]),
+        db.query('SELECT * FROM applicant_eligibility WHERE applicant_id = ?', [app.id]),
+        db.query('SELECT * FROM applicant_performance WHERE applicant_id = ? ORDER BY id ASC', [app.id])
+    ]);
     
     let rating1 = '', rating2 = '', rating3 = '';
     let rmPerf = 'Disqualified';
@@ -140,7 +141,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const buf = outZip.generate({ type: 'nodebuffer' });
 
     const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
-    fs.mkdirSync(tempDir, { recursive: true });
+    await fs.promises.mkdir(tempDir, { recursive: true });
     
     const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
     const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
@@ -173,7 +174,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
     
     const inputPath = path.join(tempDir, baseName + '.docx');
-    fs.writeFileSync(inputPath, buf);
+    await fs.promises.writeFile(inputPath, buf);
     
     const finalOutputPath = path.join(generatedDir, baseName + '.pdf');
 
@@ -185,27 +186,11 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
         while (!success && attempt <= maxRetries) {
             try {
                 const outputPath = path.join(tempDir, baseName + '.pdf');
-                const psScript = `
-$word = New-Object -ComObject Word.Application
-$word.Visible = $false
-$doc = $word.Documents.Open('${inputPath}')
-$doc.ExportAsFixedFormat('${outputPath}', 17, $false, 0)
-$doc.Close()
-$word.Quit()
-                `;
-                const scriptPath = path.join(tempDir, 'convert.ps1');
-                fs.writeFileSync(scriptPath, psScript);
-                await execAsync(`powershell -ExecutionPolicy Bypass -File "${scriptPath}"`, { timeout: 60000 });
-                
-                if (fs.existsSync(outputPath)) {
-                    fs.copyFileSync(outputPath, finalOutputPath);
-                    success = true;
-                } else {
-                    throw new Error('PDF output not found');
-                }
+                await convertWithWord(inputPath, outputPath);
+                await fs.promises.copyFile(outputPath, finalOutputPath);
+                success = true;
             } catch (convErr) {
                 console.warn(`Windows PDF conversion attempt ${attempt} failed for ${appName}:`, convErr.message);
-                try { await execAsync('taskkill /F /IM winword.exe /T'); } catch(e) {}
                 await new Promise(res => setTimeout(res, 2000));
                 attempt++;
             }
@@ -222,14 +207,9 @@ $word.Quit()
         
         while (!success && attempt <= maxRetries) {
             try {
-                await execAsync(`libreoffice --headless --convert-to pdf "${inputPath}" --outdir "${tempDir}"`, { timeout: 60000 });
-                const outputPath = path.join(tempDir, baseName + '.pdf');
-                if (fs.existsSync(outputPath)) {
-                    fs.copyFileSync(outputPath, finalOutputPath);
-                    success = true;
-                } else {
-                    throw new Error('PDF output not found');
-                }
+                const outputPath = await convertWithLibreOffice(inputPath, tempDir);
+                await fs.promises.copyFile(outputPath, finalOutputPath);
+                success = true;
             } catch (convErr) {
                 console.warn(`LibreOffice PDF conversion attempt ${attempt} failed for ${appName}:`, convErr.message);
                 await new Promise(res => setTimeout(res, 2000));
@@ -243,7 +223,7 @@ $word.Quit()
         }
     }
     
-    try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+    await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
     
     return true;
 };

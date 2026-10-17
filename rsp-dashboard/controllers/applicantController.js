@@ -51,7 +51,7 @@ function getShortenedPosition(position) {
     else if (upperPos.includes('MASTER TEACHER')) base = 'MT';
     else if (upperPos.includes('TEACHER')) base = 'T';
     else if (upperPos.includes('WATCHMAN')) base = 'WCH';
-    else { base = cleanPos.split(/\\s+/).map(w => w[0]).join('').toUpperCase(); }
+    else { base = cleanPos.split(/\s+/).map(w => w[0]).join('').toUpperCase(); }
     return base + numberSuffix;
 }
 
@@ -66,6 +66,7 @@ const requirementFields = [
 // Initializes a new applicant record, processes their baseline information, and inserts it into the database.
 // Automatically prefixes the application code with the district abbreviation and shortened position title for easy tracking.
 exports.createApplicant = async (req, res) => {
+    let conn;
     try {
         const { 
             firstName, lastName, middleName, nameExtension, applicationType, district, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink, category, position, vacancyAnnouncementNo,
@@ -82,7 +83,10 @@ exports.createApplicant = async (req, res) => {
             finalVacNo = '0';
         }
 
-        const [result] = await db.query(
+        conn = await db.getConnection();
+        await conn.beginTransaction();
+
+        const [result] = await conn.query(
             'INSERT INTO applicants (firstName, lastName, middleName, nameExtension, applicationType, district, category, position, vacancyAnnouncementNo, applicationCode, address, birthdate, sex, civilStatus, religion, disability, ethnicGroup, emailAddress, contactNo, pdsLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
             [firstName, lastName, middleName || '', nameExtension || '', applicationType || 'Walk-in', district || null, category || null, position || null, finalVacNo, 'TEMP', address || null, birthdate || null, sex || null, civilStatus || null, religion || null, disability || null, ethnicGroup || null, emailAddress || null, contactNo || null, pdsLink || null]
         );
@@ -91,7 +95,7 @@ exports.createApplicant = async (req, res) => {
         
         const vacNoStr = (finalVacNo === '0') ? '000' : String(finalVacNo).trim().toUpperCase();
         
-        const [rows] = await db.query(
+        const [rows] = await conn.query(
             "SELECT applicationCode FROM applicants WHERE applicationCode LIKE ? AND id != ? ORDER BY id DESC LIMIT 1",
             [`${positionCode}-${vacNoStr}-${currentYear}-%`, applicantId]
         );
@@ -104,27 +108,41 @@ exports.createApplicant = async (req, res) => {
         
         const incrementStr = String(increment).padStart(4, '0');
         const newCode = `${positionCode}-${vacNoStr}-${currentYear}-${incrementStr}`;
-        await db.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
+        await conn.query('UPDATE applicants SET applicationCode = ? WHERE id = ?', [newCode, applicantId]);
+
+        // Child records are inserted in one statement per table
+        const bulkInsert = async (sql, rows) => {
+            if (rows.length > 0) await conn.query(sql, [rows]);
+        };
 
         const eduArray = education ? JSON.parse(education) : [];
-        for (let e of eduArray) await db.query('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, e.degree, e.year, e.link || '']);
+        await bulkInsert('INSERT INTO applicant_education (applicant_id, degree, yearGraduated, digitalCopyLink) VALUES ?',
+            eduArray.map(e => [applicantId, e.degree, e.year, e.link || '']));
 
         const trainArray = training ? JSON.parse(training) : [];
-        for (let t of trainArray) await db.query('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, t.title, t.hours, t.link || '']);
+        await bulkInsert('INSERT INTO applicant_training (applicant_id, title, hours, digitalCopyLink) VALUES ?',
+            trainArray.map(t => [applicantId, t.title, t.hours, t.link || '']));
 
         const expArray = experience ? JSON.parse(experience) : [];
-        for (let ex of expArray) await db.query('INSERT INTO applicant_experience (applicant_id, details, years, months, digitalCopyLink) VALUES (?, ?, ?, ?, ?)', [applicantId, ex.details, ex.years, ex.months || 0, ex.link || '']);
+        await bulkInsert('INSERT INTO applicant_experience (applicant_id, details, years, months, digitalCopyLink) VALUES ?',
+            expArray.map(ex => [applicantId, ex.details, ex.years, ex.months || 0, ex.link || '']));
 
         const eligArray = eligibility ? JSON.parse(eligibility) : [];
-        for (let el of eligArray) await db.query('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES (?, ?, ?, ?)', [applicantId, el.details, el.rating, el.link || '']);
+        await bulkInsert('INSERT INTO applicant_eligibility (applicant_id, details, rating, digitalCopyLink) VALUES ?',
+            eligArray.map(el => [applicantId, el.details, el.rating, el.link || '']));
 
         const perfArray = performance ? JSON.parse(performance) : [];
-        for (let p of perfArray) await db.query('INSERT INTO applicant_performance (applicant_id, group_id, ratingPeriod, rating, letterGrade) VALUES (?, ?, ?, ?, ?)', [applicantId, p.group_id, p.ratingPeriod, p.rating, p.letterGrade]);
+        await bulkInsert('INSERT INTO applicant_performance (applicant_id, group_id, ratingPeriod, rating, letterGrade) VALUES ?',
+            perfArray.map(p => [applicantId, p.group_id, p.ratingPeriod, p.rating, p.letterGrade]));
 
+        await conn.commit();
         res.json({ success: true, applicationCode: newCode, id: applicantId });
     } catch (error) {
+        if (conn) await conn.rollback().catch(() => {});
         console.error(error);
         res.status(500).json({ success: false, error: "Internal server error" });
+    } finally {
+        if (conn) conn.release();
     }
 };
 
@@ -684,8 +702,9 @@ exports.addPerformanceGroup = async (req, res) => {
         if (!(await updateVersion(req, res, req.params.id))) return;
         const { records } = req.body;
         const groupId = Date.now().toString();
-        for (const record of records) {
-            await db.query('INSERT INTO applicant_performance (applicant_id, group_id, ratingPeriod, rating, letterGrade) VALUES (?, ?, ?, ?, ?)', [req.params.id, groupId, record.ratingPeriod, record.rating, record.letterGrade]);
+        if (records && records.length > 0) {
+            await db.query('INSERT INTO applicant_performance (applicant_id, group_id, ratingPeriod, rating, letterGrade) VALUES ?',
+                [records.map(record => [req.params.id, groupId, record.ratingPeriod, record.rating, record.letterGrade])]);
         }
         res.json({ success: true });
     } catch (error) { res.status(500).json({ success: false, error: "Internal server error" }); }
@@ -709,9 +728,9 @@ exports.updatePerformanceGroup = async (req, res) => {
         if (!(await updateVersion(req, res, appRows[0].applicant_id))) return;
 
         const { records } = req.body;
-        for (const record of records) {
-            await db.query('UPDATE applicant_performance SET ratingPeriod = ?, rating = ?, letterGrade = ? WHERE id = ? AND group_id = ?', [record.ratingPeriod, record.rating, record.letterGrade, record.id, req.params.groupId]);
-        }
+        await Promise.all(records.map(record =>
+            db.query('UPDATE applicant_performance SET ratingPeriod = ?, rating = ?, letterGrade = ? WHERE id = ? AND group_id = ?', [record.ratingPeriod, record.rating, record.letterGrade, record.id, req.params.groupId])
+        ));
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: "Internal server error" }); }
 };

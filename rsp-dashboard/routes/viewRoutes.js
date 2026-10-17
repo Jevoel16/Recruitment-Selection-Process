@@ -3,9 +3,19 @@ const router = express.Router();
 const viewController = require('../controllers/viewController');
 const authController = require('../controllers/authController');
 const { step2AuthMiddleware, requireAuth } = require('../middleware/authMiddleware');
+const { createRateLimiter } = require('../utils/security');
+
+const loginLimiter = createRateLimiter({
+    max: 20,
+    onLimit: (req, res) => res.redirect('/login?error=Too many attempts. Please try again in 15 minutes.')
+});
+const step2LoginLimiter = createRateLimiter({
+    max: 20,
+    onLimit: (req, res) => res.redirect('/step2-login?error=Too many attempts. Please try again in 15 minutes.')
+});
 
 router.get('/login', (req, res) => res.render('login', { error: req.query.error }));
-router.post('/login', authController.postLogin);
+router.post('/login', loginLimiter, authController.postLogin);
 router.get('/logout', authController.getLogout);
 
 // All routes below require authentication
@@ -31,7 +41,7 @@ router.get('/masterlist/:page', (req, res) => {
 });
 
 router.get('/step2-login', viewController.getStep2Login);
-router.post('/step2-login', viewController.postStep2Login);
+router.post('/step2-login', step2LoginLimiter, viewController.postStep2Login);
 router.get('/:step', (req, res, next) => {
     if (['step1', 'step2', 'step3', 'step4', 'step5'].includes(req.params.step)) {
         res.redirect(`/${req.params.step}/1`);

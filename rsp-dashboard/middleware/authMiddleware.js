@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const { JWT_SECRET } = require('../utils/security');
 
 exports.identityMiddleware = (req, res, next) => {
     let token = req.cookies && req.cookies.auth;

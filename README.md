@@ -9,6 +9,16 @@ This repository contains the backend and frontend components for the Recruitment
 
 ## Recent Updates
 
+- **Security hardening (dashboard)**: Passwords are now hashed with salted scrypt; legacy SHA-256 hashes still log in and are upgraded automatically on the next successful login. The JWT secret is centralized in `utils/security.js` and is required in production. Added `helmet` security headers, `sameSite` auth cookies, rate limiting on `/login` and `/step2-login`, path-traversal protection on backup downloads, and blocked public access to `/generated_notices`.
+- **Security hardening (portal)**: Added a per-IP rate limit on `/api/apply` and stopped returning raw database errors to applicants.
+- **Safer document conversion**: Word/LibreOffice PDF conversion moved into `utils/docConverter.js`, passing file paths as arguments instead of building shell commands. A hung conversion only kills the Word process it started, not the user's own Word windows.
+- **Performance**: Removed N+1 queries on the dashboard and step pages (document remarks now come from one grouped query), batched child-record inserts, parallelized count/page queries, cached DOCX templates, switched to async file I/O, and added database indexes that are created automatically on startup.
+- **Smaller dashboard page**: The Vacancy Setup tab no longer renders every position inline. `/dashboard` HTML dropped from about 2.6 MB to about 240 KB (with ~1,000 applicants and the full positions list). Position rows are now fetched once from `GET /api/positions/vacancy-setup` the first time the tab opens and built in `public/js/dashboard.js`. Vacancy toggles, plantilla setup, the position info modal, and search/filters work the same.
+- **Data integrity**: Creating an applicant now runs in a single transaction, so a failure no longer leaves partial records behind.
+- **Server reliability**: Added a final error handler (JSON for `/api`, text for pages), graceful shutdown on SIGINT/SIGTERM, a configurable DB pool size, and a 5 MB request body limit (50 MB only for the DOCX-to-PDF upload).
+- **Frontend**: Moved the dashboard's inline scripts from `partials/dashboard_scripts.hbs` into `public/js/dashboard.js`. Script and stylesheet URLs now use an automatic cache-busting version (`?v={{assetVersion}}`) instead of hand-edited numbers.
+- **Maintenance**: Removed the unused masterlist controller, moved `nodemon` to devDependencies, restored `chart.js` as a dependency, fixed the portal `dev`/`start` scripts, and replaced the leftover Laravel entries in `.gitignore` with Node-specific ones.
+
 - Expanded the generated notice filenames to include the applicant's name, position code, increment, and vacancy details.
 - Cleaned up the repository by removing obsolete scripts (`convert.ps1`), unused npm packages, and dead routing code.
 - Added an empty state visual prompt in the applicant category selection when no vacancies are available.
@@ -60,3 +70,15 @@ This repository contains the backend and frontend components for the Recruitment
 ## Getting Started
 
 See the respective directories for installation and startup instructions.
+
+### Dashboard environment variables
+
+Copy `rsp-dashboard/.env.example` to `.env` and fill it in. Settings related to security:
+
+| Variable | Purpose |
+| --- | --- |
+| `JWT_SECRET` | Secret used to sign login tokens. **Required** when `NODE_ENV=production`. |
+| `SUPERADMIN_PASSWORD` | Superadmin password. **Required** when `NODE_ENV=production`. |
+| `ADMIN_PASSWORD` | Password for the `admin` user when it is first created (default: `admin123`; change it after first login). |
+| `TRUST_PROXY` | Express `trust proxy` setting (default: `loopback`). Set it to match your reverse proxy. |
+| `DB_CONNECTION_LIMIT` | Maximum MySQL pool connections (default: `20`). |

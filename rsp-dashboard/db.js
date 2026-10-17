@@ -7,17 +7,17 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     waitForConnections: true,
-    connectionLimit: 100,
+    connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT, 10) || 20,
     queueLimit: 0
 });
 
 const testConnection = async () => {
     try {
         const connection = await pool.getConnection();
-        console.log('✅ Database connection successful!');
+        console.log('[DB] Database connection successful');
         connection.release();
     } catch (error) {
-        console.error('❌ Database connection failed:', error.message);
+        console.error('[DB] Database connection failed:', error.message);
     }
 };
 

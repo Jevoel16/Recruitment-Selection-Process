@@ -1,16 +1,18 @@
 require('dotenv').config();
 const express = require('express');
 const compression = require('compression');
+const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const hbs = require('hbs');
 const path = require('path');
 const db = require('./db');
 const { identityMiddleware } = require('./middleware/authMiddleware');
+const { hashPassword, verifyPassword } = require('./utils/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.set('trust proxy', true);
+app.set('trust proxy', process.env.TRUST_PROXY || 'loopback');
 
 const requirementFields = [
     'req_pds', 'req_prcLicense', 'req_reportRating', 'req_medCert', 'req_birthCert', 'req_marriageCert',
@@ -23,14 +25,22 @@ morgan.token('localdate', () => new Date().toLocaleString());
 app.use(morgan('[:localdate] :method :url :status :response-time ms - :res[content-length]', {
     skip: function (req, res) { return req.method === 'GET' }
 }));
+// Security headers; CSP stays off until inline scripts are moved out of the views
+app.use(helmet({ contentSecurityPolicy: false, hsts: process.env.NODE_ENV === 'production' }));
 app.use(compression());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Small default body limit; only the DOCX upload endpoint accepts large payloads
+const largeBodyPaths = new Set(['/api/export/convert-to-pdf']);
+const jsonDefault = express.json({ limit: '5mb' });
+const jsonLarge = express.json({ limit: '50mb' });
+app.use((req, res, next) => (largeBodyPaths.has(req.path) ? jsonLarge : jsonDefault)(req, res, next));
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
 app.use(cookieParser());
 app.use(identityMiddleware);
 
 // Serve static assets for application public directory and third-party dependencies
 const staticOptions = { maxAge: '30d' };
+// Generated notices contain applicant data and are only sent by email, never served publicly
+app.use('/generated_notices', (req, res) => res.status(404).end());
 app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist'), staticOptions));
 app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font'), staticOptions));
@@ -40,7 +50,18 @@ app.use('/file-saver', express.static(path.join(__dirname, 'node_modules/file-sa
 app.use('/chartjs', express.static(path.join(__dirname, 'node_modules/chart.js/dist'), staticOptions));
 app.use('/fontsource-inter', express.static(path.join(__dirname, 'node_modules/@fontsource/inter'), staticOptions));
 app.use('/choices.js', express.static(path.join(__dirname, 'node_modules/choices.js/public/assets'), staticOptions));
-app.use('/html-docx-js', express.static(path.join(__dirname, 'node_modules/html-docx-js/dist'), staticOptions));
+// Cache-busting token for /js and /css URLs: changes whenever any of those files change
+app.locals.assetVersion = (() => {
+    const crypto = require('crypto');
+    const fs = require('fs');
+    const hash = crypto.createHash('md5');
+    for (const dir of ['js', 'css']) {
+        const fullDir = path.join(__dirname, 'public', dir);
+        for (const file of fs.readdirSync(fullDir).sort()) hash.update(fs.readFileSync(path.join(fullDir, file)));
+    }
+    return hash.digest('hex').slice(0, 10);
+})();
+
 // Initialize Handlebars view engine and register partial components
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -85,6 +106,20 @@ app.use('/api/export', excelExportCAR);
 const excelExportVER = require('./routes/excelExportVER');
 app.use('/api/export', excelExportVER);
 
+// Final error handler: JSON for API calls, plain text for pages
+app.use((err, req, res, next) => {
+    console.error(`[Error] ${req.method} ${req.originalUrl}:`, err);
+    if (res.headersSent) return next(err);
+    const status = err.status || err.statusCode || 500;
+    const message = status === 413 ? 'Request body too large' : (status < 500 ? err.message : 'Internal server error');
+    if (req.originalUrl.startsWith('/api')) return res.status(status).json({ success: false, error: message });
+    res.status(status).send(message);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('[Unhandled Rejection]', reason);
+});
+
 async function ensureRequirementColumns() {
     const [columns] = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'applicants'`, [process.env.DB_NAME || 'rsp_db']);
     const existingColumns = new Set(columns.map((column) => column.COLUMN_NAME));
@@ -99,6 +134,31 @@ async function ensureExperienceColumns() {
     const [columns] = await db.query(`SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'applicant_experience'`, [process.env.DB_NAME || 'rsp_db']);
     const existingColumns = new Set(columns.map((column) => column.COLUMN_NAME));
     if (!existingColumns.has('months')) await db.query(`ALTER TABLE applicant_experience ADD COLUMN months INT DEFAULT 0 AFTER years`);
+}
+
+// Secondary indexes used by the step pages, filters and Step 1 document remarks
+const requiredIndexes = [
+    { table: 'applicants', name: 'idx_vacancyAnnouncementNo', columns: 'vacancyAnnouncementNo' },
+    { table: 'applicants', name: 'idx_applicationCode', columns: 'applicationCode' },
+    { table: 'applicant_education', name: 'idx_applicant_status', columns: 'applicant_id, status' },
+    { table: 'applicant_training', name: 'idx_applicant_status', columns: 'applicant_id, status' },
+    { table: 'applicant_experience', name: 'idx_applicant_status', columns: 'applicant_id, status' },
+    { table: 'applicant_eligibility', name: 'idx_applicant_status', columns: 'applicant_id, status' },
+    { table: 'positions', name: 'idx_title', columns: 'title' },
+    { table: 'positions', name: 'idx_category_title', columns: 'category, title' },
+    { table: 'logs', name: 'idx_createdAt', columns: 'createdAt' }
+];
+
+async function ensureIndexes() {
+    const [existing] = await db.query(`SELECT TABLE_NAME, INDEX_NAME FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = ?`, [process.env.DB_NAME || 'rsp_db']);
+    const existingKeys = new Set(existing.map((row) => `${row.TABLE_NAME}.${row.INDEX_NAME}`));
+    for (const index of requiredIndexes) {
+        if (existingKeys.has(`${index.table}.${index.name}`)) continue;
+        try {
+            await db.query(`CREATE INDEX ${index.name} ON ${index.table} (${index.columns})`);
+            console.log(`[DB] Created index ${index.table}.${index.name}`);
+        } catch (e) { console.warn(`[DB] Could not create index ${index.table}.${index.name}:`, e.message); }
+    }
 }
 
 async function ensureAdminSystem() {
@@ -126,25 +186,30 @@ async function ensureAdminSystem() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )`);
 
-    const crypto = require('crypto');
-    
+    const isProduction = process.env.NODE_ENV === 'production';
+    if (isProduction && !process.env.SUPERADMIN_PASSWORD) {
+        throw new Error('SUPERADMIN_PASSWORD must be set when NODE_ENV=production');
+    }
+
     // Seed default admin if missing
     const [adminRows] = await db.query(`SELECT id FROM users WHERE username = 'admin'`);
     if (adminRows.length === 0) {
-        const hash = crypto.createHash('sha256').update('admin123').digest('hex');
-        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES ('admin', ?, 'Administrator', 'admin', true)`, [hash]);
+        const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+        if (!process.env.ADMIN_PASSWORD) console.warn('[Security] Seeding user "admin" with the default password. Change it after first login.');
+        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES ('admin', ?, 'Administrator', 'admin', true)`, [await hashPassword(adminPass)]);
     }
 
-    // Seed/Update superadmin from .env
+    // Seed/Update superadmin from .env (password is only rewritten when it no longer matches)
     const superUser = process.env.SUPERADMIN_USERNAME || 'superadmin';
     const superPass = process.env.SUPERADMIN_PASSWORD || 'superadmin123';
-    const superHash = crypto.createHash('sha256').update(superPass).digest('hex');
-    
-    const [superRows] = await db.query(`SELECT id FROM users WHERE username = ?`, [superUser]);
+
+    const [superRows] = await db.query(`SELECT id, password FROM users WHERE username = ?`, [superUser]);
     if (superRows.length === 0) {
-        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES (?, ?, 'Super Administrator', 'superadmin', true)`, [superUser, superHash]);
+        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES (?, ?, 'Super Administrator', 'superadmin', true)`, [superUser, await hashPassword(superPass)]);
+    } else if (!(await verifyPassword(superPass, superRows[0].password))) {
+        await db.query(`UPDATE users SET password = ?, role = 'superadmin', can_access_step2 = true WHERE username = ?`, [await hashPassword(superPass), superUser]);
     } else {
-        await db.query(`UPDATE users SET password = ?, role = 'superadmin', can_access_step2 = true WHERE username = ?`, [superHash, superUser]);
+        await db.query(`UPDATE users SET role = 'superadmin', can_access_step2 = true WHERE username = ?`, [superUser]);
     }
 }
 
@@ -156,12 +221,13 @@ async function startServer() {
         await ensureRequirementColumns();
         await ensureExperienceColumns();
         await ensureAdminSystem();
-        app.listen(PORT, '0.0.0.0', () => {
+        await ensureIndexes();
+        const server = app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server is running on http://0.0.0.0:${PORT}`);
         });
 
         // Setup Automated Daily Backup
-        cron.schedule('1 12 * * *', async () => {
+        const backupTask = cron.schedule('1 12 * * *', async () => {
             console.log('[Cron] Starting automated daily backup...');
             try {
                 await backupManager.generateDailyBackups();
@@ -172,8 +238,26 @@ async function startServer() {
             }
         });
 
+        // Graceful shutdown: stop accepting requests, stop cron, then close the DB pool
+        let shuttingDown = false;
+        const shutdown = (signal) => {
+            if (shuttingDown) return;
+            shuttingDown = true;
+            console.log(`[Server] ${signal} received, shutting down...`);
+            backupTask.stop();
+            server.close(async () => {
+                await db.end().catch(() => {});
+                process.exit(0);
+            });
+            server.closeIdleConnections();
+            // SSE streams keep connections open; force exit if they do not drain
+            setTimeout(() => process.exit(0), 10000).unref();
+        };
+        process.on('SIGINT', () => shutdown('SIGINT'));
+        process.on('SIGTERM', () => shutdown('SIGTERM'));
+
     } catch (error) {
-        console.error('Failed to initialize requirement columns:', error.message);
+        console.error('Failed to start server:', error.message);
         process.exit(1);
     }
 }
