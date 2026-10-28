@@ -12,6 +12,8 @@ const { hashPassword, verifyPassword } = require('./utils/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+// 0.0.0.0 = reachable on the office LAN (restrict with the firewall rule in deploy/); 127.0.0.1 = this PC only
+const HOST = process.env.HOST || '0.0.0.0';
 app.set('trust proxy', process.env.TRUST_PROXY || 'loopback');
 
 const requirementFields = [
@@ -222,8 +224,8 @@ async function startServer() {
         await ensureExperienceColumns();
         await ensureAdminSystem();
         await ensureIndexes();
-        const server = app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server is running on http://0.0.0.0:${PORT}`);
+        const server = app.listen(PORT, HOST, () => {
+            console.log(`Server is running on http://${HOST}:${PORT}`);
         });
 
         // Setup Automated Daily Backup

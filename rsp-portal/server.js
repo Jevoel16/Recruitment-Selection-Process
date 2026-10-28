@@ -1,5 +1,6 @@
 const express = require('express');
 const compression = require('compression');
+const helmet = require('helmet');
 const hbs = require('hbs');
 const path = require('path');
 const db = require('./db');
@@ -39,10 +40,15 @@ function getShortenedPosition(position) {
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+// Listen on loopback by default so only the local Cloudflare Tunnel can reach the portal
+const HOST = process.env.HOST || '127.0.0.1';
+// Requests arrive via cloudflared on loopback; trust its X-Forwarded-For so rate limiting is per applicant
+app.set('trust proxy', process.env.TRUST_PROXY || 'loopback');
 
+app.use(helmet({ contentSecurityPolicy: false, hsts: process.env.NODE_ENV === 'production' }));
 app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 const staticOptions = { maxAge: '30d' };
 app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist'), staticOptions));
@@ -169,4 +175,4 @@ app.post('/api/apply', applyRateLimit, async (req, res) => {
     }
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`RSP Portal running on port ${PORT} at 0.0.0.0`));
+app.listen(PORT, HOST, () => console.log(`RSP Portal running on http://${HOST}:${PORT}`));

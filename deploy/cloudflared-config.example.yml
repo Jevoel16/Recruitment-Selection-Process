@@ -1,0 +1,15 @@
+# Cloudflare Tunnel config for publishing ONLY the applicant portal.
+# Copy to %USERPROFILE%\.cloudflared\config.yml and fill in the tunnel ID,
+# credentials file and hostname printed by `cloudflared tunnel create rsp-portal`.
+#
+# The dashboard (port 3000) and MySQL (port 3306) are deliberately NOT listed,
+# so nothing from the internet can reach them through this tunnel.
+
+tunnel: <TUNNEL-ID>
+credentials-file: C:\Users\<YOU>\.cloudflared\<TUNNEL-ID>.json
+
+ingress:
+  - hostname: apply.example.com
+    service: http://127.0.0.1:3001
+  # Anything else gets a 404
+  - service: http_status:404
