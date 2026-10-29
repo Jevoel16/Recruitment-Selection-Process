@@ -663,6 +663,7 @@ For test data, run `npm run seedApplicants` against a **development** database.
 4. Update this README and the changelogs whenever behavior, configuration or dependencies change. That includes bumping the version badges.
 5. Write a clear commit message: a short summary line, then what changed and why.
 6. Never commit `.env` files, generated notices, backups or real applicant data.
+7. Keep local tooling out of the repo: `.claude/` (local Claude settings), `CLAUDE.md` (personal Claude instructions) and `commit-msg.txt` (draft commit message) are listed in `.gitignore`.
 
 ---
 

@@ -1,2 +1,4 @@
 .agent/workflows/ollama.md
 commit-msg.txt
+.claude/
+CLAUDE.md
