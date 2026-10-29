@@ -68,13 +68,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         btn.disabled = false;
                     }, 2000);
                 } else {
-                    alert('Error saving position standards.');
+                    showToast('Error saving position standards.', 'danger');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 }
             } catch (err) {
                 console.error(err);
-                alert('An error occurred.');
+                showToast('Network error. Please try again.', 'danger');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast('All vacancy positions turned off successfully!', 'success', true);
                 } catch(e) {
                     console.error(e);
-                    alert('Error turning off all vacancies');
+                    showToast('Error turning off all vacancies. Only administrators can change vacancies.', 'danger');
                 }
             });
         }
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ in_vacancy })
                 });
                 const res = await response.json();
-                if(!res.success) throw new Error('Failed to update vacancy status');
+                if(!res.success) throw new Error(res.error || 'Failed to update vacancy status');
                 const pos = vacancyPositionsById.get(String(id));
                 if (pos) {
                     pos.in_vacancy = in_vacancy ? 1 : 0;
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch(e) {
                 console.error(e);
-                alert('Error toggling vacancy');
+                showToast(e.message || 'Error toggling vacancy', 'danger');
                 toggle.checked = !in_vacancy;
             }
         });
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (vacancyCount === 0) {
-                    alert('Please enter at least one Plantilla Item number.');
+                    showToast('Please enter at least one Plantilla Item number.', 'warning');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } catch(err) {
                     console.error(err);
-                    alert('Error saving plantilla');
+                    showToast('Error saving plantilla', 'danger');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 }
@@ -800,7 +800,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 legendItem.innerHTML = `
                     <div class="d-flex align-items-center" style="overflow: hidden;">
                         <span style="display: inline-block; width: 12px; height: 12px; background-color: ${color}; border-radius: 50%; margin-right: 10px; flex-shrink: 0;"></span>
-                        <span class="text-truncate fw-semibold text-secondary legend-label-text" title="${label}" style="font-size: 0.85rem; transition: text-decoration 0.2s;">${label}</span>
+                        <span class="text-truncate fw-semibold text-secondary legend-label-text" title="${escapeHtml(label)}" style="font-size: 0.85rem; transition: text-decoration 0.2s;">${escapeHtml(label)}</span>
                     </div>
                     <span class="badge bg-primary rounded-pill ms-2">${count}</span>
                 `;
@@ -991,19 +991,19 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </td>
                                 <td>
                                     <label class="form-check-label fw-bold" for="emailCb${app.id}">
-                                        ${app.firstName} ${app.lastName}
+                                        ${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}
                                     </label>
                                     <div class="mt-1 d-none pdf-ready-badge" id="pdf-ready-${app.id}">
                                         <span class="badge bg-success"><i class="bi bi-file-earmark-pdf-fill"></i> Pre-generated</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="small fw-bold">${app.applicationCode || 'N/A'}</div>
-                                    <div class="small text-muted">${app.emailAddress}</div>
+                                    <div class="small fw-bold">${escapeHtml(app.applicationCode || 'N/A')}</div>
+                                    <div class="small text-muted">${escapeHtml(app.emailAddress)}</div>
                                 </td>
                                 <td>
-                                    <div class="small">${app.position || 'N/A'}</div>
-                                    <div class="small text-muted">Vacancy Announcement No. ${app.vacancyAnnouncementNo || 'N/A'}</div>
+                                    <div class="small">${escapeHtml(app.position || 'N/A')}</div>
+                                    <div class="small text-muted">Vacancy Announcement No. ${escapeHtml(app.vacancyAnnouncementNo || 'N/A')}</div>
                                 </td>
                                 <td>
                                     ${emailCountStr}
@@ -1091,7 +1091,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const posSelect = document.getElementById('emailFilterPosition');
             posSelect.innerHTML = '<option value="">All Positions</option>';
             Array.from(positions).sort().forEach(p => {
-                posSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
+                posSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`);
             });
             posSelect.value = positions.has(currentPosition) ? currentPosition : '';
             if (window.refreshChoices) window.refreshChoices('emailFilterPosition');
@@ -1099,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const vacSelect = document.getElementById('emailFilterVacancy');
             vacSelect.innerHTML = '<option value="">All Vacancies</option>';
             Array.from(vacancies).sort().forEach(v => {
-                vacSelect.insertAdjacentHTML('beforeend', `<option value="${v}">${v}</option>`);
+                vacSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`);
             });
             vacSelect.value = vacancies.has(currentVacancy) ? currentVacancy : '';
             if (window.refreshChoices) window.refreshChoices('emailFilterVacancy');

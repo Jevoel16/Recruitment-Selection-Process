@@ -34,19 +34,19 @@
     </div>
 
     {{#if error}}
-        <div class="alert alert-danger">{{error}}</div>
+        <div class="alert alert-danger" role="alert">{{error}}</div>
     {{/if}}
 
-    <form action="/login" method="POST">
+    <form action="/login" method="POST" onsubmit="document.getElementById('loginSubmitBtn').disabled = true;">
         <div class="mb-3">
-            <label class="form-label">Username</label>
-            <input type="text" name="username" class="form-control" required autofocus>
+            <label class="form-label" for="loginUsername">Username</label>
+            <input type="text" name="username" id="loginUsername" class="form-control" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
         </div>
         <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" required>
+            <label class="form-label" for="loginPassword">Password</label>
+            <input type="password" name="password" id="loginPassword" class="form-control" autocomplete="current-password" required>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Login</button>
+        <button type="submit" class="btn btn-primary w-100" id="loginSubmitBtn">Login</button>
     </form>
 </div>
 

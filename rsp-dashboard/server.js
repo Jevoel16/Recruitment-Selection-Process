@@ -8,7 +8,7 @@ const hbs = require('hbs');
 const path = require('path');
 const db = require('./db');
 const { identityMiddleware } = require('./middleware/authMiddleware');
-const { hashPassword, verifyPassword } = require('./utils/security');
+const { hashPassword, verifyPassword, isWeakSuperadminPassword } = require('./utils/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,7 +37,6 @@ const jsonLarge = express.json({ limit: '50mb' });
 app.use((req, res, next) => (largeBodyPaths.has(req.path) ? jsonLarge : jsonDefault)(req, res, next));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
 app.use(cookieParser());
-app.use(identityMiddleware);
 
 // Serve static assets for application public directory and third-party dependencies
 const staticOptions = { maxAge: '30d' };
@@ -52,6 +51,8 @@ app.use('/file-saver', express.static(path.join(__dirname, 'node_modules/file-sa
 app.use('/chartjs', express.static(path.join(__dirname, 'node_modules/chart.js/dist'), staticOptions));
 app.use('/fontsource-inter', express.static(path.join(__dirname, 'node_modules/@fontsource/inter'), staticOptions));
 app.use('/choices.js', express.static(path.join(__dirname, 'node_modules/choices.js/public/assets'), staticOptions));
+// Identity is resolved after static files so asset requests don't hit the database
+app.use(identityMiddleware);
 // Cache-busting token for /js and /css URLs: changes whenever any of those files change
 app.locals.assetVersion = (() => {
     const crypto = require('crypto');
@@ -73,6 +74,11 @@ hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 hbs.registerHelper('inc', function(value) { return parseInt(value) + 1; });
 hbs.registerHelper('incOffset', function(value, offset) { return parseInt(value) + parseInt(offset) + 1; });
 hbs.registerHelper('eq', function (a, b) { return a === b; });
+// Quoted JS string for inline handlers: onclick="fn({{jsArg name}})". Plain {{ }} is not safe there,
+// because the browser decodes &#x27; back into a quote before the handler runs.
+hbs.registerHelper('jsArg', function (value) {
+    return new hbs.handlebars.SafeString(hbs.handlebars.escapeExpression(JSON.stringify(String(value ?? ''))));
+});
 hbs.registerHelper('titleCase', function(str) {
     if (!str || typeof str !== 'string') return str;
     return str.split(' ').map(word => word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : '').join(' ');
@@ -188,22 +194,23 @@ async function ensureAdminSystem() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )`);
 
-    const isProduction = process.env.NODE_ENV === 'production';
-    if (isProduction && !process.env.SUPERADMIN_PASSWORD) {
-        throw new Error('SUPERADMIN_PASSWORD must be set when NODE_ENV=production');
+    const superPass = process.env.SUPERADMIN_PASSWORD;
+    if (isWeakSuperadminPassword(superPass)) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error('SUPERADMIN_PASSWORD must be at least 12 characters and not a default value when NODE_ENV=production');
+        }
+        console.warn('[Security] SUPERADMIN_PASSWORD is missing or weak. Set a strong one in .env before using the dashboard on the network.');
     }
+    if (!superPass) throw new Error('SUPERADMIN_PASSWORD must be set in .env');
 
-    // Seed default admin if missing
+    // Seed the "admin" user only when ADMIN_PASSWORD is provided; there is no built-in default password
     const [adminRows] = await db.query(`SELECT id FROM users WHERE username = 'admin'`);
-    if (adminRows.length === 0) {
-        const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
-        if (!process.env.ADMIN_PASSWORD) console.warn('[Security] Seeding user "admin" with the default password. Change it after first login.');
-        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES ('admin', ?, 'Administrator', 'admin', true)`, [await hashPassword(adminPass)]);
+    if (adminRows.length === 0 && process.env.ADMIN_PASSWORD) {
+        await db.query(`INSERT INTO users (username, password, name, role, can_access_step2) VALUES ('admin', ?, 'Administrator', 'admin', true)`, [await hashPassword(process.env.ADMIN_PASSWORD)]);
     }
 
     // Seed/Update superadmin from .env (password is only rewritten when it no longer matches)
     const superUser = process.env.SUPERADMIN_USERNAME || 'superadmin';
-    const superPass = process.env.SUPERADMIN_PASSWORD || 'superadmin123';
 
     const [superRows] = await db.query(`SELECT id, password FROM users WHERE username = ?`, [superUser]);
     if (superRows.length === 0) {

@@ -1,11 +1,12 @@
 const jwt = require('jsonwebtoken');
 const db = require('../db');
-const { JWT_SECRET, hashPassword, verifyPassword, isLegacyHash } = require('../utils/security');
+const { JWT_SECRET, COOKIE_SECURE, hashPassword, verifyPassword, isLegacyHash } = require('../utils/security');
+
+const SESSION_HOURS = 12;
 
 function validatePassword(password) {
-    // Minimum 8 characters, at least one letter and one number
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
-    return regex.test(password);
+    // Minimum 8 characters with at least one letter and one number; any other characters are allowed
+    return typeof password === 'string' && password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 }
 
 exports.postLogin = async (req, res) => {
@@ -13,12 +14,12 @@ exports.postLogin = async (req, res) => {
         const { username, password } = req.body;
         const [rows] = await db.query(`SELECT * FROM users WHERE username = ?`, [username]);
         if (rows.length === 0) {
-            return res.redirect('/login?error=Invalid credentials');
+            return res.redirect('/login?error=invalid');
         }
         
         const user = rows[0];
         if (!(await verifyPassword(password, user.password))) {
-            return res.redirect('/login?error=Invalid credentials');
+            return res.redirect('/login?error=invalid');
         }
 
         // Upgrade legacy SHA-256 hashes to scrypt on successful login
@@ -26,19 +27,19 @@ exports.postLogin = async (req, res) => {
             await db.query('UPDATE users SET password = ? WHERE id = ?', [await hashPassword(password), user.id]);
         }
 
-        const token = jwt.sign({ id: user.id, username: user.username, role: user.role, can_access_step2: user.can_access_step2, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user.id, username: user.username, role: user.role, can_access_step2: user.can_access_step2, name: user.name }, JWT_SECRET, { expiresIn: `${SESSION_HOURS}h` });
         
         res.cookie('auth', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: COOKIE_SECURE,
             sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge: SESSION_HOURS * 60 * 60 * 1000
         });
 
         res.redirect('/dashboard');
     } catch (e) {
         console.error(e);
-        res.redirect('/login?error=Server error');
+        res.redirect('/login?error=server');
     }
 };
 

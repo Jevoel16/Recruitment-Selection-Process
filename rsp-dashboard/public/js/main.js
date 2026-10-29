@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
+            const collapsed = sidebar.classList.toggle('collapsed');
+            sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+            sidebarToggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
         });
     }
 
@@ -15,15 +17,22 @@ document.addEventListener('DOMContentLoaded', () => {
         function openSidebar() {
             sidebar.classList.add('show');
             backdrop.classList.add('show');
+            mobileMenuToggle.setAttribute('aria-expanded', 'true');
+            if (mobileMenuClose) mobileMenuClose.focus();
         }
         function closeSidebar() {
             sidebar.classList.remove('show');
             backdrop.classList.remove('show');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            mobileMenuToggle.focus();
         }
 
         mobileMenuToggle.addEventListener('click', openSidebar);
         if (mobileMenuClose) mobileMenuClose.addEventListener('click', closeSidebar);
         backdrop.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebar.classList.contains('show')) closeSidebar();
+        });
     }
 });
 
@@ -127,48 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-window.showToast = function(message, type = 'success', reloadAfter = false) {
-    if (reloadAfter) {
-        sessionStorage.setItem('pendingToast', JSON.stringify({ message, type }));
-        window.location.reload();
-        return;
-    }
-
-    let toastContainer = document.getElementById('globalToastContainer');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-        toastContainer.style.zIndex = '9999';
-        toastContainer.id = 'globalToastContainer';
-        document.body.appendChild(toastContainer);
-    }
-    
-    const toastId = 'toast-' + Date.now();
-    const bgMap = { success: 'bg-success', danger: 'bg-danger', info: 'bg-primary', warning: 'bg-warning text-dark' };
-    const bgClass = bgMap[type] || 'bg-success';
-    const closeWhite = type === 'warning' ? '' : 'btn-close-white';
-    
-    const toastHtml = `
-        <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${message}
-                </div>
-                <button type="button" class="btn-close ${closeWhite} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    `;
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    const toastEl = document.getElementById(toastId);
-    const delay = (type === 'info' || type === 'warning') ? 5000 : 1500;
-    const bsToast = new bootstrap.Toast(toastEl, { delay: delay });
-    bsToast.show();
-    
-    toastEl.addEventListener('hidden.bs.toast', () => {
-        toastEl.remove();
-    });
-};
+// window.showToast lives in utils.js (single toast implementation for every page)
 
 document.addEventListener('DOMContentLoaded', () => {
     const pendingToast = sessionStorage.getItem('pendingToast');
@@ -190,6 +158,8 @@ window.removeApplicantFromStep1 = function(id) {
 window.confirmRemoveApplicantFromStep1 = async function() {
     const id = document.getElementById('step1RemoveApplicantId').value;
     if (!id) return;
+    const btn = document.getElementById('confirmStep1RemoveBtn');
+    window.setButtonLoading(btn, true, 'Removing...');
     
     try {
         const res = await fetch('/api/applicants/' + id + '/status', {
@@ -203,6 +173,7 @@ window.confirmRemoveApplicantFromStep1 = async function() {
             if (modal) modal.hide();
             window.showToast('Applicant removed from Step 1', 'success', true);
         } else {
+            window.setButtonLoading(btn, false);
             window.showToast('Failed to remove applicant', 'danger');
         }
     } catch(e) {
@@ -219,9 +190,8 @@ window.confirmRemoveApplicantFromStep1 = async function() {
             const data = JSON.parse(event.data);
             if (data.connected) return; // initial handshake
             if (data.applicantId) {
-                const icon = data.failed === 0 ? '<i class="bi bi-file-earmark-pdf-fill me-1"></i>' : '<i class="bi bi-exclamation-triangle-fill me-1"></i>';
                 const toastType = data.failed === 0 ? 'info' : 'warning';
-                const msg = `${icon} PDF generation complete for <strong>${data.name}</strong> (${data.status}) — ${data.generated}/${data.total} templates generated.`;
+                const msg = `PDF generation complete for ${data.name} (${data.status}) — ${data.generated}/${data.total} templates generated.`;
                 window.showToast(msg, toastType);
             }
         } catch(e) { /* ignore parse errors */ }

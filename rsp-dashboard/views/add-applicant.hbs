@@ -16,8 +16,8 @@
                         <div class="row mb-4" id="categorySearchContainer">
                             <div class="col-md-4">
                                 <div class="input-group glass-panel h-100 shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterWizardCategories()"><i class="bi bi-search text-primary"></i></span>
-                                    <input type="text" id="categorySearch" class="form-control border-start-0 ps-0" placeholder="Search position..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterWizardCategories(); }">
+                                    <button type="button" class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterWizardCategories()" aria-label="Search"><i class="bi bi-search text-primary" aria-hidden="true"></i></button>
+                                    <input aria-label="Search position" type="text" id="categorySearch" class="form-control border-start-0 ps-0" placeholder="Search position..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterWizardCategories(); }">
                                 </div>
                             </div>
                         </div>
@@ -55,9 +55,9 @@
                             </button>
                             <h4 class="mb-0 fw-bold text-primary" id="selectedCategoryTitle">Category Name</h4>
                             
-                            <div class="input-group glass-panel shadow-sm ms-auto" style="width: 250px;">
-                                <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterAndPaginatePositions(true)"><i class="bi bi-search text-primary"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-0" id="positionSearch" placeholder="Search positions..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterAndPaginatePositions(true); }">
+                            <div class="input-group glass-panel shadow-sm ms-auto" style="width: 100%; max-width: 250px;">
+                                <button type="button" class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterAndPaginatePositions(true)" aria-label="Search"><i class="bi bi-search text-primary" aria-hidden="true"></i></button>
+                                <input aria-label="Search positions" type="text" class="form-control border-start-0 ps-0" id="positionSearch" placeholder="Search positions..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterAndPaginatePositions(true); }">
                             </div>
                         </div>
                         <div class="list-group border rounded-4 shadow-sm overflow-hidden bg-white" id="positionList">
@@ -157,7 +157,7 @@
                                 </div>
                                 <div class="col-md-4 fit-dropdown-menu">
                                     <label class="form-label fw-semibold">Sex <span class="text-danger">*</span></label>
-                                    <select class="form-select custom-ui-select" name="sex" required>
+                                    <select aria-label="Sex" class="form-select custom-ui-select" name="sex" required>
                                         <option value="">Select...</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
@@ -165,7 +165,7 @@
                                 </div>
                                 <div class="col-md-4 fit-dropdown-menu">
                                     <label class="form-label fw-semibold">Civil Status <span class="text-danger">*</span></label>
-                                    <select class="form-select custom-ui-select" name="civilStatus" required>
+                                    <select aria-label="Civil status" class="form-select custom-ui-select" name="civilStatus" required>
                                         <option value="">Select...</option>
                                         <option value="Single">Single</option>
                                         <option value="Married">Married</option>

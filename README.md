@@ -9,14 +9,11 @@
 **A digital RSP workflow for the DepEd Division of Iligan City, from vacancy posting to assignment order.**
 
 <p>
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/Express_5-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
-  <img src="https://img.shields.io/badge/Handlebars-F0772B?style=for-the-badge&logo=handlebarsdotjs&logoColor=white" alt="Handlebars" />
-  <img src="https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap" />
-  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
-  <img src="https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white" alt="Chart.js" />
-  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
-  <img src="https://img.shields.io/badge/Cloudflare_Tunnel-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare Tunnel" />
+  <img src="https://img.shields.io/badge/Node.js-22.14.0-339933?style=flat-square" alt="Node.js 22.14.0" />
+  <img src="https://img.shields.io/badge/Express-5.2.1-000000?style=flat-square" alt="Express 5.2.1" />
+  <img src="https://img.shields.io/badge/Handlebars_%28hbs%29-4.2.1-F0772B?style=flat-square" alt="Handlebars (hbs) 4.2.1" />
+  <img src="https://img.shields.io/badge/Bootstrap-5.3.8-7952B3?style=flat-square" alt="Bootstrap 5.3.8" />
+  <img src="https://img.shields.io/badge/MySQL-8.0.41-4479A1?style=flat-square" alt="MySQL 8.0.41" />
 </p>
 
 <p>
@@ -59,13 +56,17 @@ It is made up of two Node.js applications that share one MySQL database:
 - [Getting Started](#-getting-started)
 - [Deployment: Online Portal, Local Dashboard](#-deployment-online-portal-local-dashboard)
 - [Configuration](#%EF%B8%8F-configuration)
+- [Usage](#-usage)
 - [npm Scripts](#-npm-scripts)
 - [Project Structure](#-project-structure)
 - [User Accounts and Roles](#-user-accounts-and-roles)
 - [Security](#-security)
+- [Testing](#-testing)
 - [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
 - [Changelog](#-changelog)
 - [License](#-license)
+- [Author](#-author)
 
 ---
 
@@ -140,36 +141,15 @@ Both applications are server-rendered with Handlebars. The dashboard also expose
 
 ## 🧰 Tech Stack
 
-<div align="center">
+| Layer | Versions |
+| --- | --- |
+| Runtime and server | ![Node.js](https://img.shields.io/badge/Node.js-22.14.0-339933?style=flat-square) ![Express](https://img.shields.io/badge/Express-5.2.1-000000?style=flat-square) ![nodemon](https://img.shields.io/badge/nodemon-3.1.14-76D04B?style=flat-square) |
+| Front end | ![Handlebars](https://img.shields.io/badge/Handlebars_%28hbs%29-4.2.1-F0772B?style=flat-square) ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3.8-7952B3?style=flat-square) ![Bootstrap Icons](https://img.shields.io/badge/Bootstrap_Icons-1.13.1-7952B3?style=flat-square) ![Chart.js](https://img.shields.io/badge/Chart.js-4.5.1-FF6384?style=flat-square) ![Choices.js](https://img.shields.io/badge/Choices.js-11.2.3-00A5BB?style=flat-square) |
+| Data | ![MySQL](https://img.shields.io/badge/MySQL-8.0.41-4479A1?style=flat-square) ![mysql2](https://img.shields.io/badge/mysql2-3.22.5-4479A1?style=flat-square) |
+| Documents and email | ![docxtemplater](https://img.shields.io/badge/docxtemplater-3.69.0-2B579A?style=flat-square) ![ExcelJS](https://img.shields.io/badge/ExcelJS-4.4.0-217346?style=flat-square) ![Nodemailer](https://img.shields.io/badge/Nodemailer-9.0.3-22B573?style=flat-square) ![node-cron](https://img.shields.io/badge/node--cron-4.6.0-555555?style=flat-square) |
+| Security and hosting | ![jsonwebtoken](https://img.shields.io/badge/jsonwebtoken-9.0.3-D63AFF?style=flat-square) ![helmet](https://img.shields.io/badge/helmet-8.3.0-0F172A?style=flat-square) ![Cloudflare Tunnel](https://img.shields.io/badge/Cloudflare_Tunnel-cloudflared-F38020?style=flat-square) |
 
-**Runtime and server**<br/>
-<img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
-<img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white" alt="Express" />
-<img src="https://img.shields.io/badge/Nodemon-76D04B?style=flat-square&logo=nodemon&logoColor=white" alt="Nodemon" />
-
-**Front end**<br/>
-<img src="https://img.shields.io/badge/Handlebars-F0772B?style=flat-square&logo=handlebarsdotjs&logoColor=white" alt="Handlebars" />
-<img src="https://img.shields.io/badge/Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white" alt="Bootstrap" />
-<img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat-square&logo=chartdotjs&logoColor=white" alt="Chart.js" />
-<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript" />
-<img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
-
-**Data**<br/>
-<img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL" />
-<img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=mariadb&logoColor=white" alt="MariaDB" />
-
-**Documents and email**<br/>
-<img src="https://img.shields.io/badge/Microsoft_Word-2B579A?style=flat-square&logo=microsoftword&logoColor=white" alt="Microsoft Word" />
-<img src="https://img.shields.io/badge/LibreOffice-18A303?style=flat-square&logo=libreoffice&logoColor=white" alt="LibreOffice" />
-<img src="https://img.shields.io/badge/ExcelJS-217346?style=flat-square&logo=microsoftexcel&logoColor=white" alt="ExcelJS" />
-<img src="https://img.shields.io/badge/Nodemailer-22B573?style=flat-square&logo=maildotru&logoColor=white" alt="Nodemailer" />
-
-**Security and deployment**<br/>
-<img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white" alt="JWT" />
-<img src="https://img.shields.io/badge/Helmet-0F172A?style=flat-square&logo=helm&logoColor=white" alt="Helmet" />
-<img src="https://img.shields.io/badge/Cloudflare_Tunnel-F38020?style=flat-square&logo=cloudflare&logoColor=white" alt="Cloudflare Tunnel" />
-
-</div>
+Versions are the ones installed on the office PC. Supported minimums are Node.js LTS and MySQL 8 / MariaDB 10.5+.
 
 <details>
 <summary><b>Full dependency breakdown</b></summary>
@@ -428,10 +408,11 @@ The address changes every time the command is restarted, so use a named tunnel (
 
 | Variable | Description |
 | --- | --- |
-| `JWT_SECRET` | Secret used to sign login tokens. **Required** when `NODE_ENV=production`. |
+| `JWT_SECRET` | Secret used to sign login tokens. In production it must be a random string of **at least 32 characters**; the dashboard refuses to start with a missing, placeholder or short value. Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`. |
 | `SUPERADMIN_USERNAME` | Superadmin username (default: `superadmin`). |
-| `SUPERADMIN_PASSWORD` | Superadmin password. **Required** when `NODE_ENV=production`. |
-| `ADMIN_PASSWORD` | Password given to the `admin` user when it is first created (default: `admin123`). |
+| `SUPERADMIN_PASSWORD` | Superadmin password. **Required.** In production it must be at least 12 characters and not a default such as `superadmin`, or the dashboard won't start. |
+| `ADMIN_PASSWORD` | Optional. When set, an `admin` user is created with this password on first start. When empty, no `admin` user is created. |
+| `COOKIE_SECURE` | `true` only when the dashboard is served over HTTPS. Keep `false` for plain-HTTP LAN installs, otherwise browsers drop the login cookie. |
 | `DB_CONNECTION_LIMIT` | Maximum number of MySQL pool connections (default: `20`). |
 
 <details>
@@ -452,6 +433,54 @@ Up to two sending accounts are supported. Replace `n` with `1` or `2`.
 
 > [!CAUTION]
 > Never commit `.env` files. They are already listed in `.gitignore`.
+
+---
+
+## 💡 Usage
+
+### For applicants (RSP Portal)
+
+1. Open the portal, e.g. `https://apply.your-domain.com` (or <http://localhost:3001> locally).
+2. Choose **Internal** (current DepEd employee) or **External** (new applicant). Then pick the category, district and position. The browser goes to a URL like:
+   ```
+   /apply/external?position=Teacher+I&positionCategory=Teaching&district=...&category=...
+   ```
+3. Fill in the tabs: **Personal Information**, **Education**, **Training**, **Experience** and **Eligibility**.
+   - Documents are submitted as **links**, not file uploads. Upload the PDS and certificates to Google Drive (or any cloud storage), set sharing to "Anyone with the link can view", and paste the URLs.
+4. Submit, then save the **Tracking Number** that is shown. It looks like `T1-2026-15`: the position code, the year, then a running number.
+
+<details>
+<summary><b>Example API request</b> (what the form sends to <code>POST /api/apply</code>)</summary>
+
+```json
+{
+  "type": "external",
+  "first_name": "Juan", "middle_name": "Santos", "last_name": "Dela Cruz",
+  "position": "Teacher I", "positionCategory": "Teaching", "district": "District 1", "category": "Elementary",
+  "email_address": "juan@example.com", "contact_no": "09171234567",
+  "pds_link": "https://drive.google.com/...",
+  "education": "[{\"degree\":\"BEEd\",\"year\":\"2024\",\"link\":\"https://drive.google.com/...\"}]",
+  "training": "[]", "experience": "[]", "eligibility": "[{\"details\":\"LET\",\"rating\":\"85.2\",\"link\":\"\"}]"
+}
+```
+
+Response: `{ "success": true, "applicationCode": "T1-2026-15" }`. It returns `429` after 20 submissions from one IP within 15 minutes.
+
+</details>
+
+### For HR staff and evaluators (RSP Dashboard)
+
+1. On an office PC, open `http://<office-pc-ip>:3000` and sign in.
+2. **Vacancy Setup**: turn on the positions being filled, set their plantilla items, and set the vacancy announcement number. Export the **VER** to request publication.
+3. Work through the five steps for each applicant:
+   - **Step 1**: qualify or disqualify, then generate the notices.
+   - **Step 2**: enter the scores. This needs `/step2-login`.
+   - **Step 3**: rank the applicants and export the **CAR**.
+   - **Step 4**: track the requirements.
+   - **Step 5**: generate the **Assignment Orders**.
+4. Send the notices in bulk from the email dispatch screen. Use **Backup** to download an archive of the database.
+
+<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -509,16 +538,18 @@ When the dashboard starts, it makes sure these accounts exist:
 | Username | Role | Initial password |
 | --- | --- | --- |
 | `SUPERADMIN_USERNAME` (default `superadmin`) | Superadmin | `SUPERADMIN_PASSWORD` |
-| `admin` | Admin | `ADMIN_PASSWORD` (default `admin123`) |
+| `admin` | Admin | `ADMIN_PASSWORD` (only created when it is set) |
 
 | Role | Access |
 | --- | --- |
 | 🔑 **Superadmin** | Full access, including managing Admin accounts. Superadmin activity is kept out of the audit log. |
-| 🧑‍💼 **Admin** | Manages vacancies, applicants, documents and Evaluator accounts. |
-| 📝 **Evaluator** | Works on the evaluation steps they have been given. Step 2 (and therefore Step 3) needs the `can_access_step2` permission. |
+| 🧑‍💼 **Admin** | Manages vacancies, applicants, documents and Evaluator accounts. Only admins can add or edit positions, turn vacancies on or off, delete applicants, download backups, send bulk emails and convert DOCX to PDF on the server. |
+| 📝 **Evaluator** | Works on the evaluation steps they have been given. Step 2 (and therefore Step 3) needs the `can_access_step2` permission or a Step 2 unlock. This rule is enforced on the API too, not just on the pages. |
+
+Role and permission changes take effect on the user's next request, and deleting a user signs them out immediately. Sessions last 12 hours.
 
 > [!IMPORTANT]
-> Change the default passwords right after the first login. In production, the dashboard won't start until `JWT_SECRET` and `SUPERADMIN_PASSWORD` are set.
+> In production the dashboard won't start until `JWT_SECRET` is a long random value and `SUPERADMIN_PASSWORD` is strong (see [Configuration](#%EF%B8%8F-configuration)).
 
 <p align="right"><a href="#top">⬆ back to top</a></p>
 
@@ -536,7 +567,20 @@ When the dashboard starts, it makes sure these accounts exist:
 ### Passwords and sessions
 - Passwords are hashed with salted scrypt (`utils/security.js`).
 - Older SHA-256 hashes still work and are upgraded automatically on the next successful login.
-- Sessions use signed JWTs stored in `sameSite` cookies.
+- Sessions use signed JWTs stored in `httpOnly`, `sameSite` cookies that expire after 12 hours.
+- Every request reloads the user's role and Step 2 permission from the database, so demoted or deleted users lose access at once.
+- Production refuses to start with a placeholder or short `JWT_SECRET` or a weak `SUPERADMIN_PASSWORD`. There are no built-in default passwords.
+- Logout is a `POST`, and login pages only show fixed error messages, so crafted links can't sign users out or show fake text.
+
+### Access control
+- Admin-only API routes: positions and vacancies, deleting applicants, backups, bulk email and DOCX-to-PDF conversion.
+- Step 2 and Step 3 API actions (assess, no appearance, newly promoted, proceed to requirements) need Step 2 access, the same as the pages.
+
+### Cross-site scripting (XSS)
+- Applicant data comes from the public portal, so it is escaped everywhere the dashboard builds HTML: `escapeHtml()` and `jsArg()` in `public/js/utils.js`, and the `jsArg` Handlebars helper for inline `onclick` arguments.
+- Toasts render plain text.
+- Names in outgoing email HTML are escaped.
+- Document links are only rendered when they start with `http://` or `https://`.
 
 ### HTTP hardening
 - Both apps send `helmet` security headers, with HSTS turned on in production.
@@ -545,12 +589,49 @@ When the dashboard starts, it makes sure these accounts exist:
 
 ### File and process safety
 - Backup downloads are protected against path traversal.
+- Generated notice file names are built from letters and digits only (`utils/noticeNames.js`), so an application code can never point outside `generated_notices`.
+- CSV backups prefix values starting with `=`, `+`, `-` or `@` with `'`, so spreadsheet apps don't run them as formulas.
+- The server-side PDF converter only accepts real `.docx` files.
 - `/generated_notices` is not served publicly.
 - Word and LibreOffice are called with file paths as arguments, never through a shell command string.
+
+### Public portal
+- Every application is validated on the server (`rsp-portal/lib/validateApplication.js`): required fields, lengths, email and phone formats, age, allowed positions and districts, at most 20 entries per list, and `http(s)` links only.
+- The tracking code is always generated by the server; a code sent by the browser is ignored.
+- A strict Content Security Policy is on, with no inline scripts.
+- Behind the tunnel, rate limiting uses the real visitor IP from `CF-Connecting-IP`.
+- Unknown pages and server errors show a friendly error page.
 
 ### Error handling
 - The portal never returns raw database errors to applicants.
 - Creating an applicant runs in a single transaction.
+
+---
+
+## 🧪 Testing
+
+The project has no automated test suite yet. Before releasing a change, run these manual checks.
+
+| Area | Check |
+| --- | --- |
+| Syntax | `node --check rsp-dashboard/server.js` and `node --check rsp-portal/server.js` |
+| Portal | Submit a test application at <http://localhost:3001>. A tracking number appears, and the applicant shows up in the dashboard. |
+| Portal binding | `netstat -ano \| findstr :3001` shows `127.0.0.1:3001` only. |
+| Security headers | `curl -I http://127.0.0.1:3001/` includes `X-Content-Type-Options: nosniff`. |
+| Rate limit | The 21st `POST /api/apply` from one IP within 15 minutes returns `429`. |
+| Portal validation | An empty form shows inline errors. A list with 21 entries, or a `javascript:` link, is rejected with `400`. `/nope` shows the 404 page. |
+| Dashboard | Sign in, then move a test applicant through Steps 1–5 and generate each notice, the CAR, the IER and the VER. |
+| Roles | As an evaluator, `DELETE /api/applicants/:id` and `GET /api/export/backup` return `403`. Without Step 2 access, `POST /api/applicants/:id/assess` returns `401`. |
+| XSS | A test applicant named `<img src=x onerror=alert(1)>` shows as plain text in every list and modal. |
+| Secrets | With `NODE_ENV=production` and a weak `SUPERADMIN_PASSWORD`, `npm start` stops with a security error. |
+| Deployment | From mobile data, the portal URL loads. `http://<office-public-ip>:3000` does not respond. |
+
+For test data, run `npm run seedApplicants` against a **development** database.
+
+> [!WARNING]
+> `node seeders/unseed.js` **empties every table**: applicants, positions, logs and email logs. It doesn't remove only the test data. Never run it against the real database.
+
+<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -566,9 +647,22 @@ When the dashboard starts, it makes sure these accounts exist:
 | Can't connect to the database | Make sure MySQL is running, the `DB_*` values are correct, and you have run `npm run db:init`. |
 | Emails fail to send | Check the `SMTP_*` values. Gmail needs an App Password. Check whether the daily limit was reached. |
 | Page looks stale on `localhost` | An old Service Worker may be caching responses. Unregister it in DevTools (**Application → Service Workers**). |
-| Production start fails with a security error | Set `JWT_SECRET` and `SUPERADMIN_PASSWORD` in `.env`. |
+| Production start fails with a security error | Set `JWT_SECRET` to a random value of at least 32 characters and `SUPERADMIN_PASSWORD` to at least 12 characters (not `superadmin`) in `rsp-dashboard/.env`. |
+| Login works but you are sent straight back to the login page | `COOKIE_SECURE=true` on a plain-HTTP install. Set it to `false` unless the dashboard is served over HTTPS. |
+| Evaluators get "Only administrators can do this." | That action is admin-only. Ask an admin, or change the user's role. |
 
 <p align="right"><a href="#top">⬆ back to top</a></p>
+
+---
+
+## 🤝 Contributing
+
+1. Create a branch from `main`, e.g. `feature/vacancy-filter` or `fix/notice-filename`.
+2. Keep changes focused, and match the existing code style (CommonJS, Express controllers and routes, Handlebars partials).
+3. Run the [Testing](#-testing) checks.
+4. Update this README and the changelogs whenever behavior, configuration or dependencies change. That includes bumping the version badges.
+5. Write a clear commit message: a short summary line, then what changed and why.
+6. Never commit `.env` files, generated notices, backups or real applicant data.
 
 ---
 
@@ -576,6 +670,12 @@ When the dashboard starts, it makes sure these accounts exist:
 
 Recent highlights:
 
+- 🛡️ **Security, UI and usability pass**
+  - Production refuses weak secrets; sessions last 12 hours and pick up role changes immediately.
+  - Admin-only and Step 2 rules are enforced on the API.
+  - Applicant data is escaped across the dashboard, notice file names are sanitized, and CSV backups are safe to open in Excel.
+  - Toasts replace browser alerts, buttons show loading states, and modals, menus, search boxes and filters are labelled for screen readers.
+  - The portal validates every application on the server, always generates the tracking code itself, enables a strict CSP, works on phones, saves a draft while applicants type, and shows inline errors instead of pop-ups.
 - 🌐 **Online portal, local dashboard**
   - Cloudflare Tunnel deployment guide and a least-privilege portal DB user.
   - Firewall script that keeps the dashboard LAN-only.
@@ -600,6 +700,13 @@ For the full release history, see [CHANGELOG.md](CHANGELOG.md) and [rsp-dashboar
 Released under the **ISC** license, as declared in each application's `package.json`.
 
 The official templates, logos and seals in this repository belong to the **Department of Education**. They are included for use by the Division of Iligan City only.
+
+---
+
+## 👤 Author
+
+**Jevoel16** · [GitHub](https://github.com/Jevoel16)<br/>
+Personnel Section, Recruitment, Selection and Placement (RSP), DepEd Division of Iligan City
 
 <div align="center">
 <sub>Built for the DepEd Division of Iligan City · Personnel Section, RSP</sub>

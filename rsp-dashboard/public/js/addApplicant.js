@@ -79,7 +79,7 @@
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 border-bottom bg-transparent fw-medium';
-                        btn.innerHTML = `<span>${pos.title}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
+                        btn.innerHTML = `<span>${escapeHtml(pos.title)}</span> <i class="bi bi-chevron-right text-muted small"></i>`;
                         btn.onclick = () => handlePositionSelection(pos);
                         list.appendChild(btn);
                     });
@@ -118,7 +118,7 @@
         document.getElementById('wizardCategory').value = cat;
         document.getElementById('wizardPosition').value = pos.title;
         document.getElementById('wizardVacancyAnnouncementNo').value = pos.vacancyAnnouncementNo || '';
-        document.getElementById('selectedPositionText').innerHTML = `${cat} > ${pos.title}`;
+        document.getElementById('selectedPositionText').textContent = `${cat} > ${pos.title}`;
         document.getElementById('addApplicantTitle').innerHTML = '<i class="bi bi-person-vcard me-2"></i>Applicant Information';
         
         const posText = (pos.title || '').toLowerCase();
@@ -164,18 +164,18 @@
         } else {
             wizardData[type].forEach((item, index) => {
                 let text = '';
-                if (type === 'education') text = `<strong>${item.degree}</strong> (${item.year})`;
-                if (type === 'training') text = `<strong>${item.title}</strong> (${item.hours} hrs)`;
+                if (type === 'education') text = `<strong>${escapeHtml(item.degree)}</strong> (${escapeHtml(item.year)})`;
+                if (type === 'training') text = `<strong>${escapeHtml(item.title)}</strong> (${escapeHtml(item.hours)} hrs)`;
                 if (type === 'experience') {
                     let parts = [];
                     if (item.years > 0) parts.push(item.years + (item.years == 1 ? " year" : " years"));
                     if (item.months > 0) parts.push(item.months + (item.months == 1 ? " month" : " months"));
                     let dur = parts.length > 0 ? parts.join(" & ") : "0 years";
-                    text = `<strong>${item.details}</strong> (${dur})`;
+                    text = `<strong>${escapeHtml(item.details)}</strong> (${escapeHtml(dur)})`;
                 }
-                if (type === 'eligibility') text = `<strong>${item.details}</strong> (Rating: ${item.rating})`;
+                if (type === 'eligibility') text = `<strong>${escapeHtml(item.details)}</strong> (Rating: ${escapeHtml(item.rating)})`;
                 
-                let linkHtml = item.link ? `<br><a href="${item.link}" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : '';
+                let linkHtml = /^https?:\/\//i.test(item.link || '') ? `<br><a href="${escapeHtml(item.link)}" rel="noopener noreferrer" target="_blank" class="text-primary text-decoration-none small"><i class="bi bi-link-45deg"></i> View Document</a>` : '';
                 
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center rounded shadow-sm mb-2">
                     <span>${text}${linkHtml}</span>
@@ -205,7 +205,7 @@
             if (document.getElementById('edu_link')) document.getElementById('edu_link').value = '';
             renderWizardList('education');
             saveDraft();
-        } else alert("Please provide both degree and year.");
+        } else showToast("Please provide both degree and year.", "warning");
     });
 
     document.getElementById('btn-add-train')?.addEventListener('click', () => {
@@ -219,7 +219,7 @@
             if (document.getElementById('train_link')) document.getElementById('train_link').value = '';
             renderWizardList('training');
             saveDraft();
-        } else alert("Please provide both title and hours.");
+        } else showToast("Please provide both title and hours.", "warning");
     });
 
     document.getElementById('btn-add-exp')?.addEventListener('click', () => {
@@ -235,7 +235,7 @@
             if (document.getElementById('exp_link')) document.getElementById('exp_link').value = '';
             renderWizardList('experience');
             saveDraft();
-        } else alert("Please provide details and years/months.");
+        } else showToast("Please provide details and years/months.", "warning");
     });
 
     document.getElementById('btn-add-elig')?.addEventListener('click', () => {
@@ -249,7 +249,7 @@
             if (document.getElementById('elig_link')) document.getElementById('elig_link').value = '';
             renderWizardList('eligibility');
             saveDraft();
-        } else alert("Please provide details and rating.");
+        } else showToast("Please provide details and rating.", "warning");
     });
 
     let isFormDirty = false;
@@ -385,11 +385,7 @@
                         errorMsg = 'Contact No. must start with 09 and be exactly 11 digits.';
                     }
                     
-                    if (window.showToast) {
-                        window.showToast(errorMsg, 'danger');
-                    } else {
-                        alert(errorMsg);
-                    }
+                    window.showToast(errorMsg, 'danger');
                     
                     const tabPane = firstInvalid.closest('.tab-pane');
                     if (tabPane && !tabPane.classList.contains('active')) {
@@ -448,16 +444,14 @@
             } else {
                 const errorData = await res.json().catch(() => ({}));
                 const errMsg = errorData.error || 'Failed to save applicant';
-                if (window.showToast) window.showToast(errMsg, 'danger');
-                else alert(errMsg);
+                window.showToast(errMsg, 'danger');
                 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         } catch (err) {
             console.error('Failed to save applicant', err);
-            if (window.showToast) window.showToast('Network error. Failed to save applicant.', 'danger');
-            else alert('Network error. Failed to save applicant.');
+            window.showToast('Network error. Failed to save applicant.', 'danger');
             btn.innerHTML = originalText;
             btn.disabled = false;
         }

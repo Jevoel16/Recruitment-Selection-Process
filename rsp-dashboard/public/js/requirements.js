@@ -103,7 +103,7 @@ async function openRequirementsModal(id, skipFetch = false) {
             
             <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-4 border">
                 <div>
-                    <h6 class="mb-0 fw-bold text-dark">${app.name}</h6>
+                    <h6 class="mb-0 fw-bold text-dark">${escapeHtml(app.name)}</h6>
                     <small class="text-muted">Click items to toggle completion</small>
                 </div>
                 <div class="text-end">

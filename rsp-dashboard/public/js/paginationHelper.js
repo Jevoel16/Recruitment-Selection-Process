@@ -132,6 +132,8 @@ const PaginationHelper = {
             }
             
             a.innerHTML = text;
+            if (active) a.setAttribute('aria-current', 'page');
+            else a.setAttribute('aria-label', `Go to page ${pageNum}`);
             li.appendChild(a);
             return li;
         };

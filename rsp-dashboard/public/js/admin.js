@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const tbody = document.querySelector('#usersTable tbody');
                 let noUsersRow = document.getElementById('noUsersRow');
+                const countEl = document.getElementById('userResultCount');
+                if (countEl) countEl.textContent = query ? `${visibleCount} matching user${visibleCount === 1 ? '' : 's'}` : '';
 
                 if (visibleCount === 0) {
                     if (!noUsersRow) {
@@ -54,13 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const targetId = this.getAttribute('data-target');
                 const input = document.getElementById(targetId);
                 const icon = this.querySelector('i');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.replace('bi-eye', 'bi-eye-slash');
-                } else {
-                    input.type = 'password';
-                    icon.classList.replace('bi-eye-slash', 'bi-eye');
-                }
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                icon.classList.replace(show ? 'bi-eye' : 'bi-eye-slash', show ? 'bi-eye-slash' : 'bi-eye');
+                this.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+                this.setAttribute('aria-pressed', String(show));
             });
         });
     }
@@ -73,36 +73,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Shared message row for the users/logs tables (loading, empty and error states)
+function tableMessageRow(colspan, message, { id = '', icon = 'bi-inbox', loading = false } = {}) {
+    const visual = loading
+        ? '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>'
+        : `<i class="bi ${icon} fs-1 d-block mb-2 text-secondary opacity-50" aria-hidden="true"></i>`;
+    return `<tr${id ? ` id="${id}"` : ''}><td colspan="${colspan}" class="text-center py-5 text-muted">${visual}${escapeHtml(message)}</td></tr>`;
+}
+
+async function readError(res, fallback) {
+    try {
+        const body = await res.json();
+        return body.error || body.message || fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+// Same rule as the server: 8+ characters with at least one letter and one number
+function isStrongPassword(password) {
+    return password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
+}
+
 async function fetchUsers() {
+    const tbody = document.querySelector('#usersTable tbody');
+    tbody.innerHTML = tableMessageRow(5, 'Loading users...', { loading: true });
     try {
         const signal = window.getTabAbortSignal ? window.getTabAbortSignal() : undefined;
         const response = await fetch('/api/users', { signal });
+        if (!response.ok) throw new Error(await readError(response, 'Could not load users.'));
         const users = await response.json();
-        const tbody = document.querySelector('#usersTable tbody');
-        tbody.innerHTML = '';
-        
+
         let html = '';
         if (users.length === 0) {
-            html = `
-                <tr id="noUsersRow">
-                    <td colspan="5" class="text-center py-5 text-muted">
-                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                        No users found matching the criteria.
-                    </td>
-                </tr>
-            `;
+            html = tableMessageRow(5, 'No users found matching the criteria.', { id: 'noUsersRow' });
         } else {
             users.forEach(user => {
                 html += `
                     <tr>
-                        <td>${user.name}</td>
-                        <td>${user.username}</td>
-                        <td><span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${user.role}</span></td>
-                        <td>${user.can_access_step2 ? '<i class="bi bi-check-circle-fill text-success"></i> Yes' : '<i class="bi bi-x-circle-fill text-danger"></i> No'}</td>
+                        <td>${escapeHtml(user.name)}</td>
+                        <td>${escapeHtml(user.username)}</td>
+                        <td><span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${escapeHtml(user.role)}</span></td>
+                        <td>${user.can_access_step2 ? '<i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i> Yes' : '<i class="bi bi-x-circle-fill text-danger" aria-hidden="true"></i> No'}</td>
                         <td class="text-center pe-4 ps-3 text-nowrap">
                             <div class="d-flex justify-content-center align-items-center gap-2">
-                                <button class="btn btn-sm btn-warning action-btn text-dark shadow-sm px-2 py-1" onclick="openEditUser(${user.id}, '${user.role}', ${user.can_access_step2})" title="Edit User"><i class="bi bi-pencil"></i> Edit</button>
-                                <button class="btn btn-sm btn-danger action-btn shadow-sm px-2 py-1" onclick="deleteUser(${user.id})" title="Delete User"><i class="bi bi-trash"></i> Delete</button>
+                                <button class="btn btn-sm btn-outline-primary action-btn shadow-sm px-2 py-1" onclick="openEditUser(${user.id}, ${jsArg(user.role)}, ${user.can_access_step2 ? 'true' : 'false'})" aria-label="Edit ${escapeHtml(user.username)}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</button>
+                                <button class="btn btn-sm btn-outline-danger action-btn shadow-sm px-2 py-1" onclick="deleteUser(${user.id})" aria-label="Delete ${escapeHtml(user.username)}"><i class="bi bi-trash" aria-hidden="true"></i> Delete</button>
                             </div>
                         </td>
                     </tr>
@@ -110,7 +126,7 @@ async function fetchUsers() {
             });
         }
         tbody.innerHTML = html;
-        
+
         // Re-apply search filter if there's an active search query
         const searchInput = document.getElementById('userSearchInput');
         if (searchInput && searchInput.value) {
@@ -119,6 +135,7 @@ async function fetchUsers() {
     } catch (e) {
         if (e.name === 'AbortError') return;
         console.error(e);
+        tbody.innerHTML = tableMessageRow(5, e.message || 'Could not load users.', { icon: 'bi-exclamation-triangle' });
     }
 }
 
@@ -130,18 +147,18 @@ async function createUser(e) {
 
     const password = formData.get('password');
     const confirmPassword = formData.get('confirmPassword');
-    
+
     if (password !== confirmPassword) {
-        alert("Passwords do not match.");
+        showToast('Passwords do not match.', 'warning');
         return;
     }
-    
-    const strengthRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
-    if (!strengthRegex.test(password)) {
-        alert("Password must be at least 8 characters long and contain at least one letter and one number.");
+    if (!isStrongPassword(password)) {
+        showToast('Password must be at least 8 characters long and contain at least one letter and one number.', 'warning');
         return;
     }
 
+    const btn = document.getElementById('createUserBtn');
+    setButtonLoading(btn, true, 'Creating...');
     try {
         const res = await fetch('/api/users', {
             method: 'POST',
@@ -154,15 +171,18 @@ async function createUser(e) {
             fetchUsers();
             showToast('User successfully created!', 'success');
         } else {
-            const err = await res.json();
-            alert('Error: ' + err.error);
+            showToast(await readError(res, 'Could not create the user.'), 'danger');
         }
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error(err);
+        showToast('Network error. Please try again.', 'danger');
+    } finally {
+        setButtonLoading(btn, false);
     }
 }
 
 function openEditUser(id, role, can_access_step2) {
+    document.getElementById('editUserForm').reset();
     document.getElementById('editUserId').value = id;
     document.getElementById('editUserRole').value = role;
     document.getElementById('editAccessStep2').checked = can_access_step2;
@@ -173,19 +193,17 @@ async function updateUser(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const id = document.getElementById('editUserId').value;
-    
+
     const password = formData.get('password');
     const confirmPassword = formData.get('confirmPassword');
-    
+
     if (password) {
         if (password !== confirmPassword) {
-            alert("Passwords do not match.");
+            showToast('Passwords do not match.', 'warning');
             return;
         }
-        
-        const strengthRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
-        if (!strengthRegex.test(password)) {
-            alert("Password must be at least 8 characters long and contain at least one letter and one number.");
+        if (!isStrongPassword(password)) {
+            showToast('Password must be at least 8 characters long and contain at least one letter and one number.', 'warning');
             return;
         }
     }
@@ -196,6 +214,8 @@ async function updateUser(e) {
         password: password || undefined
     };
 
+    const btn = document.getElementById('editUserBtn');
+    setButtonLoading(btn, true, 'Saving...');
     try {
         const res = await fetch(`/api/users/${id}`, {
             method: 'PUT',
@@ -206,11 +226,15 @@ async function updateUser(e) {
             bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
             e.target.reset();
             fetchUsers();
+            showToast('User updated.', 'success');
         } else {
-            alert('Error updating user');
+            showToast(await readError(res, 'Could not update the user.'), 'danger');
         }
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error(err);
+        showToast('Network error. Please try again.', 'danger');
+    } finally {
+        setButtonLoading(btn, false);
     }
 }
 
@@ -221,42 +245,49 @@ function deleteUser(id) {
 
 async function executeDeleteUser() {
     const id = document.getElementById('deleteUserId').value;
+    const btn = document.getElementById('deleteUserBtn');
+    setButtonLoading(btn, true, 'Deleting...');
     try {
         const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
         if (res.ok) {
             bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
             fetchUsers();
+            showToast('User deleted.', 'success');
         } else {
-            const err = await res.json();
-            alert('Error: ' + err.error);
+            showToast(await readError(res, 'Could not delete the user.'), 'danger');
         }
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error(err);
+        showToast('Network error. Please try again.', 'danger');
+    } finally {
+        setButtonLoading(btn, false);
     }
 }
 
 async function fetchLogs() {
+    const tbody = document.querySelector('#logsTable tbody');
+    const colspan = document.querySelectorAll('#logsTable thead th').length || 3;
+    tbody.innerHTML = tableMessageRow(colspan, 'Loading logs...', { loading: true });
     try {
         const signal = window.getTabAbortSignal ? window.getTabAbortSignal() : undefined;
         const response = await fetch('/api/logs', { signal });
+        if (!response.ok) throw new Error(await readError(response, 'Could not load logs.'));
         const logs = await response.json();
-        const tbody = document.querySelector('#logsTable tbody');
-        tbody.innerHTML = '';
-        
-        let html = '';
-        logs.forEach(log => {
-            const date = new Date(log.createdAt).toLocaleString();
-            html += `
+
+        if (logs.length === 0) {
+            tbody.innerHTML = tableMessageRow(colspan, 'No activity has been logged yet.');
+            return;
+        }
+        tbody.innerHTML = logs.map(log => `
                 <tr>
-                    <td><small class="text-muted">${date}</small></td>
-                    <td><strong>${log.name}</strong> <br><small class="text-muted">@${log.username}</small></td>
-                    <td>${log.action}</td>
+                    <td><small class="text-muted">${escapeHtml(new Date(log.createdAt).toLocaleString())}</small></td>
+                    <td><strong>${escapeHtml(log.name)}</strong> <br><small class="text-muted">@${escapeHtml(log.username)}</small></td>
+                    <td>${escapeHtml(log.action)}</td>
                 </tr>
-            `;
-        });
-        tbody.innerHTML = html;
+            `).join('');
     } catch (e) {
         if (e.name === 'AbortError') return;
         console.error(e);
+        tbody.innerHTML = tableMessageRow(colspan, e.message || 'Could not load logs.', { icon: 'bi-exclamation-triangle' });
     }
 }

@@ -1,10 +1,10 @@
     <!-- Performance Calculator Modal -->
-    <div class="modal fade glass-modal" id="perfCalcModal" tabindex="-1">
+    <div class="modal fade glass-modal" id="perfCalcModal" tabindex="-1" aria-labelledby="perfCalcModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header border-bottom border-light border-opacity-25 bg-info bg-opacity-10 text-info">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-graph-up-arrow"></i> Performance Points Calculator</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold" id="perfCalcModalLabel"><i class="bi bi-graph-up-arrow"></i> Performance Points Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3">
@@ -26,7 +26,7 @@
                         <div class="form-text" id="perfRatingHelp">Enter RPMS rating (0-5) or midpoint value.</div>
                         <div class="mt-2" id="midpointHelperDiv">
                             <label class="form-label small text-muted">Midpoint Helper (External Applicants)</label>
-                            <select class="form-select form-select-sm searchable-select" id="perfMidpointHelper" onchange="applyMidpoint()">
+                            <select aria-label="Adjectival rating" class="form-select form-select-sm searchable-select" id="perfMidpointHelper" onchange="applyMidpoint()">
                                 <option value="">-- Select Adjectival Rating --</option>
                                 <option value="4.75">Outstanding (4.500 - 5.000)</option>
                                 <option value="3.995">Very Satisfactory (3.500 - 4.499)</option>

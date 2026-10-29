@@ -4,19 +4,22 @@ const viewController = require('../controllers/viewController');
 const authController = require('../controllers/authController');
 const { step2AuthMiddleware, requireAuth } = require('../middleware/authMiddleware');
 const { createRateLimiter } = require('../utils/security');
+const { loginErrorMessage } = require('../utils/loginErrors');
 
 const loginLimiter = createRateLimiter({
     max: 20,
-    onLimit: (req, res) => res.redirect('/login?error=Too many attempts. Please try again in 15 minutes.')
+    onLimit: (req, res) => res.redirect('/login?error=locked')
 });
 const step2LoginLimiter = createRateLimiter({
     max: 20,
-    onLimit: (req, res) => res.redirect('/step2-login?error=Too many attempts. Please try again in 15 minutes.')
+    onLimit: (req, res) => res.redirect('/step2-login?error=locked')
 });
 
-router.get('/login', (req, res) => res.render('login', { error: req.query.error }));
+router.get('/login', (req, res) => res.render('login', { error: loginErrorMessage(req.query.error) }));
 router.post('/login', loginLimiter, authController.postLogin);
-router.get('/logout', authController.getLogout);
+// Logout is a POST so other sites can't sign users out with a link or image
+router.post('/logout', authController.getLogout);
+router.get('/logout', (req, res) => res.redirect(req.user ? '/dashboard' : '/login'));
 
 // All routes below require authentication
 router.use(requireAuth);

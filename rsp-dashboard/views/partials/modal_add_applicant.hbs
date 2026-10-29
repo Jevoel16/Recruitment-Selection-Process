@@ -1,10 +1,10 @@
     <!-- Add Applicant Modal -->
-    <div class="modal fade glass-modal" id="addApplicantModal" tabindex="-1">
+    <div class="modal fade glass-modal" id="addApplicantModal" tabindex="-1" aria-labelledby="addApplicantModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header border-bottom-0 bg-primary bg-opacity-10 text-primary pb-3">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i><span id="addApplicantModalTitle">New Applicant Wizard</span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold" id="addApplicantModalLabel"><i class="bi bi-person-plus-fill me-2"></i><span id="addApplicantModalTitle">New Applicant Wizard</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addApplicantForm">
@@ -60,7 +60,7 @@
                             </div>
                             <div class="col-md-4 fit-dropdown-menu">
                                 <label class="form-label">Sex</label>
-                                <select class="form-select custom-ui-select" name="sex">
+                                <select aria-label="Sex" class="form-select custom-ui-select" name="sex">
                                     <option value="">Select...</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>

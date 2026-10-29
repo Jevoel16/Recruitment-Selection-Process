@@ -4,12 +4,16 @@ const positionController = require('../controllers/positionController');
 const applicantController = require('../controllers/applicantController');
 const db = require('../db');
 const authController = require('../controllers/authController');
-const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
+const { requireAuth, requireAdmin, step2AuthMiddleware } = require('../middleware/authMiddleware');
 const pdfEvents = require('../utils/pdfEvents');
 const backupManager = require('../utils/backupManager');
 const { convertWithWord, convertWithLibreOffice } = require('../utils/docConverter');
+const { noticeBaseName } = require('../utils/noticeNames');
 const path = require('path');
 const fs = require('fs');
+
+// Applicant names come from the public portal, so escape them before putting them in email HTML
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const transporterCache = new Map();
 
@@ -65,16 +69,16 @@ router.get('/logs', requireAdmin, authController.getLogs);
 
 // Endpoints for managing positions and fetching dynamic plantilla assignments
 router.get('/positions/vacancy-setup', positionController.getVacancySetup);
-router.post('/positions', positionController.createPosition);
-router.post('/positions/update', positionController.updatePosition);
-router.post('/positions/vacancy-off-all', positionController.turnOffAllVacancies);
-router.post('/positions/:id/vacancy', positionController.togglePositionVacancy);
-router.post('/positions/:id/plantilla', positionController.updatePlantilla);
+router.post('/positions', requireAdmin, positionController.createPosition);
+router.post('/positions/update', requireAdmin, positionController.updatePosition);
+router.post('/positions/vacancy-off-all', requireAdmin, positionController.turnOffAllVacancies);
+router.post('/positions/:id/vacancy', requireAdmin, positionController.togglePositionVacancy);
+router.post('/positions/:id/plantilla', requireAdmin, positionController.updatePlantilla);
 router.get('/positions/export/doc', positionController.exportDoc);
 
 // Core endpoints for applicant creation, assessment, scoring, and workflow progression
 router.post('/applicants', applicantController.createApplicant);
-router.delete('/applicants/:id', applicantController.deleteApplicant);
+router.delete('/applicants/:id', requireAdmin, applicantController.deleteApplicant);
 router.post('/applicants/:id/disqualify', applicantController.disqualifyApplicant);
 router.post('/applicants/:id/qualify', applicantController.qualifyApplicant);
 router.post('/applicants/:id/pregenerate-pdf', applicantController.pregeneratePdf);
@@ -82,10 +86,10 @@ router.post('/applicants/:id/proceed-step2', applicantController.proceedStep2);
 router.put('/applicants/:id/status', applicantController.updateStatus);
 router.post('/applicants/:id/requirements/all', applicantController.toggleAllRequirements);
 router.post('/applicants/:id/requirement', applicantController.updateRequirement);
-router.post('/applicants/:id/assess', applicantController.assessApplicant);
-router.post('/applicants/:id/no-appearance', applicantController.noAppearanceApplicant);
-router.post('/applicants/:id/newly-promoted', applicantController.newlyPromotedApplicant);
-router.post('/applicants/:id/proceed-requirements', applicantController.proceedRequirements);
+router.post('/applicants/:id/assess', step2AuthMiddleware, applicantController.assessApplicant);
+router.post('/applicants/:id/no-appearance', step2AuthMiddleware, applicantController.noAppearanceApplicant);
+router.post('/applicants/:id/newly-promoted', step2AuthMiddleware, applicantController.newlyPromotedApplicant);
+router.post('/applicants/:id/proceed-requirements', step2AuthMiddleware, applicantController.proceedRequirements);
 router.post('/applicants/:id/toggle-assignment-req', applicantController.toggleAssignmentReq);
 router.post('/applicants/:id/assign', applicantController.assignApplicant);
 router.post('/applicants/:id/complete', applicantController.completeApplicant);
@@ -129,7 +133,7 @@ router.put('/performance/group/:groupId', applicantController.updatePerformanceG
 
 
 // JSON Database Backup Endpoint
-router.get('/export/backup', async (req, res) => {
+router.get('/export/backup', requireAdmin, async (req, res) => {
     try {
         const data = await backupManager.fetchDatabaseData();
         const backupData = {
@@ -151,7 +155,7 @@ router.get('/export/backup', async (req, res) => {
 });
 
 // CSV Database Backup Endpoint (Zip of CSVs)
-router.get('/export/backup/csv', async (req, res) => {
+router.get('/export/backup/csv', requireAdmin, async (req, res) => {
     try {
         const data = await backupManager.fetchDatabaseData();
         
@@ -177,7 +181,7 @@ router.get('/export/backup/csv', async (req, res) => {
 });
 
 // Automated Backups List Endpoint
-router.get('/export/backup/automated/list', async (req, res) => {
+router.get('/export/backup/automated/list', requireAdmin, async (req, res) => {
     try {
         const backups = await backupManager.listBackups();
         res.json(backups);
@@ -188,7 +192,7 @@ router.get('/export/backup/automated/list', async (req, res) => {
 });
 
 // Automated Backups Download Endpoint
-router.get('/export/backup/automated/download/:filename', async (req, res) => {
+router.get('/export/backup/automated/download/:filename', requireAdmin, async (req, res) => {
     try {
         // Reject anything that is not a plain file name inside the backup directory
         const filename = path.basename(req.params.filename);
@@ -253,7 +257,7 @@ router.get('/export/email-codes/applicants', async (req, res) => {
 });
 
 // Endpoint to auto email application codes to specific applicants
-router.post('/export/email-codes', async (req, res) => {
+router.post('/export/email-codes', requireAdmin, async (req, res) => {
     try {
         const { applicantIds, accountIndex } = req.body;
         if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
@@ -294,7 +298,7 @@ router.post('/export/email-codes', async (req, res) => {
                     to: applicant.emailAddress,
                     subject: 'Your Application Code',
                     text: `Hello ${applicant.firstName} ${applicant.lastName},\n\nYour application code for the Recruitment and Selection Process is: ${applicant.applicationCode}\n\nPlease keep this code for your reference.\n\nThank you!`,
-                    html: `<p>Hello ${applicant.firstName} ${applicant.lastName},</p><p>Your application code for the Recruitment and Selection Process is: <strong>${applicant.applicationCode}</strong></p><p>Please keep this code for your reference.</p><p>Thank you!</p>`
+                    html: `<p>Hello ${escapeHtml(applicant.firstName)} ${escapeHtml(applicant.lastName)},</p><p>Your application code for the Recruitment and Selection Process is: <strong>${escapeHtml(applicant.applicationCode)}</strong></p><p>Please keep this code for your reference.</p><p>Thank you!</p>`
                 });
                 
                 // Log success
@@ -533,29 +537,7 @@ router.post('/export/pre-generate-docs', async (req, res) => {
                 }
                 const buf = outZip.generate({ type: 'nodebuffer' });
 
-                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                
-                let posCode = 'UnknownPos';
-                let vacancyNo = 'UnknownVac';
-                let increment = '0000';
-                if (app.applicationCode) {
-                    const parts = app.applicationCode.split('-');
-                    if (parts.length >= 4) {
-                        posCode = parts[0];
-                        vacancyNo = parts[1];
-                        increment = parts[3];
-                    } else if (parts.length > 0) {
-                        posCode = parts[0];
-                        increment = parts[parts.length - 1];
-                    }
-                } else {
-                    if (app.position_code) posCode = app.position_code.replace(/[^a-zA-Z0-9]/g, '');
-                    if (app.vacancyAnnouncementNo) vacancyNo = app.vacancyAnnouncementNo.replace(/[^a-zA-Z0-9]/g, '');
-                }
-                
-                const noticeType = 'NoticeOfEvaluation';
-                const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
+                const baseName = noticeBaseName(app, 'NoticeOfEvaluation', app.position_code);
                 const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
                 await fs.promises.mkdir(tempDir, { recursive: true });
                 const inputPath = path.join(tempDir, baseName + '.docx');
@@ -610,7 +592,7 @@ router.post('/export/pre-generate-docs', async (req, res) => {
     }
 });
 
-router.post('/export/email-docs', async (req, res) => {
+router.post('/export/email-docs', requireAdmin, async (req, res) => {
     try {
         const { applicantIds, accountIndex } = req.body;
         if (!applicantIds || !Array.isArray(applicantIds) || applicantIds.length === 0) {
@@ -644,30 +626,7 @@ router.post('/export/email-docs', async (req, res) => {
             try {
 
 
-                const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
-                const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-                
-                let posCode = 'UnknownPos';
-                let vacancyNo = 'UnknownVac';
-                let increment = '0000';
-                if (app.applicationCode) {
-                    const parts = app.applicationCode.split('-');
-                    if (parts.length >= 4) {
-                        posCode = parts[0];
-                        vacancyNo = parts[1];
-                        increment = parts[3];
-                    } else if (parts.length > 0) {
-                        posCode = parts[0];
-                        increment = parts[parts.length - 1];
-                    }
-                } else {
-                    if (app.position_code) posCode = app.position_code.replace(/[^a-zA-Z0-9]/g, '');
-                    if (app.vacancyAnnouncementNo) vacancyNo = app.vacancyAnnouncementNo.replace(/[^a-zA-Z0-9]/g, '');
-                }
-                
-                const noticeType = 'NoticeOfEvaluation';
-
-                const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
+                const baseName = noticeBaseName(app, 'NoticeOfEvaluation', app.position_code);
                 const pdfPath = path.join(generatedDir, baseName + '.pdf');
                 const docxPath = path.join(generatedDir, baseName + '.docx');
                 
@@ -696,7 +655,7 @@ router.post('/export/email-docs', async (req, res) => {
                     to: app.emailAddress,
                     subject: 'Your Initial Evaluation Document',
                     text: `Good Day, ${app.firstName} ${app.lastName}! \n\nPlease find attached files for your Initial Evaluation.\n\nThank you!`,
-                    html: `<p>Good Day, ${app.firstName} ${app.lastName}! </p><p>Please find attached files for your Initial Evaluation.</p><p>Thank you!</p>`,
+                    html: `<p>Good Day, ${escapeHtml(app.firstName)} ${escapeHtml(app.lastName)}! </p><p>Please find attached files for your Initial Evaluation.</p><p>Thank you!</p>`,
                     attachments: [{ filename: attachmentName, content: attachmentBuf }]
                 });
                 
@@ -717,7 +676,7 @@ router.post('/export/email-docs', async (req, res) => {
     }
 });
 
-router.post('/export/convert-to-pdf', async (req, res) => {
+router.post('/export/convert-to-pdf', requireAdmin, async (req, res) => {
     try {
         const { filename, docxBase64 } = req.body;
         if (!docxBase64) return res.status(400).json({ error: 'Missing document data' });
@@ -727,8 +686,14 @@ router.post('/export/convert-to-pdf', async (req, res) => {
         const cleanup = () => fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
 
         const safeName = (filename || 'doc').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+        const docxBuffer = Buffer.from(docxBase64, 'base64');
+        // Only DOCX files (ZIP containers starting with "PK") are handed to LibreOffice
+        if (!/\.docx$/i.test(safeName) || docxBuffer.subarray(0, 2).toString('latin1') !== 'PK') {
+            await cleanup();
+            return res.status(400).json({ error: 'Only .docx files can be converted.' });
+        }
         const inputPath = path.join(tempDir, safeName);
-        await fs.promises.writeFile(inputPath, Buffer.from(docxBase64, 'base64'));
+        await fs.promises.writeFile(inputPath, docxBuffer);
 
         let outputPath;
         try {

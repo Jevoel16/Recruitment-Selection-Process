@@ -1,10 +1,10 @@
 <!-- Generic Delete Confirmation Modal -->
-<div class="modal fade glass-modal" id="deleteConfirmModal" tabindex="-1">
+<div class="modal fade glass-modal" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header border-bottom-0 bg-danger bg-opacity-10 text-danger pb-2">
-                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title fw-bold" id="deleteConfirmModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center p-4">
                 <p class="mb-4 text-dark">Are you sure you want to delete this record? This action cannot be undone.</p>

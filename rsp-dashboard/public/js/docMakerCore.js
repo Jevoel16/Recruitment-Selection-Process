@@ -73,9 +73,9 @@ window.exportFromTemplate = async (templateUrl, data, filename) => {
         console.error("Error generating document:", error);
         if (error.properties && error.properties.errors) {
             console.error("Docxtemplater detailed errors:", error.properties.errors);
-            alert("Failed to generate document: " + error.properties.errors.map(e => e.message || e.name).join(", "));
+            showToast("Failed to generate document: " + error.properties.errors.map(e => e.message || e.name).join(", "), "danger");
         } else {
-            alert("Failed to generate document from template: " + (error.message || error));
+            showToast("Failed to generate document from template: " + (error.message || error), "danger");
         }
     }
 };

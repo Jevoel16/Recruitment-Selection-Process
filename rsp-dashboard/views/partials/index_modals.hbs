@@ -69,12 +69,12 @@
     {{> modal_step3_remove_no_appearance}}
 
     <!-- Document Type Modal -->
-    <div class="modal fade glass-modal" id="docTypeModal" tabindex="-1">
+    <div class="modal fade glass-modal" id="docTypeModal" tabindex="-1" aria-labelledby="docTypeModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0">
                     <h5 class="modal-title fw-bold text-primary" id="docTypeModalTitle"><i class="bi bi-file-earmark-word"></i> Generate Document</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body pb-4">
                     <p class="text-muted small mb-3" id="docTypeModalDesc">Select the template to use for generating the document.</p>
@@ -96,12 +96,12 @@
     </div>
 
     <!-- Off All Vacancies Confirmation Modal -->
-    <div class="modal fade glass-modal" id="offAllVacanciesModal" tabindex="-1">
+    <div class="modal fade glass-modal" id="offAllVacanciesModal" tabindex="-1" aria-labelledby="offAllVacanciesModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle"></i> Turn Off All Vacancies</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold text-danger" id="offAllVacanciesModalLabel"><i class="bi bi-exclamation-triangle"></i> Turn Off All Vacancies</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body pb-4">
                     <p class="mb-0">Are you sure you want to turn off all vacancy positions? This will mark all positions as non-vacant.</p>

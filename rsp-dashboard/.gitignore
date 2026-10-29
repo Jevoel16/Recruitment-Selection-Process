@@ -31,6 +31,7 @@ dist/
 
 # Generated output
 *.pdf
+public/generated_notices/*.docx
 /database/database_backups/*
 !/database/database_backups/.gitignore
 

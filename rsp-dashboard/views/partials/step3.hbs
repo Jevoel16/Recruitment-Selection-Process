@@ -8,13 +8,13 @@
                 <form method="GET" action="/step3/1" class="row g-2">
                     <div class="col-md-3">
                         <div class="input-group glass-panel h-100 shadow-sm">
-                            <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="submitSearch(this.closest('form'))"><i class="bi bi-search text-primary"></i></span>
-                            <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name or code..." value="{{searchQuery}}" onkeypress="if(event.key === 'Enter') { event.preventDefault(); submitSearch(this.form); }">
+                            <button type="button" class="input-group-text bg-white border-end-0 cursor-pointer" onclick="submitSearch(this.closest('form'))" aria-label="Search"><i class="bi bi-search text-primary" aria-hidden="true"></i></button>
+                            <input aria-label="Search by name or code" type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Search by name or code..." value="{{searchQuery}}" onkeypress="if(event.key === 'Enter') { event.preventDefault(); submitSearch(this.form); }">
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
-                            <select name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
+                            <select aria-label="Filter: All Positions" name="position" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="if(this.form.vacancy) this.form.vacancy.value=''; if(this.form.step) this.form.step.value=''; if(this.form.remarks) this.form.remarks.value=''; if(this.form.office) this.form.office.value=''; this.form.submit()">
                                 <option value="">All Positions</option>
                                 {{#each positionList}}
                                     <option value="{{this}}" {{#if (eq this ../positionFilter)}}selected{{/if}}>{{this}}</option>
@@ -24,7 +24,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
-                            <select name="vacancy" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                            <select aria-label="Filter: All Vacancies" name="vacancy" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Vacancies</option>
                                 {{#each vacancyList}}
                                     <option value="{{this}}" {{#if (eq this ../vacancyFilter)}}selected{{/if}}>{{this}}</option>
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-3">
                         <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
-                            <select name="remarks" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
+                            <select aria-label="Filter: All Steps & Remarks" name="remarks" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="this.form.submit()">
                                 <option value="">All Steps & Remarks</option>
                                 {{#each remarksList}}
                                     <option value="{{this.value}}" {{#if (eq this.value ../remarksFilter)}}selected{{/if}}>{{this.label}}</option>
@@ -71,7 +71,7 @@
                             <td data-label="Applicant Name" class="fw-medium applicant-name-display-{{this.id}}">{{titleCase this.name}}</td>
                             <td data-label="Position">{{this.position}}</td>
                             <td data-label="Score Summary" class="text-center">
-                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, '{{titleCase this.name}}', true)" title="View Summary">
+                                <button class="btn btn-sm btn-outline-primary action-btn" onclick="openStep2SummaryModal({{this.id}}, {{jsArg (titleCase this.name)}}, true)" title="View Summary">
                                     <i class="bi bi-eye"></i> View
                                 </button>
                             </td>
@@ -100,13 +100,13 @@
                             </td>
                             <td data-label="Action" class="text-end pe-4">
                                 {{#if (eq this.status 'ASSESSED')}}
-                                <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, '{{titleCase this.name}}')" title="Move to Step 4"><i class="bi bi-arrow-right-circle"></i> Move</button>
+                                <button class="btn btn-sm btn-primary action-btn" onclick="proceedToRequirements({{this.id}}, {{jsArg (titleCase this.name)}})" title="Move to Step 4"><i class="bi bi-arrow-right-circle"></i> Move</button>
                                 {{/if}}
                                 {{#if (eq this.status 'NO_APPEARANCE')}}
-                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{titleCase this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
+                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, {{jsArg (titleCase this.name)}})" title="Remove"><i class="bi bi-trash"></i> Remove</button>
                                 {{/if}}
                                 {{#if (eq this.status 'NEWLY_PROMOTED')}}
-                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, '{{titleCase this.name}}')" title="Remove"><i class="bi bi-trash"></i> Remove</button>
+                                <button class="btn btn-sm btn-danger action-btn" onclick="confirmRemoveNoAppearance({{this.id}}, {{jsArg (titleCase this.name)}})" title="Remove"><i class="bi bi-trash"></i> Remove</button>
                                 {{/if}}
                             </td>
                         </tr>
@@ -125,7 +125,7 @@
                             <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
                         {{else}}
                             <li class="page-item {{#if this.isCurrent}}active{{/if}}">
-                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}">{{this.page}}</a>
+                                <a class="page-link mx-1 {{#if this.isCurrent}}shadow-sm{{/if}} {{#if @first}}page-first{{else if @last}}page-last{{else}}rounded-circle{{/if}}" href="{{this.url}}" {{#if this.isCurrent}}aria-current="page"{{else}}aria-label="Go to page {{this.page}}"{{/if}}>{{this.page}}</a>
                             </li>
                         {{/if}}
                     {{/each}}

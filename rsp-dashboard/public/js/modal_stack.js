@@ -1,8 +1,13 @@
 const modalStack = [];
+// Element that had focus before the first modal opened; focus goes back there when the stack empties
+let modalStackOpener = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('show.bs.modal', function (event) {
         const currentModalElement = event.target;
+        if (modalStack.length === 0 && document.activeElement && document.activeElement !== document.body) {
+            modalStackOpener = document.activeElement;
+        }
         
         // Check if there is an active modal open that is not the one currently being requested.
         if (modalStack.length > 0) {
@@ -59,6 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show the previous modal
             const prevInstance = bootstrap.Modal.getOrCreateInstance(previousModalElement);
             prevInstance.show();
+        } else if (modalStackOpener) {
+            if (document.body.contains(modalStackOpener) && typeof modalStackOpener.focus === 'function') {
+                modalStackOpener.focus();
+            }
+            modalStackOpener = null;
         }
     });
 
@@ -73,6 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     event.preventDefault();
                     event.stopPropagation();
                     closeBtn.click();
+                } else if (topModal.getAttribute('data-bs-keyboard') !== 'false') {
+                    const instance = bootstrap.Modal.getInstance(topModal);
+                    if (instance) instance.hide();
                 }
             }
         }
@@ -80,5 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.clearModalStack = function() {
         modalStack.length = 0;
+        modalStackOpener = null;
     };
 });

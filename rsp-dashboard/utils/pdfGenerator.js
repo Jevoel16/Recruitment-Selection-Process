@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { convertWithWord, convertWithLibreOffice } = require('./docConverter');
+const { noticeBaseName } = require('./noticeNames');
 
 const cleanText = (txt) => {
     if (!txt) return '';
@@ -143,27 +144,6 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
     const tempDir = path.join(os.tmpdir(), 'rsp_pdf_gen_' + Date.now() + '_' + app.id);
     await fs.promises.mkdir(tempDir, { recursive: true });
     
-    const cleanLName = (app.lastName || '').replace(/[^a-zA-Z0-9]/g, '');
-    const cleanFName = (app.firstName || '').replace(/[^a-zA-Z0-9]/g, '');
-    
-    let posCode = 'UnknownPos';
-    let vacancyNo = 'UnknownVac';
-    let increment = '0000';
-    if (app.applicationCode) {
-        const parts = app.applicationCode.split('-');
-        if (parts.length >= 4) {
-            posCode = parts[0];
-            vacancyNo = parts[1];
-            increment = parts[3];
-        } else if (parts.length > 0) {
-            posCode = parts[0];
-            increment = parts[parts.length - 1];
-        }
-    } else {
-        if (positionStandards && positionStandards.position_code) posCode = positionStandards.position_code.replace(/[^a-zA-Z0-9]/g, '');
-        if (app.vacancyAnnouncementNo) vacancyNo = app.vacancyAnnouncementNo.replace(/[^a-zA-Z0-9]/g, '');
-    }
-    
     let noticeType = 'NoticeOfEvaluation';
     if (templateName.includes('Notice to DQ')) {
         noticeType = 'Notice_to_DQ';
@@ -171,7 +151,7 @@ const doGeneratePDFForApplicant = async (app, templateName) => {
         noticeType = 'Notice_to_Qualified';
     }
 
-    const baseName = `${cleanLName}_${cleanFName}_${posCode}-${increment}-${vacancyNo}_${noticeType}_${app.id}`;
+    const baseName = noticeBaseName(app, noticeType, positionStandards && positionStandards.position_code);
     
     const inputPath = path.join(tempDir, baseName + '.docx');
     await fs.promises.writeFile(inputPath, buf);

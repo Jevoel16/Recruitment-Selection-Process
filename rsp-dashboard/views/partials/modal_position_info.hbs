@@ -1,9 +1,9 @@
-<div class="modal fade glass-modal" id="positionInfoModal" tabindex="-1">
+<div class="modal fade glass-modal" id="positionInfoModal" tabindex="-1" aria-labelledby="positionInfoModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0">
             <div class="modal-header border-bottom-0 pb-0">
                 <h5 class="modal-title fw-bold text-primary" id="positionInfoModalTitle">Position Info</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="positionForm">
                 <div class="modal-body pb-4">
@@ -33,7 +33,7 @@
     <div class="d-flex justify-content-between align-items-center mb-1">
         <label class="form-label fw-semibold mb-0">QS: Education</label>
     </div>
-    <select class="form-select mb-2 custom-ui-select" id="modalPosEduLevel" name="qsEducationLevel">
+    <select aria-label="Level increment" class="form-select mb-2 custom-ui-select" id="modalPosEduLevel" name="qsEducationLevel">
         <option value="">Select Level Increment</option>
 <option value="1">Level 1: Can Read and Write / Elem Level</option>
                             <option value="2">Level 2: Elementary Graduate</option>
@@ -73,7 +73,7 @@
     <div class="d-flex justify-content-between align-items-center mb-1">
         <label class="form-label fw-semibold mb-0">QS: Training</label>
     </div>
-    <select class="form-select mb-2 custom-ui-select" id="modalPosTrainLevel" name="qsTrainingLevel">
+    <select aria-label="Level increment" class="form-select mb-2 custom-ui-select" id="modalPosTrainLevel" name="qsTrainingLevel">
         <option value="">Select Level Increment</option>
 <option value="1">Level 1: 0 to less than 8 hours</option>
                             <option value="2">Level 2: 8 hours to less than 16 hours</option>
@@ -112,7 +112,7 @@
     <div class="d-flex justify-content-between align-items-center mb-1">
         <label class="form-label fw-semibold mb-0">QS: Experience</label>
     </div>
-    <select class="form-select mb-2 custom-ui-select" id="modalPosExpLevel" name="qsExperienceLevel">
+    <select aria-label="Level increment" class="form-select mb-2 custom-ui-select" id="modalPosExpLevel" name="qsExperienceLevel">
         <option value="">Select Level Increment</option>
                             <option value="1">Level 1: No experience to less than 6 months</option>
                             <option value="2">Level 2: 6 months to less than 1 year</option>

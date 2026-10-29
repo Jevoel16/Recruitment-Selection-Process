@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-29 (v1.6.0-Release)
+
+### Security
+- **Secrets**: Production refuses to start with a missing, placeholder or short `JWT_SECRET`, or a weak `SUPERADMIN_PASSWORD`. The `admin123`/`superadmin123` fallbacks are gone; the `admin` user is only seeded when `ADMIN_PASSWORD` is set.
+- **Sessions**: Tokens last 12 hours, and every request reloads the user's role and Step 2 access, so demoted or deleted users lose access immediately. The cookie `Secure` flag is now controlled by `COOKIE_SECURE`. Logout is a `POST`.
+- **Access control**: Positions, vacancies, applicant deletion, backups, bulk email and DOCX-to-PDF conversion are admin-only on the API. Step 2/3 actions on the API now require Step 2 access. The matching buttons are hidden from evaluators.
+- **XSS**: Applicant data is escaped wherever the dashboard builds HTML (`escapeHtml`/`jsArg` in `utils.js`, and a `jsArg` Handlebars helper for inline handlers). Toasts render plain text, and email HTML escapes names.
+- **Files**: Generated notice names come from the new `utils/noticeNames.js`, which keeps only letters and digits. CSV backups neutralize formula-like values. The PDF converter accepts only real `.docx` files.
+- **Errors**: Login pages show fixed messages from `utils/loginErrors.js`, and the metrics endpoint no longer returns raw error text.
+
+### Changed
+- **Feedback**: Every `alert()` became a toast. Error toasts stay up for 5 seconds. User create, edit and delete show loading states plus success and error messages. The users and logs tables have loading, empty and error rows.
+- **Accessibility**: All modals have `aria-labelledby`, every close button has a label, and search icons are real buttons. Search boxes and filters are labelled, the sidebar toggles report their state, metric cards work from the keyboard, focus returns to where it was after modals close, and pagination marks the current page.
+- **Layout**: Step 2, 4 and 5 tables use the responsive table wrapper; the metrics chart and the position search box shrink on small screens; reduced-motion settings are respected.
+
 ## 2026-07-30 (v1.5.9-Release)
 
 ### Added

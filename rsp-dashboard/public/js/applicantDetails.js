@@ -56,19 +56,19 @@ async function openInfoModal(id) {
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">First Name</label>
-                        <input type="text" class="form-control" name="firstName" value="${app.firstName || ''}" required oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" class="form-control" name="firstName" value="${escapeHtml(app.firstName)}" required oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Middle Name</label>
-                        <input type="text" class="form-control" name="middleName" value="${app.middleName || ''}" oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" class="form-control" name="middleName" value="${escapeHtml(app.middleName)}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Last Name</label>
-                        <input type="text" class="form-control" name="lastName" value="${app.lastName || ''}" required oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" class="form-control" name="lastName" value="${escapeHtml(app.lastName)}" required oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Ext.</label>
-                        <input type="text" class="form-control" name="nameExtension" value="${app.nameExtension || ''}" oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" class="form-control" name="nameExtension" value="${escapeHtml(app.nameExtension)}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     
                     <div class="col-md-12 border rounded-3 p-3 bg-light">
@@ -76,38 +76,38 @@ async function openInfoModal(id) {
                         <div class="row g-2">
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold small">House/Block/Lot No.</label>
-                                <input type="text" class="form-control form-control-sm" name="res_house" value="${addr.res_house || ''}" oninput="this.value = this.value.toUpperCase();">
+                                <input type="text" class="form-control form-control-sm" name="res_house" value="${escapeHtml(addr.res_house)}" oninput="this.value = this.value.toUpperCase();">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold small">Street</label>
-                                <input type="text" class="form-control form-control-sm" name="res_street" value="${addr.res_street || ''}" oninput="this.value = this.value.toUpperCase();">
+                                <input type="text" class="form-control form-control-sm" name="res_street" value="${escapeHtml(addr.res_street)}" oninput="this.value = this.value.toUpperCase();">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold small">Subdivision/Village</label>
-                                <input type="text" class="form-control form-control-sm" name="res_subdivision" value="${addr.res_subdivision || ''}" oninput="this.value = this.value.toUpperCase();">
+                                <input type="text" class="form-control form-control-sm" name="res_subdivision" value="${escapeHtml(addr.res_subdivision)}" oninput="this.value = this.value.toUpperCase();">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold small">Barangay <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm" name="res_barangay" value="${addr.res_barangay || ''}" required oninput="this.value = this.value.toUpperCase();">
+                                <input type="text" class="form-control form-control-sm" name="res_barangay" value="${escapeHtml(addr.res_barangay)}" required oninput="this.value = this.value.toUpperCase();">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold small">City/Municipality <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm" name="res_city" value="${addr.res_city || ''}" required oninput="this.value = this.value.toUpperCase();">
+                                <input type="text" class="form-control form-control-sm" name="res_city" value="${escapeHtml(addr.res_city)}" required oninput="this.value = this.value.toUpperCase();">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold small">Province <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm" name="res_province" value="${addr.res_province || ''}" required oninput="this.value = this.value.toUpperCase();">
+                                <input type="text" class="form-control form-control-sm" name="res_province" value="${escapeHtml(addr.res_province)}" required oninput="this.value = this.value.toUpperCase();">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold small">Zip Code</label>
-                                <input type="text" class="form-control form-control-sm" name="res_zip" value="${addr.res_zip || ''}" oninput="this.value = this.value.toUpperCase();">
+                                <input type="text" class="form-control form-control-sm" name="res_zip" value="${escapeHtml(addr.res_zip)}" oninput="this.value = this.value.toUpperCase();">
                             </div>
                         </div>
 
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Birthdate</label>
-                        <input type="date" class="form-control" name="birthdate" value="${app.birthdate || ''}">
+                        <input type="date" class="form-control" name="birthdate" value="${escapeHtml(app.birthdate)}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Sex</label>
@@ -129,23 +129,23 @@ async function openInfoModal(id) {
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Religion</label>
-                        <input type="text" class="form-control" name="religion" value="${app.religion || ''}" oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" class="form-control" name="religion" value="${escapeHtml(app.religion)}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Disability</label>
-                        <input type="text" class="form-control" name="disability" value="${app.disability || ''}" oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" class="form-control" name="disability" value="${escapeHtml(app.disability)}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Ethnic Group</label>
-                        <input type="text" class="form-control" name="ethnicGroup" value="${app.ethnicGroup || ''}" oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" class="form-control" name="ethnicGroup" value="${escapeHtml(app.ethnicGroup)}" oninput="this.value = this.value.toUpperCase();">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="emailAddress" value="${app.emailAddress || ''}">
+                        <input type="email" class="form-control" name="emailAddress" value="${escapeHtml(app.emailAddress)}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Contact No</label>
-                        <input type="text" class="form-control" name="contactNo" value="${app.contactNo || ''}" placeholder="Contact">
+                        <input type="text" class="form-control" name="contactNo" value="${escapeHtml(app.contactNo)}" placeholder="Contact">
                     </div>
                 </div>
                 <div class="d-flex justify-content-end mt-4">
@@ -202,31 +202,31 @@ async function openSummaryModal(id, name, hideActions = false) {
             if(!items || !items.length) return `<li class="list-group-item text-muted small">No ${typeName} records.</li>`;
             return items.map(item => {
                 const badgeClass = item.status === 'QUALIFIED' ? 'bg-success' : item.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark';
-                let docTitle = item.degree || item.title || item.details;
+                let docTitle = escapeHtml(item.degree || item.title || item.details);
                 
                 if (typeName === 'training' && item.hours) {
                     const hrsStr = item.hours == 1 ? 'hour' : 'hours';
-                    docTitle += ` <span class="text-muted fst-italic">(${item.hours} ${hrsStr})</span>`;
+                    docTitle += ` <span class="text-muted fst-italic">(${escapeHtml(item.hours)} ${hrsStr})</span>`;
                 } else if (typeName === 'experience') {
                     let expStr = [];
                     if (item.years) {
                         const yrStr = item.years == 1 ? 'yr' : 'yrs';
-                        expStr.push(`${item.years} ${yrStr}`);
+                        expStr.push(`${escapeHtml(item.years)} ${yrStr}`);
                     }
                     if (item.months) {
                         const moStr = item.months == 1 ? 'mo' : 'mos';
-                        expStr.push(`${item.months} ${moStr}`);
+                        expStr.push(`${escapeHtml(item.months)} ${moStr}`);
                     }
                     if (expStr.length > 0) {
                         docTitle += ` <span class="text-muted fst-italic">(${expStr.join(', ')})</span>`;
                     }
                 } else if (typeName === 'performance records') {
-                    docTitle = `${item.ratingPeriod} - Rating: ${item.rating} ${item.letterGrade ? `(${item.letterGrade})` : ''}`;
+                    docTitle = `${escapeHtml(item.ratingPeriod)} - Rating: ${escapeHtml(item.rating)} ${item.letterGrade ? `(${escapeHtml(item.letterGrade)})` : ''}`;
                 }
                 
                 return `<li class="list-group-item d-flex justify-content-between align-items-center small">
                     <span>${docTitle}</span>
-                    <span class="badge ${badgeClass}">${item.status || 'PENDING'}</span>
+                    <span class="badge ${badgeClass}">${escapeHtml(item.status || 'PENDING')}</span>
                 </li>`;
             }).join('');
         };

@@ -22,11 +22,10 @@
                     {{#each groupedPositions}}
                     <div class="col-md-6 col-lg-6">
                         <div class="card border-0 glass-panel shadow-sm rounded-4 h-100 p-2 category-metric-card {{#if this.hasVacancy}}border-start border-4 border-success{{else}}border-start border-4 border-secondary opacity-75{{/if}}" 
-                            data-category-card="{{this.categoryName}}" 
-                            style="transition: transform 0.2s; cursor: pointer;" 
-                            onmouseover="this.style.transform='translateY(-5px)'" 
-                            onmouseout="this.style.transform='translateY(0)'"
-                            onclick="showCategoryChart('{{this.categoryName}}')">
+                            data-category-card="{{this.categoryName}}"
+                            role="button" tabindex="0" aria-label="Show vacancy chart for {{this.categoryName}}"
+                            onclick="showCategoryChart({{jsArg this.categoryName}})"
+                            onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.click(); }">
                             <div class="card-body p-2">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h6 class="fw-bold mb-0 text-truncate" title="{{this.categoryName}}">{{this.categoryName}}</h6>
@@ -61,10 +60,10 @@
                 </div>
                 <div class="glass-panel p-4 rounded-4 shadow-sm bg-white" style="min-height: 400px;">
                     <div id="chartFlexContainer" class="d-flex flex-wrap justify-content-center align-items-center w-100">
-                        <div style="width: 350px; height: 350px; flex-shrink: 0;">
+                        <div style="width: 100%; max-width: 350px; aspect-ratio: 1 / 1; flex-shrink: 0;">
                             <canvas id="categoryPieChart"></canvas>
                         </div>
-                        <div id="customChartLegend" class="ms-md-4 mt-4 mt-md-0 flex-grow-1" style="max-height: 350px; overflow-y: auto; min-width: 300px; padding-right: 10px;">
+                        <div id="customChartLegend" class="ms-md-4 mt-4 mt-md-0 flex-grow-1" style="max-height: 350px; overflow-y: auto; min-width: min(300px, 100%); padding-right: 10px;">
                             <!-- Legend items will be injected here -->
                         </div>
                     </div>

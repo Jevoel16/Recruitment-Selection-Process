@@ -348,7 +348,7 @@ body {
 .sidebar.collapsed .sidebar-collapsed-text {
     display: block !important;
 }
-.sidebar.collapsed .mb-4.align-items-center {
+.sidebar.collapsed .sidebar-head {
     justify-content: center !important;
     flex-direction: column;
 }
@@ -364,4 +364,265 @@ body {
 }
 .modal.fade .modal-dialog {
     transition: transform 0.10s ease-out !important;
+}
+
+/* ===== Portal layout & components ===== */
+.portal-body {
+    background: linear-gradient(135deg, var(--white) 0%, #f1f5f9 100%);
+}
+
+.skip-link {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 2000;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: var(--white);
+    border-radius: 0.5rem;
+}
+
+main:focus,
+[tabindex="-1"]:focus {
+    outline: none;
+}
+
+.max-w-500 { max-width: 500px; }
+.max-w-600 { max-width: 600px; }
+.max-w-800 { max-width: 800px; }
+.max-w-1200 { max-width: 1200px; }
+
+/* Home: application type cards (buttons) */
+.home-hero-icon {
+    font-size: 4rem;
+}
+.applicant-type-btn {
+    display: block;
+    color: inherit;
+}
+.kiosk-btn {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 1.5rem;
+    border: 2px solid transparent;
+}
+.kiosk-btn:hover,
+.kiosk-btn:focus-visible {
+    transform: translateY(-10px);
+    border-color: var(--primary);
+    box-shadow: 0 15px 35px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+.kiosk-btn:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--primary) 50%, transparent);
+    outline-offset: 2px;
+}
+.kiosk-icon {
+    font-size: 5rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+/* Home: position picker modal */
+.picker-modal {
+    border-radius: 1rem;
+}
+.picker {
+    display: flex;
+    min-height: 500px;
+}
+.picker-categories {
+    width: 280px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--bs-border-color);
+}
+.picker-categories-title {
+    font-size: 0.85rem;
+}
+.picker-placeholder-icon {
+    font-size: 3rem;
+    opacity: 0.2;
+}
+.position-card {
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.position-card:hover,
+.position-card:focus-visible {
+    border-color: var(--bs-primary) !important;
+    box-shadow: var(--bs-box-shadow-sm);
+}
+
+/* Stack the category panel above the positions on narrow screens */
+@media (max-width: 767.98px) {
+    .modal-fullscreen-md-down .modal-content {
+        border-radius: 0;
+    }
+    .picker {
+        flex-direction: column;
+        min-height: 0;
+    }
+    .picker-categories {
+        width: 100%;
+        border-right: 0;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+    .picker-categories .list-group {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+    .picker-categories .list-group-item {
+        flex: 1 0 auto;
+        width: auto;
+        text-align: center;
+        white-space: nowrap;
+        border-width: 0 1px 0 0;
+    }
+    .picker-placeholder {
+        min-height: 200px;
+    }
+}
+
+/* Application form: sidebar on desktop, sticky top stepper below 992px */
+.tab-section {
+    display: none;
+}
+.tab-section.active {
+    display: block;
+}
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+.sidebar {
+    width: 280px;
+    padding: 1.5rem;
+    z-index: 1000;
+    transition: width 0.3s ease;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+}
+.sidebar-head {
+    margin-bottom: 1.5rem;
+}
+.sidebar-brand {
+    order: -1;
+}
+.custom-sidebar-tabs {
+    flex-direction: column;
+    margin-bottom: auto;
+}
+.custom-sidebar-tabs .nav-link {
+    padding: 1rem;
+}
+.sidebar-footer {
+    font-size: 0.8rem;
+    border-top: 1px solid color-mix(in srgb, var(--white) 10%, transparent);
+}
+.main-content {
+    min-width: 0;
+    padding: 3rem;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+}
+
+@media (max-width: 991.98px) {
+    .app-shell {
+        display: block;
+    }
+    .sidebar,
+    .sidebar.collapsed {
+        width: 100% !important;
+        height: auto;
+        padding: 0.75rem 1rem;
+    }
+    .sidebar-head {
+        margin-bottom: 0.75rem;
+    }
+    .sidebar-brand .fs-4 {
+        font-size: 1.15rem !important;
+    }
+    .sidebar.collapsed .sidebar-text {
+        display: inline !important;
+    }
+    .custom-sidebar-tabs {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: thin;
+        margin-bottom: 0;
+        gap: 0.25rem !important;
+    }
+    .custom-sidebar-tabs .nav-item {
+        flex: 1 0 auto;
+    }
+    .custom-sidebar-tabs .nav-link {
+        padding: 0.5rem 0.75rem;
+        text-align: center !important;
+        white-space: nowrap;
+        font-size: 0.9rem;
+    }
+    .main-content {
+        width: 100%;
+        padding: 1rem;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+    .entry-add {
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .custom-sidebar-tabs .nav-link .sidebar-icon {
+        margin-right: 0.25rem !important;
+    }
+}
+
+.success-icon {
+    font-size: 5rem;
+}
+
+/* Print only the success modal (tracking code) when it is open */
+@media print {
+    body.modal-open > *:not(#successModal) {
+        display: none !important;
+    }
+    body.modal-open #successModal {
+        position: static;
+        display: block !important;
+    }
+    body.modal-open .modal-dialog {
+        transform: none !important;
+        margin: 0 auto;
+    }
+    body.modal-open .modal-content {
+        box-shadow: none;
+        border: 1px solid #000 !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    .kiosk-btn:hover,
+    .kiosk-btn:focus-visible,
+    .glass-card:hover,
+    .btn-add-glass:hover,
+    .action-btn:hover,
+    .cursor-pointer:hover {
+        transform: none;
+    }
 }

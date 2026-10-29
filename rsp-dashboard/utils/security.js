@@ -5,16 +5,32 @@ const scrypt = promisify(crypto.scrypt);
 const KEY_LENGTH = 64;
 const DEV_JWT_SECRET = 'fallback-secret-for-dev';
 
-// Resolve the JWT secret once. Production refuses to run on the dev fallback.
+const PLACEHOLDER_SECRETS = new Set([DEV_JWT_SECRET, 'change-me-to-a-long-random-string']);
+const WEAK_SUPERADMIN_PASSWORDS = new Set(['superadmin', 'superadmin123', 'admin123', 'password', 'changeme']);
+
+// Resolve the JWT secret once. Production refuses to run on a missing, placeholder or short secret.
 function getJwtSecret() {
-    if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+    const secret = process.env.JWT_SECRET;
     if (process.env.NODE_ENV === 'production') {
-        throw new Error('JWT_SECRET must be set when NODE_ENV=production');
+        if (!secret || PLACEHOLDER_SECRETS.has(secret) || secret.length < 32) {
+            throw new Error('JWT_SECRET must be a random string of at least 32 characters when NODE_ENV=production');
+        }
+        return secret;
     }
+    if (secret) return secret;
+    console.warn('[Security] JWT_SECRET is not set; using the development fallback. Never run like this on the office network.');
     return DEV_JWT_SECRET;
 }
 
 const JWT_SECRET = getJwtSecret();
+
+// Auth cookies are only marked Secure when the dashboard is served over HTTPS (set COOKIE_SECURE=true).
+// Plain-HTTP LAN installs keep this false, otherwise browsers would drop the login cookie.
+const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
+
+function isWeakSuperadminPassword(password) {
+    return !password || password.length < 12 || WEAK_SUPERADMIN_PASSWORDS.has(password.toLowerCase());
+}
 
 // Hashes are stored as "scrypt$<saltHex>$<hashHex>".
 async function hashPassword(password) {
@@ -69,4 +85,4 @@ function createRateLimiter({ windowMs = 15 * 60 * 1000, max = 10, onLimit } = {}
     };
 }
 
-module.exports = { JWT_SECRET, hashPassword, verifyPassword, isLegacyHash, createRateLimiter };
+module.exports = { JWT_SECRET, COOKIE_SECURE, isWeakSuperadminPassword, hashPassword, verifyPassword, isLegacyHash, createRateLimiter };

@@ -34,13 +34,13 @@
                     <form class="row g-2" onsubmit="event.preventDefault(); filterVacancyTable();">
                         <div class="col-md-3">
                             <div class="input-group glass-panel h-100 shadow-sm">
-                                <span class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterVacancyTable()"><i class="bi bi-search text-primary"></i></span>
-                                <input type="text" id="vacancySearch" class="form-control border-start-0 ps-0" placeholder="Search position name..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterVacancyTable(); }">
+                                <button type="button" class="input-group-text bg-white border-end-0 cursor-pointer" onclick="filterVacancyTable()" aria-label="Search"><i class="bi bi-search text-primary" aria-hidden="true"></i></button>
+                                <input aria-label="Search position name" type="text" id="vacancySearch" class="form-control border-start-0 ps-0" placeholder="Search position name..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); filterVacancyTable(); }">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
-                                <select id="vacancyCategory" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
+                                <select aria-label="Filter: All Categories" id="vacancyCategory" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
                                     <option value="">All Categories</option>
                                     {{#each groupedPositions}}
                                         <option value="{{this.categoryName}}">{{this.categoryName}}</option>
@@ -50,13 +50,14 @@
                         </div>
                         <div class="col-md-2">
                             <div class="glass-panel filter-glass-panel h-100 px-2 py-1">
-                                <select id="vacancyStatus" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
+                                <select aria-label="Filter: All Statuses" id="vacancyStatus" class="form-select bg-transparent border-0 shadow-none custom-ui-select" onchange="filterVacancyTable()">
                                     <option value="">All Statuses</option>
                                     <option value="vacant">Vacant</option>
                                     <option value="non-vacant">Non-Vacant</option>
                                 </select>
                             </div>
                         </div>
+                        {{#if (eq user.role "admin")}}
                         <div class="col-md-4 d-flex gap-2">
                             <button type="button" class="btn btn-primary h-100 w-50 fw-bold shadow-sm rounded-3" data-bs-toggle="modal" data-bs-target="#addPositionModal">
                                 <i class="bi bi-plus-circle-fill me-1"></i> Add Position
@@ -65,6 +66,7 @@
                                 <i class="bi bi-power me-1"></i> Off Vacancy
                             </button>
                         </div>
+                        {{/if}}
                     </form>
                 </div>
 
@@ -82,7 +84,7 @@
                         <div class="row g-4">
                             {{#each groupedPositions}}
                             <div class="col-md-6 vacancy-category-grid-item" data-category="{{this.categoryName}}">
-                                <button type="button" class="btn btn-outline-primary category-btn-hover w-100 py-4 fw-bold rounded-4 shadow-sm bg-white" onclick="showVacancyCategory('{{this.categorySlug}}', '{{this.categoryName}}')">
+                                <button type="button" class="btn btn-outline-primary category-btn-hover w-100 py-4 fw-bold rounded-4 shadow-sm bg-white" onclick="showVacancyCategory({{jsArg this.categorySlug}}, {{jsArg this.categoryName}})">
                                     <i class="bi bi-folder-fill fs-1 d-block mb-2"></i>
                                     <span class="fs-5">{{this.categoryName}}</span>
                                 </button>

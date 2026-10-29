@@ -1,261 +1,313 @@
-<div class="d-flex" style="min-height: 100vh;">
-    <!-- Sidebar -->
-    <nav class="sidebar premium-nav text-white d-flex flex-column p-4 flex-shrink-0 shadow-lg" id="mainSidebar" style="width: 280px; z-index: 1000; transition: width 0.3s ease;">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <button class="btn text-white p-0 border-0" id="sidebarToggle">
-                <i class="bi bi-list fs-3"></i>
-            </button>
-            <a href="/" class="d-flex align-items-center text-white text-decoration-none overflow-hidden" style="white-space: nowrap; order:-1;">
-                <i class="bi bi-briefcase-fill text-primary fs-2 me-3 sidebar-icon"></i>
+<div class="app-shell">
+    <!-- Sidebar (desktop) / top stepper (below 992px) -->
+    <nav class="sidebar premium-nav text-white d-flex flex-column flex-shrink-0 shadow-lg" id="mainSidebar" aria-label="Application steps">
+        <div class="d-flex align-items-center justify-content-between sidebar-head">
+            <a href="/" class="d-flex align-items-center text-white text-decoration-none overflow-hidden text-nowrap sidebar-brand">
+                <img src="/images/logos/DepEd%20Seal.png" alt="" width="36" height="36" class="me-3 sidebar-icon">
                 <span class="fs-4 fw-bold sidebar-text">RSP Portal</span>
             </a>
+            <button type="button" class="btn text-white p-0 border-0 d-none d-lg-inline-block" id="sidebarToggle" aria-controls="mainSidebar" aria-expanded="true" aria-label="Collapse sidebar">
+                <i class="bi bi-list fs-3" aria-hidden="true"></i>
+            </button>
+            <span class="badge bg-light text-primary py-2 px-3 rounded-pill text-capitalize d-lg-none">{{type}} Applicant</span>
         </div>
-        
-        <div class="mb-4 text-center sidebar-text">
+
+        <div class="mb-4 text-center sidebar-text d-none d-lg-block">
             <span class="badge bg-light text-primary fs-6 py-2 px-3 rounded-pill text-capitalize">{{type}} Applicant</span>
         </div>
 
-        <ul class="nav nav-pills flex-column mb-auto custom-sidebar-tabs gap-2" id="portalTab">
+        <ol class="nav nav-pills custom-sidebar-tabs gap-2 list-unstyled" id="portalTab">
             <li class="nav-item">
-                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3 active" data-target="info">
-                    <i class="bi bi-person-lines-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Information</span>
-                </a>
+                <button type="button" class="nav-link text-white w-100 text-start rounded-3 active" data-target="info" aria-controls="section-info" aria-current="step">
+                    <i class="bi bi-person-lines-fill fs-5 me-2 align-middle sidebar-icon" aria-hidden="true"></i><span class="align-middle sidebar-text">Information</span>
+                </button>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="education">
-                    <i class="bi bi-mortarboard-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Education</span>
-                </a>
+                <button type="button" class="nav-link text-white w-100 text-start rounded-3" data-target="education" aria-controls="section-education">
+                    <i class="bi bi-mortarboard-fill fs-5 me-2 align-middle sidebar-icon" aria-hidden="true"></i><span class="align-middle sidebar-text">Education</span>
+                </button>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="training">
-                    <i class="bi bi-award-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Training</span>
-                </a>
+                <button type="button" class="nav-link text-white w-100 text-start rounded-3" data-target="training" aria-controls="section-training">
+                    <i class="bi bi-award-fill fs-5 me-2 align-middle sidebar-icon" aria-hidden="true"></i><span class="align-middle sidebar-text">Training</span>
+                </button>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="experience">
-                    <i class="bi bi-briefcase-fill fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Experience</span>
-                </a>
+                <button type="button" class="nav-link text-white w-100 text-start rounded-3" data-target="experience" aria-controls="section-experience">
+                    <i class="bi bi-briefcase-fill fs-5 me-2 align-middle sidebar-icon" aria-hidden="true"></i><span class="align-middle sidebar-text">Experience</span>
+                </button>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-white w-100 text-start p-3 rounded-3" data-target="eligibility">
-                    <i class="bi bi-shield-check fs-5 me-2 align-middle sidebar-icon"></i> <span class="align-middle sidebar-text">Eligibility</span>
-                </a>
+                <button type="button" class="nav-link text-white w-100 text-start rounded-3" data-target="eligibility" aria-controls="section-eligibility">
+                    <i class="bi bi-shield-check fs-5 me-2 align-middle sidebar-icon" aria-hidden="true"></i><span class="align-middle sidebar-text">Eligibility</span>
+                </button>
             </li>
-        </ul>
-        
-        <div class="mt-auto pt-4 text-light opacity-75 overflow-hidden" style="font-size: 0.8rem; border-top: 1px solid color-mix(in srgb, var(--white) 10%, transparent); white-space: nowrap;">
+        </ol>
+
+        <div class="mt-auto pt-4 text-light opacity-75 overflow-hidden text-nowrap sidebar-footer d-none d-lg-block">
             <div class="sidebar-text">
-                2026 Recruitment Selection Process.<br>Digitized & Optimized.
+                2026 Recruitment Selection Process.<br>Digitized &amp; Optimized.
             </div>
             <div class="sidebar-collapsed-text d-none text-center">
-                <i class="bi bi-info-circle fs-5"></i>
+                <i class="bi bi-info-circle fs-5" aria-hidden="true"></i>
             </div>
         </div>
     </nav>
-    
+
     <!-- Main Content -->
-    <main class="flex-grow-1 p-5 main-content" style="height: 100vh; overflow-y: auto;">
-        <div class="container-fluid max-w-800 mx-auto">
-            <h2 class="mb-4 fw-bold">Application Form</h2>
+    <main id="main" tabindex="-1" class="flex-grow-1 main-content">
+        <div class="container-fluid max-w-800 mx-auto px-0">
+            <h1 class="h2 mb-1 fw-bold">Application Form</h1>
+            <p class="text-muted mb-4">{{position}} &middot; {{category}} &middot; District {{district}}</p>
+
+            <div id="errorSummary" class="alert alert-danger d-none" role="alert" aria-live="assertive" tabindex="-1">
+                <h2 class="h6 fw-bold mb-2" id="errorSummaryTitle">Please fix the following before continuing:</h2>
+                <ul class="mb-0" id="errorSummaryList"></ul>
+            </div>
+
             <form id="applicationForm" novalidate>
                 <input type="hidden" name="type" value="{{type}}">
                 <input type="hidden" name="position" value="{{position}}">
                 <input type="hidden" name="positionCategory" value="{{positionCategory}}">
                 <input type="hidden" name="district" value="{{district}}">
                 <input type="hidden" name="category" value="{{category}}">
-                
+
                 <!-- Information Section -->
-                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section active" id="section-info">
-                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Personal Information</h4>
+                <section class="glass-panel p-3 p-md-4 mb-4 rounded-4 shadow-sm tab-section active" id="section-info" aria-labelledby="heading-info" data-step="info">
+                    <h2 class="h4 fw-semibold mb-4 border-bottom pb-2" id="heading-info" tabindex="-1"><i class="bi bi-person-lines-fill me-2 text-primary" aria-hidden="true"></i>Personal Information</h2>
+                    <p class="small text-muted">Fields marked <span aria-hidden="true">*</span><span class="visually-hidden">with an asterisk</span> are required.</p>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">First Name *</label>
-                            <input type="text" class="form-control" name="first_name" required>
+                            <label class="form-label" for="first_name">First Name *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required maxlength="100" autocomplete="given-name" aria-describedby="first_name-error">
+                            <div class="invalid-feedback" id="first_name-error"></div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Middle Name</label>
-                            <input type="text" class="form-control" name="middle_name">
+                            <label class="form-label" for="middle_name">Middle Name</label>
+                            <input type="text" class="form-control" id="middle_name" name="middle_name" maxlength="100" autocomplete="additional-name" aria-describedby="middle_name-error">
+                            <div class="invalid-feedback" id="middle_name-error"></div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Last Name *</label>
-                            <input type="text" class="form-control" name="last_name" required>
+                            <label class="form-label" for="last_name">Last Name *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required maxlength="100" autocomplete="family-name" aria-describedby="last_name-error">
+                            <div class="invalid-feedback" id="last_name-error"></div>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">Suffix</label>
-                            <input type="text" class="form-control" name="name_extension" placeholder="e.g. Jr, Sr">
+                            <label class="form-label" for="name_extension">Suffix</label>
+                            <input type="text" class="form-control" id="name_extension" name="name_extension" maxlength="20" placeholder="e.g. Jr, Sr" autocomplete="honorific-suffix" aria-describedby="name_extension-error">
+                            <div class="invalid-feedback" id="name_extension-error"></div>
                         </div>
 
                         <div class="col-md-12">
-                            <label class="form-label">Address *</label>
-                            <input type="text" class="form-control" name="address" required>
+                            <label class="form-label" for="address">Address *</label>
+                            <input type="text" class="form-control" id="address" name="address" required maxlength="255" autocomplete="street-address" aria-describedby="address-error">
+                            <div class="invalid-feedback" id="address-error"></div>
                         </div>
 
-                        <div class="col-md-2">
-                            <label class="form-label">Age *</label>
-                            <input type="number" class="form-control" name="age" required>
+                        <div class="col-6 col-md-2">
+                            <label class="form-label" for="age">Age *</label>
+                            <input type="number" class="form-control" id="age" name="age" required min="18" max="70" step="1" inputmode="numeric" aria-describedby="age-error">
+                            <div class="invalid-feedback" id="age-error"></div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Sex *</label>
-                            <select class="form-select" name="sex" required>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label" for="sex">Sex *</label>
+                            <select class="form-select" id="sex" name="sex" required autocomplete="sex" aria-describedby="sex-error">
                                 <option value="" selected disabled>Select Sex</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                                 <option value="Other">Other</option>
                             </select>
+                            <div class="invalid-feedback" id="sex-error"></div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Civil Status</label>
-                            <input type="text" class="form-control" name="civil_status">
+                            <label class="form-label" for="civil_status">Civil Status</label>
+                            <select class="form-select" id="civil_status" name="civil_status" aria-describedby="civil_status-error">
+                                <option value="" selected>Select Civil Status</option>
+                                {{#each civilStatuses}}<option value="{{this}}">{{this}}</option>{{/each}}
+                            </select>
+                            <div class="invalid-feedback" id="civil_status-error"></div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Religion</label>
-                            <input type="text" class="form-control" name="religion">
+                            <label class="form-label" for="religion">Religion</label>
+                            <input type="text" class="form-control" id="religion" name="religion" maxlength="100" aria-describedby="religion-error">
+                            <div class="invalid-feedback" id="religion-error"></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Disability</label>
-                            <input type="text" class="form-control" name="disability" placeholder="Leave blank if none">
+                            <label class="form-label" for="disability">Disability</label>
+                            <input type="text" class="form-control" id="disability" name="disability" maxlength="100" placeholder="Leave blank if none" aria-describedby="disability-error">
+                            <div class="invalid-feedback" id="disability-error"></div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Ethnic Group</label>
-                            <input type="text" class="form-control" name="ethnic_group" placeholder="Leave blank if none">
+                            <label class="form-label" for="ethnic_group">Ethnic Group</label>
+                            <input type="text" class="form-control" id="ethnic_group" name="ethnic_group" maxlength="100" placeholder="Leave blank if none" aria-describedby="ethnic_group-error">
+                            <div class="invalid-feedback" id="ethnic_group-error"></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Email *</label>
-                            <input type="email" class="form-control" name="email_address" required>
+                            <label class="form-label" for="email_address">Email *</label>
+                            <input type="email" class="form-control" id="email_address" name="email_address" required maxlength="150" autocomplete="email" inputmode="email" aria-describedby="email_address-error">
+                            <div class="invalid-feedback" id="email_address-error"></div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Contact No. *</label>
-                            <input type="text" class="form-control" name="contact_no" required>
+                            <label class="form-label" for="contact_no">Contact No. *</label>
+                            <input type="tel" class="form-control" id="contact_no" name="contact_no" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="09171234567"
+                                   data-validate="ph-mobile"
+                                   aria-describedby="contact_no-help contact_no-error">
+                            <div class="form-text" id="contact_no-help">PH mobile number, e.g. 09171234567 or +639171234567.</div>
+                            <div class="invalid-feedback" id="contact_no-error"></div>
                         </div>
 
                         <div class="col-md-12">
-                            <label class="form-label">PDS Link (Personal Data Sheet)</label>
-                            <input type="url" class="form-control" name="pds_link" placeholder="https://...">
+                            <label class="form-label" for="pds_link">PDS Link (Personal Data Sheet)</label>
+                            <input type="url" class="form-control" id="pds_link" name="pds_link" maxlength="255" placeholder="https://..." inputmode="url"
+                                   pattern="https?://.+" data-pattern-message="Link must start with http:// or https://"
+                                   aria-describedby="pds_link-help pds_link-error">
+                            <div class="form-text" id="pds_link-help">Upload your PDS to Google Drive (or similar), then set sharing to <strong>&ldquo;Anyone with the link&rdquo;</strong> so the HR team can open it.</div>
+                            <div class="invalid-feedback" id="pds_link-error"></div>
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="button" class="btn btn-primary btn-next" data-next="education">Next: Education <i class="bi bi-arrow-right"></i></button>
+                        <button type="button" class="btn btn-primary btn-next" data-next="education">Next: Education <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
                     </div>
-                </div>
+                </section>
 
                 <!-- Education Section -->
-                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-education">
-                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-mortarboard-fill me-2 text-primary"></i>Education Background</h4>
-                    <p class="text-muted small">Add your educational attainments below.</p>
-                    <div id="eduList" class="mb-3"></div>
-                    <div class="bg-light p-3 rounded-3 mb-4">
-                        <div class="row g-2 align-items-end">
+                <section class="glass-panel p-3 p-md-4 mb-4 rounded-4 shadow-sm tab-section" id="section-education" aria-labelledby="heading-education" data-step="education" data-list="education">
+                    <h2 class="h4 fw-semibold mb-4 border-bottom pb-2" id="heading-education" tabindex="-1"><i class="bi bi-mortarboard-fill me-2 text-primary" aria-hidden="true"></i>Education Background</h2>
+                    <p class="text-muted small">Add your educational attainments below (up to 20).</p>
+                    <div id="eduList" class="mb-3" aria-live="polite"></div>
+                    <div class="invalid-feedback d-block mb-3" id="education-error" role="alert"></div>
+                    <div class="bg-light p-3 rounded-3 mb-2 entry-form">
+                        <div class="row g-2 align-items-start">
                             <div class="col-md-5">
-                                <label class="form-label small">Degree/Course</label>
-                                <input type="text" id="edu_degree" class="form-control form-control-sm">
+                                <label class="form-label small" for="edu_degree">Degree/Course</label>
+                                <input type="text" id="edu_degree" class="form-control form-control-sm" maxlength="255" required aria-describedby="edu_degree-error">
+                                <div class="invalid-feedback" id="edu_degree-error"></div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label small">Year Grad</label>
-                                <input type="number" id="edu_year" class="form-control form-control-sm">
+                            <div class="col-5 col-md-2">
+                                <label class="form-label small" for="edu_year">Year Grad</label>
+                                <input type="number" id="edu_year" class="form-control form-control-sm" required min="1950" max="{{currentYear}}" step="1" inputmode="numeric" aria-describedby="edu_year-error">
+                                <div class="invalid-feedback" id="edu_year-error"></div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small">Link/Certificate (URL)</label>
-                                <input type="url" id="edu_link" class="form-control form-control-sm">
+                            <div class="col-7 col-md-4">
+                                <label class="form-label small" for="edu_link">Link/Certificate (URL)</label>
+                                <input type="url" id="edu_link" class="form-control form-control-sm" maxlength="500" inputmode="url" placeholder="https://..." pattern="https?://.+" data-pattern-message="Link must start with http:// or https://" aria-describedby="link-help-education edu_link-error">
+                                <div class="invalid-feedback" id="edu_link-error"></div>
                             </div>
-                            <div class="col-md-1">
-                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-edu"><i class="bi bi-plus"></i></button>
+                            <div class="col-md-1 entry-add">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-edu" aria-label="Add education entry"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-md-none ms-1">Add</span></button>
                             </div>
                         </div>
                     </div>
+                    <p class="form-text mb-0" id="link-help-education">Certificate links must be shared with <strong>&ldquo;Anyone with the link&rdquo;</strong> so the HR team can open them.</p>
                     <div class="d-flex justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="info"><i class="bi bi-arrow-left"></i> Back</button>
-                        <button type="button" class="btn btn-primary btn-next" data-next="training">Next: Training <i class="bi bi-arrow-right"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="info"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</button>
+                        <button type="button" class="btn btn-primary btn-next" data-next="training">Next: Training <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
                     </div>
-                </div>
+                </section>
 
                 <!-- Training Section -->
-                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-training">
-                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-award-fill me-2 text-primary"></i>Training & Seminars</h4>
-                    <div id="traList" class="mb-3"></div>
-                    <div class="bg-light p-3 rounded-3 mb-4">
-                        <div class="row g-2 align-items-end">
+                <section class="glass-panel p-3 p-md-4 mb-4 rounded-4 shadow-sm tab-section" id="section-training" aria-labelledby="heading-training" data-step="training" data-list="training">
+                    <h2 class="h4 fw-semibold mb-4 border-bottom pb-2" id="heading-training" tabindex="-1"><i class="bi bi-award-fill me-2 text-primary" aria-hidden="true"></i>Training &amp; Seminars</h2>
+                    <div id="traList" class="mb-3" aria-live="polite"></div>
+                    <div class="invalid-feedback d-block mb-3" id="training-error" role="alert"></div>
+                    <div class="bg-light p-3 rounded-3 mb-2 entry-form">
+                        <div class="row g-2 align-items-start">
                             <div class="col-md-5">
-                                <label class="form-label small">Title of Training/Seminar</label>
-                                <input type="text" id="train_title" class="form-control form-control-sm">
+                                <label class="form-label small" for="train_title">Title of Training/Seminar</label>
+                                <input type="text" id="train_title" class="form-control form-control-sm" maxlength="255" required aria-describedby="train_title-error">
+                                <div class="invalid-feedback" id="train_title-error"></div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label small">Hours</label>
-                                <input type="number" id="train_hours" class="form-control form-control-sm">
+                            <div class="col-5 col-md-2">
+                                <label class="form-label small" for="train_hours">Hours</label>
+                                <input type="number" id="train_hours" class="form-control form-control-sm" required min="1" max="9999" step="1" inputmode="numeric" aria-describedby="train_hours-error">
+                                <div class="invalid-feedback" id="train_hours-error"></div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small">Link/Certificate (URL)</label>
-                                <input type="url" id="train_link" class="form-control form-control-sm">
+                            <div class="col-7 col-md-4">
+                                <label class="form-label small" for="train_link">Link/Certificate (URL)</label>
+                                <input type="url" id="train_link" class="form-control form-control-sm" maxlength="500" inputmode="url" placeholder="https://..." pattern="https?://.+" data-pattern-message="Link must start with http:// or https://" aria-describedby="link-help-training train_link-error">
+                                <div class="invalid-feedback" id="train_link-error"></div>
                             </div>
-                            <div class="col-md-1">
-                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-train"><i class="bi bi-plus"></i></button>
+                            <div class="col-md-1 entry-add">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-train" aria-label="Add training entry"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-md-none ms-1">Add</span></button>
                             </div>
                         </div>
                     </div>
+                    <p class="form-text mb-0" id="link-help-training">Certificate links must be shared with <strong>&ldquo;Anyone with the link&rdquo;</strong> so the HR team can open them.</p>
                     <div class="d-flex justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="education"><i class="bi bi-arrow-left"></i> Back</button>
-                        <button type="button" class="btn btn-primary btn-next" data-next="experience">Next: Experience <i class="bi bi-arrow-right"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="education"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</button>
+                        <button type="button" class="btn btn-primary btn-next" data-next="experience">Next: Experience <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
                     </div>
-                </div>
+                </section>
 
                 <!-- Experience Section -->
-                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-experience">
-                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-briefcase-fill me-2 text-primary"></i>Work Experience</h4>
-                    <div id="expList" class="mb-3"></div>
-                    <div class="bg-light p-3 rounded-3 mb-4">
-                        <div class="row g-2 align-items-end">
+                <section class="glass-panel p-3 p-md-4 mb-4 rounded-4 shadow-sm tab-section" id="section-experience" aria-labelledby="heading-experience" data-step="experience" data-list="experience">
+                    <h2 class="h4 fw-semibold mb-4 border-bottom pb-2" id="heading-experience" tabindex="-1"><i class="bi bi-briefcase-fill me-2 text-primary" aria-hidden="true"></i>Work Experience</h2>
+                    <div id="expList" class="mb-3" aria-live="polite"></div>
+                    <div class="invalid-feedback d-block mb-3" id="experience-error" role="alert"></div>
+                    <div class="bg-light p-3 rounded-3 mb-2 entry-form">
+                        <div class="row g-2 align-items-start">
                             <div class="col-md-5">
-                                <label class="form-label small">Details/Position</label>
-                                <input type="text" id="exp_details" class="form-control form-control-sm">
+                                <label class="form-label small" for="exp_details">Details/Position</label>
+                                <input type="text" id="exp_details" class="form-control form-control-sm" maxlength="1000" required aria-describedby="exp_details-error">
+                                <div class="invalid-feedback" id="exp_details-error"></div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label small">Years</label>
-                                <input type="number" id="exp_years" step="0.1" class="form-control form-control-sm">
+                            <div class="col-5 col-md-2">
+                                <label class="form-label small" for="exp_years">Years</label>
+                                <input type="number" id="exp_years" class="form-control form-control-sm" required min="0" max="60" step="0.1" inputmode="decimal" aria-describedby="exp_years-error">
+                                <div class="invalid-feedback" id="exp_years-error"></div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small">Link/Certificate (URL)</label>
-                                <input type="url" id="exp_link" class="form-control form-control-sm">
+                            <div class="col-7 col-md-4">
+                                <label class="form-label small" for="exp_link">Link/Certificate (URL)</label>
+                                <input type="url" id="exp_link" class="form-control form-control-sm" maxlength="500" inputmode="url" placeholder="https://..." pattern="https?://.+" data-pattern-message="Link must start with http:// or https://" aria-describedby="link-help-experience exp_link-error">
+                                <div class="invalid-feedback" id="exp_link-error"></div>
                             </div>
-                            <div class="col-md-1">
-                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-exp"><i class="bi bi-plus"></i></button>
+                            <div class="col-md-1 entry-add">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-exp" aria-label="Add experience entry"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-md-none ms-1">Add</span></button>
                             </div>
                         </div>
                     </div>
+                    <p class="form-text mb-0" id="link-help-experience">Certificate links must be shared with <strong>&ldquo;Anyone with the link&rdquo;</strong> so the HR team can open them.</p>
                     <div class="d-flex justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="training"><i class="bi bi-arrow-left"></i> Back</button>
-                        <button type="button" class="btn btn-primary btn-next" data-next="eligibility">Next: Eligibility <i class="bi bi-arrow-right"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="training"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</button>
+                        <button type="button" class="btn btn-primary btn-next" data-next="eligibility">Next: Eligibility <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
                     </div>
-                </div>
+                </section>
 
                 <!-- Eligibility Section -->
-                <div class="glass-panel p-4 mb-4 rounded-4 shadow-sm tab-section" id="section-eligibility">
-                    <h4 class="fw-semibold mb-4 border-bottom pb-2"><i class="bi bi-shield-check me-2 text-primary"></i>Eligibility</h4>
-                    <div id="eliList" class="mb-3"></div>
-                    <div class="bg-light p-3 rounded-3 mb-4">
-                        <div class="row g-2 align-items-end">
+                <section class="glass-panel p-3 p-md-4 mb-4 rounded-4 shadow-sm tab-section" id="section-eligibility" aria-labelledby="heading-eligibility" data-step="eligibility" data-list="eligibility">
+                    <h2 class="h4 fw-semibold mb-4 border-bottom pb-2" id="heading-eligibility" tabindex="-1"><i class="bi bi-shield-check me-2 text-primary" aria-hidden="true"></i>Eligibility</h2>
+                    <div id="eliList" class="mb-3" aria-live="polite"></div>
+                    <div class="invalid-feedback d-block mb-3" id="eligibility-error" role="alert"></div>
+                    <div class="bg-light p-3 rounded-3 mb-2 entry-form">
+                        <div class="row g-2 align-items-start">
                             <div class="col-md-5">
-                                <label class="form-label small">Details (e.g. LET, Civil Service)</label>
-                                <input type="text" id="elig_details" class="form-control form-control-sm">
+                                <label class="form-label small" for="elig_details">Details (e.g. LET, Civil Service)</label>
+                                <input type="text" id="elig_details" class="form-control form-control-sm" maxlength="1000" required aria-describedby="elig_details-error">
+                                <div class="invalid-feedback" id="elig_details-error"></div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label small">Rating</label>
-                                <input type="number" id="elig_rating" step="0.01" class="form-control form-control-sm">
+                            <div class="col-5 col-md-2">
+                                <label class="form-label small" for="elig_rating">Rating</label>
+                                <input type="number" id="elig_rating" class="form-control form-control-sm" required min="0" max="100" step="0.01" inputmode="decimal" aria-describedby="elig_rating-error">
+                                <div class="invalid-feedback" id="elig_rating-error"></div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small">Link/Certificate (URL)</label>
-                                <input type="url" id="elig_link" class="form-control form-control-sm">
+                            <div class="col-7 col-md-4">
+                                <label class="form-label small" for="elig_link">Link/Certificate (URL)</label>
+                                <input type="url" id="elig_link" class="form-control form-control-sm" maxlength="500" inputmode="url" placeholder="https://..." pattern="https?://.+" data-pattern-message="Link must start with http:// or https://" aria-describedby="link-help-eligibility elig_link-error">
+                                <div class="invalid-feedback" id="elig_link-error"></div>
                             </div>
-                            <div class="col-md-1">
-                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-elig"><i class="bi bi-plus"></i></button>
+                            <div class="col-md-1 entry-add">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="btn-add-elig" aria-label="Add eligibility entry"><i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-md-none ms-1">Add</span></button>
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="experience"><i class="bi bi-arrow-left"></i> Back</button>
-                        <button type="submit" class="btn btn-success btn-lg px-5">Submit Application <i class="bi bi-check-circle"></i></button>
+                    <p class="form-text mb-0" id="link-help-eligibility">Certificate links must be shared with <strong>&ldquo;Anyone with the link&rdquo;</strong> so the HR team can open them.</p>
+                    <div class="d-flex flex-wrap gap-2 justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-prev" data-prev="experience"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</button>
+                        <button type="submit" class="btn btn-success btn-lg px-4 px-md-5">Submit Application <i class="bi bi-check-circle" aria-hidden="true"></i></button>
                     </div>
-                </div>
+                </section>
 
             </form>
         </div>
@@ -263,17 +315,26 @@
 </div>
 
 <!-- Success Modal -->
-<div class="modal fade glass-modal" id="successModal" tabindex="-1" data-bs-backdrop="static">
+<div class="modal fade glass-modal" id="successModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="successModalTitle" aria-describedby="successModalDesc">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 text-center p-4">
+        <div class="modal-content border-0 text-center p-3 p-md-4">
             <div class="modal-body">
-                <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
-                <h3 class="fw-bold mt-3">Application Submitted!</h3>
-                <p class="text-muted">Your application has been received. Please save your Tracking Number for reference:</p>
-                <div class="bg-light p-3 rounded-3 mb-4">
-                    <span class="fs-4 fw-monospace fw-bold text-primary" id="trackingCodeDisplay"></span>
+                <i class="bi bi-check-circle-fill text-success success-icon" aria-hidden="true"></i>
+                <h2 class="h3 fw-bold mt-3" id="successModalTitle" tabindex="-1">Application Submitted!</h2>
+                <p class="text-muted" id="successModalDesc">Your application has been received. Your tracking code is:</p>
+                <div class="bg-light p-3 rounded-3 mb-3">
+                    <span class="fs-4 font-monospace fw-bold text-primary text-break" id="trackingCodeDisplay"></span>
                 </div>
-                <a href="/" class="btn btn-primary w-100">Return to Home</a>
+                <div class="alert alert-warning small text-start mb-3" role="note">
+                    <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
+                    <strong>Save this code now.</strong> Copy it, print this page, or write it down. You will need it to follow up on your application.
+                </div>
+                <div class="d-flex gap-2 mb-3 d-print-none">
+                    <button type="button" class="btn btn-outline-primary flex-fill" id="btnCopyCode"><i class="bi bi-clipboard me-1" aria-hidden="true"></i>Copy code</button>
+                    <button type="button" class="btn btn-outline-primary flex-fill" id="btnPrintCode"><i class="bi bi-printer me-1" aria-hidden="true"></i>Print</button>
+                </div>
+                <p class="small text-success mb-3 d-print-none" id="copyStatus" role="status" aria-live="polite"></p>
+                <a href="/" class="btn btn-primary w-100 d-print-none">Return to Home</a>
             </div>
         </div>
     </div>

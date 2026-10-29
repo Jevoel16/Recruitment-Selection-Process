@@ -51,25 +51,25 @@
             <img src="/images/rsp-logo.png" alt="RSP Logo" height="30" class="me-2">
             <span class="fw-bold fs-5 text-primary">RSP Dashboard</span>
         </div>
-        <button class="btn border-0 p-1" id="mobileMenuToggle">
-            <i class="bi bi-list fs-2 text-primary"></i>
+        <button class="btn border-0 p-1" id="mobileMenuToggle" aria-label="Open menu" aria-controls="mainSidebar" aria-expanded="false">
+            <i class="bi bi-list fs-2 text-primary" aria-hidden="true"></i>
         </button>
     </div>
 
     <!-- Sidebar wrapper updated for offcanvas on mobile -->
     <div class="d-flex" style="min-height: 100vh;">
         <!-- Sidebar -->
-        <nav class="sidebar premium-nav text-white d-flex flex-column p-3 p-md-4 flex-shrink-0 shadow-lg responsive-sidebar" id="mainSidebar" style="width: 280px; z-index: 1055; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;">
+        <nav aria-label="Main navigation" class="sidebar premium-nav text-white d-flex flex-column p-3 p-md-4 flex-shrink-0 shadow-lg responsive-sidebar" id="mainSidebar" style="width: 280px; z-index: 1055; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;">
             <div class="d-flex align-items-center justify-content-between mb-4 sidebar-top-row">
                 <a href="/" class="d-flex align-items-center text-white text-decoration-none overflow-hidden" style="white-space: nowrap;">
                     <img src="/images/rsp-logo.png" alt="RSP Logo" class="me-3 sidebar-icon sidebar-logo-icon" style="height: 40px; width: auto; object-fit: contain;">
                     <span class="fs-4 fw-bold sidebar-text" style="font-size: 1.25rem !important;">RSP</span>
                 </a>
-                <button class="btn text-white p-0 border-0 flex-shrink-0 d-md-none" id="mobileMenuClose">
-                    <i class="bi bi-x-lg fs-4"></i>
+                <button class="btn text-white p-0 border-0 flex-shrink-0 d-md-none" id="mobileMenuClose" aria-label="Close menu">
+                    <i class="bi bi-x-lg fs-4" aria-hidden="true"></i>
                 </button>
-                <button class="btn text-white p-0 border-0 flex-shrink-0 d-none d-md-block" id="sidebarToggle">
-                    <i class="bi bi-list fs-3"></i>
+                <button class="btn text-white p-0 border-0 flex-shrink-0 d-none d-md-block" id="sidebarToggle" aria-label="Collapse sidebar" aria-controls="mainSidebar" aria-expanded="true">
+                    <i class="bi bi-list fs-3" aria-hidden="true"></i>
                 </button>
             </div>
             <ul class="nav nav-pills flex-column mb-auto custom-sidebar-tabs gap-2" id="rspTab">
@@ -120,12 +120,16 @@
                         <div class="fw-bold">{{user.name}}</div>
                         <div class="opacity-75 small">@{{user.username}} ({{user.role}})</div>
                     </div>
-                    <a href="/logout" class="btn btn-sm btn-outline-light border-0" title="Logout">
-                        <i class="bi bi-box-arrow-right fs-5"></i>
-                    </a>
+                    <form action="/logout" method="post" class="m-0">
+                        <button type="submit" class="btn btn-sm btn-outline-light border-0" title="Logout" aria-label="Log out">
+                            <i class="bi bi-box-arrow-right fs-5" aria-hidden="true"></i>
+                        </button>
+                    </form>
                 </div>
                 <div class="sidebar-collapsed-text d-none text-center">
-                    <a href="/logout" class="text-white text-decoration-none" title="Logout"><i class="bi bi-box-arrow-right fs-5"></i></a>
+                    <form action="/logout" method="post" class="m-0">
+                        <button type="submit" class="btn btn-link p-0 text-white text-decoration-none" title="Logout" aria-label="Log out"><i class="bi bi-box-arrow-right fs-5" aria-hidden="true"></i></button>
+                    </form>
                 </div>
             </div>
         </nav>

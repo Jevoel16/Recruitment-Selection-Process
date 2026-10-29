@@ -5,6 +5,35 @@
  * @param {boolean} reload - Whether to reload the page after showing the toast
  */
 window.toastQueue = window.toastQueue || [];
+
+// Escapes text before it is placed in innerHTML or an HTML attribute.
+// Applicant data arrives from the public portal, so always run it through this.
+window.escapeHtml = function(value) {
+    return String(value ?? '').replace(/[&<>"'`]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+};
+
+// Turns a value into a quoted JS string argument that is safe inside an onclick="..." attribute.
+window.jsArg = function(value) {
+    return window.escapeHtml(JSON.stringify(String(value ?? '')));
+};
+
+// Disables a button and shows a spinner while a request runs; call again with false to restore it.
+window.setButtonLoading = function(btn, loading, label = 'Saving...') {
+    if (!btn) return;
+    if (loading) {
+        if (btn.dataset.originalHtml === undefined) btn.dataset.originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${window.escapeHtml(label)}`;
+    } else {
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        if (btn.dataset.originalHtml !== undefined) {
+            btn.innerHTML = btn.dataset.originalHtml;
+            delete btn.dataset.originalHtml;
+        }
+    }
+};
 window.isToastShowing = window.isToastShowing || false;
 
 window.showToast = function(message, type = 'info', reload = false) {
@@ -23,7 +52,6 @@ function processToastQueue() {
     
     if (!template || !container) {
         console.warn('Toast elements not found. Message:', message);
-        alert(message);
         if (reload) window.location.reload();
         
         window.isToastShowing = false;
@@ -44,10 +72,12 @@ function processToastQueue() {
         default: toastEl.classList.add('bg-info');
     }
 
-    toastMsg.innerHTML = message;
+    toastMsg.textContent = message;
     container.appendChild(toastEl);
     
-    const toast = new bootstrap.Toast(toastEl, { delay: 1500 });
+    // Errors and warnings stay up long enough to read; reload toasts stay short so the page refreshes promptly
+    const delay = reload ? 1500 : (type === 'danger' || type === 'warning') ? 5000 : 2500;
+    const toast = new bootstrap.Toast(toastEl, { delay });
     
     toastEl.addEventListener('hidden.bs.toast', () => {
         toastEl.remove();

@@ -45,7 +45,7 @@ if (qualifyForm) {
                     const actionTd = row.querySelector('.text-end');
                     if (actionTd) {
                         const applicantName = document.getElementById('qualifyName').innerText;
-                        actionTd.innerHTML = `<button class="btn btn-sm btn-success action-btn" onclick="openProceedModal(${id}, '${applicantName.replace(/'/g, "\\'")}')" title="Proceed to Step 2"><i class="bi bi-arrow-right-circle"></i> Proceed</button>`;
+                        actionTd.innerHTML = `<button class="btn btn-sm btn-success action-btn" onclick="openProceedModal(${id}, ${jsArg(applicantName)})" title="Proceed to Step 2"><i class="bi bi-arrow-right-circle"></i> Proceed</button>`;
                     }
                     const remarksTd = document.getElementById(`remarks-cell-${id}`);
                     if (remarksTd) remarksTd.innerHTML = '<span class="badge bg-success">Qualified</span>';

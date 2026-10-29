@@ -14,6 +14,8 @@ function jsonToCsv(jsonArray) {
         return keys.map(k => {
             let val = obj[k];
             if (val === null || val === undefined) return '';
+            // Applicant text comes from the public portal; stop spreadsheet apps from running it as a formula
+            if (typeof val === 'string' && /^[=+\-@\t\r]/.test(val) && !/^-?\d+(\.\d+)?$/.test(val)) val = `'${val}`;
             val = String(val).replace(/"/g, '""');
             if (val.search(/("|,|\n)/g) >= 0) val = `"${val}"`;
             return val;

@@ -49,7 +49,8 @@ exports.getMetrics = async (req, res) => {
         }
         res.json({ totalVacantCount, totalPositionsCount, groupedPositions });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Metrics error:', err);
+        res.status(500).json({ error: 'Failed to load metrics' });
     }
 };
 
@@ -912,8 +913,10 @@ exports.getStepPage = async (req, res, next) => {
     }
 };
 
+const { loginErrorMessage } = require('../utils/loginErrors');
+
 exports.getStep2Login = (req, res) => {
-    res.render('step2-login', { error: req.query.error, step2Active: true });
+    res.render('step2-login', { error: loginErrorMessage(req.query.error), step2Active: true });
 };
 
 exports.postStep2Login = async (req, res) => {
@@ -922,20 +925,20 @@ exports.postStep2Login = async (req, res) => {
         const db = require('../db');
         const crypto = require('crypto');
         const jwt = require('jsonwebtoken');
-        const { JWT_SECRET, verifyPassword } = require('../utils/security');
+        const { JWT_SECRET, COOKIE_SECURE, verifyPassword } = require('../utils/security');
 
         const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
         if (rows.length === 0) {
-            return res.redirect('/step2-login?error=Invalid credentials');
+            return res.redirect('/step2-login?error=invalid');
         }
 
         const user = rows[0];
         if (!(await verifyPassword(password, user.password))) {
-            return res.redirect('/step2-login?error=Invalid credentials');
+            return res.redirect('/step2-login?error=invalid');
         }
 
         if (!user.can_access_step2) {
-            return res.redirect('/step2-login?error=You do not have permission to access Step 2');
+            return res.redirect('/step2-login?error=denied');
         }
 
         // Create a fingerprint using IP and User-Agent to prevent cookie theft/spoofing on HTTP
@@ -950,7 +953,7 @@ exports.postStep2Login = async (req, res) => {
         
         res.cookie('step2Auth', token, {
             httpOnly: true,
-            secure: false, // Must be false for standard HTTP
+            secure: COOKIE_SECURE,
             sameSite: 'lax',
             maxAge: 12 * 60 * 60 * 1000 // 12 hours
         });
@@ -961,6 +964,6 @@ exports.postStep2Login = async (req, res) => {
         res.redirect('/step2/1');
     } catch (e) {
         console.error(e);
-        res.redirect('/step2-login?error=Server error');
+        res.redirect('/step2-login?error=server');
     }
 };

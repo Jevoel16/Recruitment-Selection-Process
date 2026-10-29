@@ -1,3 +1,4 @@
+// escapeHtml and jsArg come from utils.js; record text comes from the public portal
 function getDisplayFileLink(link) {
     if (!link) return '#';
     return link.startsWith('http') ? link : `/uploads/${link}`;
@@ -107,14 +108,14 @@ async function openEduModal(id, isWizard = false) {
                     <div class="d-flex align-items-center">
                         ${radioHtml}
                         <span>
-                            <strong>${docTitle}</strong> (${gradYear})
-                            <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                            <strong>${escapeHtml(docTitle)}</strong> (${escapeHtml(gradYear)})
+                            <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${escapeHtml(e.status || 'PENDING')}</span>
                         </span>
                     </div>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('education', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('education', ${e.id}, ${id}, '${e.degree.replace(/'/g, "\\'")}', '${e.yearGraduated}', 'Year Graduated', 'edu')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('education', ${e.id}, ${id}, ${jsArg(e.degree)}, ${jsArg(e.yearGraduated)}, 'Year Graduated', 'edu')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('education', ${e.id}, ${id}, 'edu')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -185,13 +186,13 @@ async function openTrainModal(id, isWizard = false) {
             train.forEach(t => {
                 const docLink = t.digitalCopyLink || t.link;
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${t.title}</strong> (${t.hours} hours)
-                    <br><span class="badge ${t.status === 'QUALIFIED' ? 'bg-success' : t.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${t.status || 'PENDING'}</span>
+                    <span><strong>${escapeHtml(t.title)}</strong> (${escapeHtml(t.hours)} hours)
+                    <br><span class="badge ${t.status === 'QUALIFIED' ? 'bg-success' : t.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${escapeHtml(t.status || 'PENDING')}</span>
                     </span>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${t.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('training', ${id}, ${t.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${t.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('training', ${id}, ${t.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('training', ${t.id}, ${id}, '${t.title.replace(/'/g, "\\'")}', '${t.hours}', 'Hours', 'train')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('training', ${t.id}, ${id}, ${jsArg(t.title)}, ${jsArg(t.hours)}, 'Hours', 'train')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('training', ${t.id}, ${id}, 'train')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -266,13 +267,13 @@ async function openExpModal(id, isWizard = false) {
                 let dur = parts.length > 0 ? parts.join(" & ") : "0 years";
 
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${e.details}</strong> (${dur})
-                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                    <span><strong>${escapeHtml(e.details)}</strong> (${escapeHtml(dur)})
+                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${escapeHtml(e.status || 'PENDING')}</span>
                     </span>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('experience', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('experience', ${e.id}, ${id}, '${e.details.replace(/'/g, "\\'")}', '${e.years}', '${e.months || 0}', 'exp')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('experience', ${e.id}, ${id}, ${jsArg(e.details)}, ${jsArg(e.years)}, ${jsArg(e.months || 0)}, 'exp')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('experience', ${e.id}, ${id}, 'exp')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -344,13 +345,13 @@ async function openEligModal(id, isWizard = false) {
                 const docTitle = e.details || e.title;
                 const docLink = e.digitalCopyLink || e.link;
                 html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><strong>${docTitle}</strong> (${e.rating})
-                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                    <span><strong>${escapeHtml(docTitle)}</strong> (${escapeHtml(e.rating)})
+                    <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${escapeHtml(e.status || 'PENDING')}</span>
                     </span>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-warning ${e.status === 'DISQUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('eligibility', ${id}, ${e.id}, 'DISQUALIFIED')"><i class="bi bi-x-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('eligibility', ${e.id}, ${id}, '${(e.title || e.details).replace(/'/g, "\\'")}', '${e.rating || ''}', 'Rating', 'elig')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-info text-white" onclick="prepareUpdateRecord('eligibility', ${e.id}, ${id}, ${jsArg((e.title || e.details))}, ${jsArg(e.rating || '')}, 'Rating', 'elig')"><i class="bi bi-pencil"></i></button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('eligibility', ${e.id}, ${id}, 'elig')"><i class="bi bi-trash"></i></button>
                     </div>
                 </li>`;
@@ -473,9 +474,9 @@ async function openPerfModal(id, editGroupId = null) {
                     html += `
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>${e.ratingPeriod}</strong>
-                                <br>Score: ${e.rating} ${e.letterGrade ? `(Grade: ${e.letterGrade})` : ''}
-                                <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${e.status || 'PENDING'}</span>
+                                <strong>${escapeHtml(e.ratingPeriod)}</strong>
+                                <br>Score: ${escapeHtml(e.rating)} ${e.letterGrade ? `(Grade: ${escapeHtml(e.letterGrade)})` : ''}
+                                <br><span class="badge ${e.status === 'QUALIFIED' ? 'bg-success' : e.status === 'DISQUALIFIED' ? 'bg-danger' : 'bg-warning text-dark'}">${escapeHtml(e.status || 'PENDING')}</span>
                             </div>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-success ${e.status === 'QUALIFIED' ? 'disabled' : ''}" onclick="updateDocStatus('performance', ${id}, ${e.id}, 'QUALIFIED')"><i class="bi bi-check-circle"></i></button>
@@ -509,10 +510,10 @@ async function openPerfModal(id, editGroupId = null) {
                 const rec = recordsToEdit[i];
                 html += `
                     <div class="d-flex gap-2 w-100 mb-2">
-                        <input type="hidden" name="id_${i}" value="${rec.id || ''}">
-                        <input type="text" class="form-control" name="period_${i}" placeholder="${placeholders[i].period}" value="${rec.ratingPeriod || ''}" style="flex: 2;" required>
-                        <input type="number" step="any" class="form-control" name="rating_${i}" placeholder="${placeholders[i].rating}" value="${rec.rating || ''}" style="flex: 1;" required>
-                        <input type="text" class="form-control" name="grade_${i}" placeholder="${placeholders[i].grade}" value="${rec.letterGrade || ''}" style="flex: 1;" required>
+                        <input type="hidden" name="id_${i}" value="${escapeHtml(rec.id || '')}">
+                        <input type="text" class="form-control" name="period_${i}" placeholder="${placeholders[i].period}" value="${escapeHtml(rec.ratingPeriod || '')}" style="flex: 2;" required>
+                        <input type="number" step="any" class="form-control" name="rating_${i}" placeholder="${placeholders[i].rating}" value="${escapeHtml(rec.rating || '')}" style="flex: 1;" required>
+                        <input type="text" class="form-control" name="grade_${i}" placeholder="${placeholders[i].grade}" value="${escapeHtml(rec.letterGrade || '')}" style="flex: 1;" required>
                     </div>
                 `;
             }

@@ -1,10 +1,10 @@
     <!-- Step 3 Remove No Appearance Modal -->
-    <div class="modal fade glass-modal" id="step3RemoveModal" tabindex="-1">
+    <div class="modal fade glass-modal" id="step3RemoveModal" tabindex="-1" aria-labelledby="step3RemoveModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header border-bottom border-light border-opacity-25 bg-danger bg-opacity-10 text-danger">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle"></i> Remove Applicant</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold" id="step3RemoveModalLabel"><i class="bi bi-exclamation-triangle"></i> Remove Applicant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 text-center">
                     <input type="hidden" id="step3RemoveApplicantId">

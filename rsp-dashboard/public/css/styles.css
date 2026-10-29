@@ -686,3 +686,35 @@ select.custom-ui-select option {
 .input-group.glass-panel:has(input:not(:placeholder-shown)) {
     border: 2px solid var(--bs-primary) !important;
 }
+/* Clickable metric cards: hover lift lives here instead of inline handlers */
+.category-metric-card {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.category-metric-card:hover,
+.category-metric-card:focus-visible {
+    transform: translateY(-5px);
+}
+
+/* Visible keyboard focus for custom controls */
+.category-metric-card:focus-visible,
+.input-group-text.cursor-pointer:focus-visible,
+.toggle-password:focus-visible {
+    outline: 3px solid rgba(13, 110, 253, 0.6);
+    outline-offset: 2px;
+}
+
+/* Search-icon buttons keep the look of the old input-group spans */
+button.input-group-text {
+    border-right: 0;
+}
+
+/* Respect the user's reduced-motion setting */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
